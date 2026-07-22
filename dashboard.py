@@ -44,9 +44,8 @@ def ana_ekran_olustur(page: ft.Page):
         ], alignment="center", horizontal_alignment="center"),
         bgcolor="#111111",
         height=220,
-        border_radius=10,
-        # ÇÖKMEYE SEBEP OLAN 'border=ft.border.all(...)' SATIRI TAMAMEN SİLİNDİ
-        alignment=ft.alignment.center
+        border_radius=10
+        # ÇÖKMEYE SEBEP OLAN 'alignment=ft.alignment.center' SATIRI BURADAN SİLİNDİ!
     )
 
     # 4. YAPAY ZEKA SİNYAL VE HABER ÖZETİ MODÜLÜ
@@ -92,4 +91,4 @@ def ana_ekran_olustur(page: ft.Page):
         bgcolor="#030303"
     )
     
-    return ana_icerik   
+    return ana_icerik
