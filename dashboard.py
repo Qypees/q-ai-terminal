@@ -92,4 +92,4 @@ def ana_ekran_olustur(page: ft.Page):
         bgcolor="#030303"
     )
     
-    return ana_icerik
+    return ana_icerik   
