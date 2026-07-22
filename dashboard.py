@@ -34,7 +34,7 @@ def ana_ekran_olustur(page: ft.Page):
         spacing=10
     )
 
-    # 3. TRADINGVIEW GRAFİK ALANI (Entegrasyon Çerçevesi)
+    # 3. TRADINGVIEW GRAFİK ALANI
     grafik_alani = ft.Container(
         content=ft.Column([
             ft.Text("📊 TradingView (BTC/USDT)", size=16, weight="bold", color="#00ffcc"),
@@ -45,7 +45,7 @@ def ana_ekran_olustur(page: ft.Page):
         bgcolor="#111111",
         height=220,
         border_radius=10,
-        border=ft.border.all(1, "#333333"),
+        # ÇÖKMEYE SEBEP OLAN 'border=ft.border.all(...)' SATIRI TAMAMEN SİLİNDİ
         alignment=ft.alignment.center
     )
 
