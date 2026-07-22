@@ -3,7 +3,6 @@ import flet as ft
 def uyari_ekrani(page: ft.Page, kabul_edildi_fonksiyonu):
     page.controls.clear()
     
-    # Hata veren ikon yerine uyarı emojisi kullanıldı
     ikon = ft.Text("⚠️", size=70)
     baslik = ft.Text("YASAL UYARI", size=28, weight="bold", color="red")
     
@@ -27,8 +26,8 @@ def uyari_ekrani(page: ft.Page, kabul_edildi_fonksiyonu):
     icerik = ft.Container(
         content=ft.Column(
             controls=[ikon, baslik, ft.Container(height=10), metin, ft.Container(height=30), buton],
-            alignment="center",
-            horizontal_alignment="center"
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
         ),
         padding=30,
         expand=True,
