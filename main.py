@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import requests
@@ -13,9 +13,12 @@ import re
 app = FastAPI(title="Q-AI Terminal Core")
 templates = Jinja2Templates(directory="templates")
 
-# Cüzdan Hafızası (Sayfalar arası geçişlerde sıfırlanmaz)
+# Cüzdan Hafızası
 aktif_pozisyonlar = []
 spot_varliklar = []
+
+# Oturum durumunu takip eden hafıza (F5 atıldığında veya sekme yenilendiğinde sıfırlanır)
+onayli_kullanicilar = set()
 
 class ChatRequest(BaseModel):
     mesaj: str
@@ -131,38 +134,6 @@ def isiharitasi_verilerini_cek(zaman="1d"):
             coin["degisim"] = round(gercek_degisim, 2)
     return sorted(hareketli_coinler, key=lambda x: x['hacim'], reverse=True)
 
-def ai_firsatlari_cek():
-    tum_piyasa = coklu_piyasa_verilerini_cek()
-    firsatlar = []
-    for coin in tum_piyasa:
-        if coin["sembol"] in ["USDT", "USDC", "DAI"] or "YATAY" in coin["ai_yon"]: continue
-        degisim_mutlak = abs(coin["degisim"])
-        if degisim_mutlak > 3.0 and coin["hacim"] > 500:
-            fiyat = coin["fiyat"]
-            yon_net = "LONG" if "LONG" in coin["ai_yon"] else "SHORT"
-            guc = min(99, int(70 + (degisim_mutlak * 2.5) + (coin["hacim"] / 1000)))
-            tp = fiyat * (1 + (degisim_mutlak * 1.5) / 100) if yon_net == "LONG" else fiyat * (1 - (degisim_mutlak * 1.5) / 100)
-            sl = fiyat * (1 - (degisim_mutlak * 0.8) / 100) if yon_net == "LONG" else fiyat * (1 + (degisim_mutlak * 0.8) / 100)
-            def formatla(deger): return f"{deger:,.4f}".rstrip('0').rstrip('.') if deger < 1 else f"{deger:,.2f}"
-            firsatlar.append({"coin": coin["sembol"], "yon": yon_net, "giris": formatla(fiyat), "hedef": formatla(tp), "stop": formatla(sl), "guc": guc, "yorum": coin["ai_yorum"]})
-    firsatlar.sort(key=lambda x: x["guc"], reverse=True)
-    return firsatlar[:6]
-
-def cuzdan_verilerini_cek():
-    varliklar = [
-        {"sembol": "BTC", "miktar": 0.145, "degisim": round(random.uniform(1.0, 3.0), 2)},
-        {"sembol": "ETH", "miktar": 1.85, "degisim": round(random.uniform(0.5, 2.0), 2)},
-        {"sembol": "SOL", "miktar": 32.0, "degisim": round(random.uniform(-1.0, 1.0), 2)},
-        {"sembol": "USDT", "miktar": 1250.50, "degisim": 0.0}
-    ]
-    live_data = get_live_binance_data()
-    binance_dict = {item['symbol']: item for item in live_data}
-    for varlik in varliklar:
-        symbol_usdt = f"{varlik['sembol']}USDT"
-        varlik["fiyat"] = float(binance_dict[symbol_usdt]['lastPrice']) if symbol_usdt in binance_dict else COIN_FIYATLARI[varlik['sembol']]
-        varlik["deger"] = varlik["miktar"] * varlik["fiyat"]
-    return {"toplam_bakiye": sum(item["deger"] for item in varliklar), "varliklar": varliklar}
-
 # ==========================================
 # 3. AI BİRLEŞİK BEYİN VE HABERLER
 # ==========================================
@@ -217,7 +188,7 @@ def uclu_ai_birlesik_yanit(mesaj: str):
         return f"🔍 **Q-AI Değerlendirmesi:** '{mesaj}' talebiniz incelendi. Bitcoin **${btc_fiyat:,.2f}** seviyesindeyken risk/ödül oranına dikkat edilmelidir."
 
 # ==========================================
-# 4. JSON API UÇ NOKTALARI (CÜZDAN DAHİL)
+# 4. JSON API UÇ NOKTALARI
 # ==========================================
 @app.get("/api/piyasa")
 async def api_piyasa(): return JSONResponse(content=coklu_piyasa_verilerini_cek())
@@ -237,7 +208,6 @@ async def api_isiharitasi_data(zaman: str = "1d"): return JSONResponse(content=i
 @app.post("/api/sohbet")
 async def api_sohbet(req: ChatRequest): return JSONResponse(content={"yanit": uclu_ai_birlesik_yanit(req.mesaj)})
 
-# CÜZDAN API ENDPOINT'LERİ
 @app.get("/api/cuzdan/spot")
 async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
 
@@ -248,8 +218,7 @@ async def api_cuzdan_spot_post(req: SpotVarlikRequest):
 
 @app.delete("/api/cuzdan/spot/{index}")
 async def api_cuzdan_spot_delete(index: int):
-    if 0 <= index < len(spot_varliklar):
-        spot_varliklar.pop(index)
+    if 0 <= index < len(spot_varliklar): spot_varliklar.pop(index)
     return JSONResponse(content={"durum": "silindi"})
 
 @app.get("/api/cuzdan/vadeli")
@@ -261,48 +230,80 @@ async def api_cuzdan_vadeli_post(req: VadeliPozisyonRequest):
     yon = req.yon
     kaldirac = req.kaldirac
     ai_yorum = f"Q-AI Analizi: {coin} için {kaldirac} kaldıraçlı {yon} pozisyonu sisteme kaydedildi. Algoritmalar mevcut destek seviyesinde tutunma ihtimalini %74 olarak hesaplıyor."
-    
-    aktif_pozisyonlar.append({
-        "coin": coin, "kaldirac": kaldirac, "yon": yon, "miktar": req.miktar,
-        "zaman": datetime.datetime.now().strftime("%H:%M"), "ai_yorum": ai_yorum
-    })
+    aktif_pozisyonlar.append({"coin": coin, "kaldirac": kaldirac, "yon": yon, "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M"), "ai_yorum": ai_yorum})
     return JSONResponse(content={"durum": "basarili"})
 
 @app.delete("/api/cuzdan/vadeli/{index}")
 async def api_cuzdan_vadeli_delete(index: int):
-    if 0 <= index < len(aktif_pozisyonlar):
-        aktif_pozisyonlar.pop(index)
+    if 0 <= index < len(aktif_pozisyonlar): aktif_pozisyonlar.pop(index)
     return JSONResponse(content={"durum": "silindi"})
 
 # ==========================================
-# 5. YÖNLENDİRİCİLER (HTML SAYFALARI)
+# 5. GÜVENLİK VE YÖNLENDİRME KONTROLÜ (F5 ATILINCA BAŞA ATMA)
 # ==========================================
 @app.get("/", response_class=HTMLResponse)
-async def ana_ekran(request: Request): return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
+async def splash_ekrani(request: Request): 
+    # Kök dizine her girildiğinde veya sayfa yenilendiğinde oturum onayını siliyoruz ki en baştan başlasın
+    onayli_kullanicilar.discard(request.client.host)
+    return templates.TemplateResponse(request=request, name="splash.html", context={"request": request})
+
+@app.get("/disclaimer", response_class=HTMLResponse)
+async def yasal_uyari_sayfasi(request: Request): 
+    return templates.TemplateResponse(request=request, name="disclaimer.html", context={"request": request})
+
+@app.get("/onayla")
+async def oturum_onayla(request: Request):
+    # Kullanıcı uyarıyı kabul ettiğinde onay listesine eklenir ve ana kontrol paneline (/pano) yönlendirilir
+    onayli_kullanicilar.add(request.client.host)
+    return RedirectResponse(url="/pano", status_code=303)
+
+def yetki_kontrol(request: Request):
+    # Kullanıcı onaylı değilse (F5 atıldıysa veya direkt url yazıldıysa) doğrudan splash ekranına (/) atılır
+    return request.client.host in onayli_kullanicilar
+
+@app.get("/pano", response_class=HTMLResponse)
+async def ana_ekran(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
 
 @app.get("/piyasa", response_class=HTMLResponse)
-async def piyasa_sayfasi(request: Request): return templates.TemplateResponse(request=request, name="piyasa.html", context={"request": request})
+async def piyasa_sayfasi(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="piyasa.html", context={"request": request})
 
 @app.get("/haberler", response_class=HTMLResponse)
-async def haberler_sayfasi(request: Request): return templates.TemplateResponse(request=request, name="haberler.html", context={"request": request})
+async def haberler_sayfasi(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="haberler.html", context={"request": request})
 
 @app.get("/sinyaller", response_class=HTMLResponse)
-async def sinyaller_sayfasi(request: Request): return templates.TemplateResponse(request=request, name="sinyaller.html", context={"request": request})
+async def sinyaller_sayfasi(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="sinyaller.html", context={"request": request})
 
 @app.get("/top5", response_class=HTMLResponse)
-async def top5_sayfasi(request: Request): return templates.TemplateResponse(request=request, name="top5.html", context={"request": request})
+async def top5_sayfasi(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="top5.html", context={"request": request})
 
 @app.get("/isiharitasi", response_class=HTMLResponse)
-async def isiharitasi_sayfasi(request: Request): return templates.TemplateResponse(request=request, name="isiharitasi.html", context={"request": request})
+async def isiharitasi_sayfasi(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="isiharitasi.html", context={"request": request})
 
 @app.get("/cuzdan", response_class=HTMLResponse)
-async def cuzdan_sayfasi(request: Request): return templates.TemplateResponse(request=request, name="cuzdan.html", context={"request": request})
+async def cuzdan_sayfasi(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="cuzdan.html", context={"request": request})
 
 @app.get("/sohbet", response_class=HTMLResponse)
-async def sohbet_sayfasi(request: Request): return templates.TemplateResponse(request=request, name="sohbet.html", context={"request": request})
+async def sohbet_sayfasi(request: Request): 
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="sohbet.html", context={"request": request})
 
 @app.get("/{sayfa_adi}", response_class=HTMLResponse)
 async def sayfa_yonlendir(request: Request, sayfa_adi: str):
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     try: return templates.TemplateResponse(request=request, name=f"{sayfa_adi}.html", context={"request": request})
     except: return templates.TemplateResponse(request=request, name="yapim_asamasinda.html", context={"request": request, "sayfa": sayfa_adi.upper()})
 

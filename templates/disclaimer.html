@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yasal Uyarı | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #010103; color: white; margin: 0; overflow: hidden; }
+        .glass-panel { 
+            background: linear-gradient(135deg, rgba(10,10,14,0.9) 0%, rgba(5,5,7,0.95) 100%); 
+            border: 1px solid rgba(239, 68, 68, 0.3); 
+            backdrop-filter: blur(10px);
+            border-radius: 20px; 
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.15);
+            animation: panelFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes panelFadeIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center p-4">
+
+    <div class="glass-panel w-full max-w-xl p-8 md:p-10 flex flex-col items-center text-center">
+        
+        <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500 flex items-center justify-center text-3xl mb-4 shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse">
+            ⚠️
+        </div>
+
+        <h1 class="text-2xl md:text-3xl font-black text-red-500 tracking-widest mb-6">YASAL UYARI VE SORUMLULUK REDDİ</h1>
+        
+        <div class="text-gray-300 text-sm leading-relaxed text-left flex flex-col gap-4 mb-8 bg-[#030304]/80 p-6 rounded-xl border border-gray-800">
+            <p>Bu terminal (<strong class="text-white">Q-AI</strong>), tamamen kişisel geliştirme, yapay zeka entegrasyonu ve piyasa analizi amacıyla oluşturulmuştur.</p>
+            <p>İçerisinde yer alan yapay zeka verileri, sinyaller ve teknik analiz grafiklerinin hiçbiri <strong class="text-red-400">YATIRIM TAVSİYESİ DEĞİLDİR</strong>.</p>
+            <p>Kripto para piyasalarında işlem yapmak yüksek finansal risk taşır. Sistem algoritmalarının ürettiği sonuçlardan veya piyasa dalgalanmalarından kaynaklanabilecek zararlardan geliştirici sorumlu tutulamaz.</p>
+            <p class="text-[#00ffcc] font-bold text-center">Sisteme giriş yaparak tüm riskleri ve bu metni okuyup kabul etmiş sayılırsınız.</p>
+        </div>
+
+        <!-- Buton tıklandığında /onayla adresine gider ve ana kontrol paneline (/pano) sızdırır -->
+        <button onclick="window.location.href='/onayla'" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black py-4 rounded-xl text-base tracking-wider transition-all shadow-[0_0_25px_rgba(16,185,129,0.4)] transform hover:scale-[1.02] cursor-pointer uppercase">
+            OKUDUM VE KABUL EDİYORUM ✓
+        </button>
+
+    </div>
+
+</body>
+</html>
