@@ -7,7 +7,8 @@ from market_page import piyasa_sayfasi_olustur
 from news_page import haber_sayfasi_olustur
 from top5_page import top5_sayfasi_olustur
 from heatmap_page import isi_haritasi_sayfasi_olustur
-from ai_chat_page import ai_sohbet_sayfasi_olustur # AI SOHBET EKLENDİ
+from ai_chat_page import ai_sohbet_sayfasi_olustur
+from wallet_page import cuzdan_sayfasi_olustur # CÜZDAN SAYFASI BAĞLANTISI EKLENDİ
 
 def ana_ekran_olustur(page: ft.Page):
     
@@ -18,9 +19,9 @@ def ana_ekran_olustur(page: ft.Page):
     def kutu_olustur(baslik, alt_metin, fonk=None, esneklik=1, neon_renk="#00ffcc"):
         icerik = ft.Column(
             controls=[
-                ft.Text(baslik, size=16, weight="900", color="white"), 
+                ft.Text(baslik, size=16, weight="900", color="white"),
                 ft.Container(height=2),
-                ft.Text(alt_metin, size=12, color="#A0A0A5", text_align="center") 
+                ft.Text(alt_metin, size=12, color="#A0A0A5", text_align="center")
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
@@ -29,8 +30,8 @@ def ana_ekran_olustur(page: ft.Page):
         kutu = ft.Container(
             content=icerik,
             gradient=ft.LinearGradient(
-                begin=ft.Alignment(-1, -1), end=ft.Alignment(1, 1), 
-                colors=["#0A0A0E", "#050507", "#030304"] 
+                begin=ft.Alignment(-1, -1), end=ft.Alignment(1, 1),
+                colors=["#0A0A0E", "#050507", "#030304"]
             ),
             border=cerceve_olustur(1, "#1A1A24"), border_radius=16, padding=20, expand=esneklik,
             shadow=[ft.BoxShadow(blur_radius=15, color="#000000", offset=ft.Offset(0, 10))],
@@ -85,9 +86,9 @@ def ana_ekran_olustur(page: ft.Page):
 
     ust_bar = ft.Row(
         [
-            ft.Row([ft.Text("⚡", size=24), ft.Text("Q-AI TERMİNAL", size=20, weight="900", color="white")]), 
+            ft.Row([ft.Text("⚡", size=24), ft.Text("Q-AI TERMİNAL", size=20, weight="900", color="white")]),
             sag_ust_bot_gostergesi
-        ], 
+        ],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
 
@@ -98,18 +99,18 @@ def ana_ekran_olustur(page: ft.Page):
     tarih_metni = f"📍 İstanbul | {simdi.strftime('%d.%m.%Y - %H:%M')}"
     kutu_1 = ft.Container(
         content=ft.Row([ft.Text(tarih_metni, size=14, weight="bold", color="#A0A0A5")], alignment=ft.MainAxisAlignment.CENTER),
-        gradient=ft.LinearGradient(begin=ft.Alignment(0, -1), end=ft.Alignment(0, 1), colors=["#0A0A0E", "#030304"]), 
+        gradient=ft.LinearGradient(begin=ft.Alignment(0, -1), end=ft.Alignment(0, 1), colors=["#0A0A0E", "#030304"]),
         border_radius=16, padding=15, height=55, border=cerceve_olustur(1, "#1A1A24"),
         on_click=jenerik_sayfaya_gec("Tarih ve Saat", "📍", "Yerel zaman dilimi ve alarm ayarları çok yakında burada olacak.")
     )
 
-    kutu_2 = kutu_olustur("📈 CANLI PİYASA  🔴 LİVE", "Fiyatlar ve tahta ekranı\n(İçeri Gir)", fonk=sayfaya_gec(piyasa_sayfasi_olustur, "Canlı Piyasa"), esneklik=3, neon_renk="#EF4444")
+    kutu_2 = kutu_olustur("📈 CANLI PİYASA 🔴 LİVE", "Fiyatlar ve tahta ekranı\n(İçeri Gir)", fonk=sayfaya_gec(piyasa_sayfasi_olustur, "Canlı Piyasa"), esneklik=3, neon_renk="#EF4444")
     kutu_3 = kutu_olustur("📰 SON DAKİKA", "Piyasa Haberleri\n(İçeri Gir)", fonk=sayfaya_gec(haber_sayfasi_olustur, "Haber Merkezi"), esneklik=1, neon_renk="#F59E0B")
     kutu_4 = kutu_olustur("🧠 AI FIRSATLARI", "Sinyaller ve Yorumlar\n(İçeri Gir)", fonk=sayfaya_gec(ai_signal_sayfasi_olustur, "AI Sinyal Merkezi"), esneklik=2, neon_renk="#10B981")
     satir_234 = ft.Row([kutu_2, ft.Column([kutu_3, kutu_4], expand=2, spacing=15)], height=220)
 
     kutu_5 = kutu_olustur("📊 GRAFİK EKRANI", "AI Destekli Analizler ve TradingView Entegrasyonu (İçeri Gir)", fonk=sayfaya_gec(grafik_sayfasi_olustur, "Grafik Terminali"), neon_renk="#00ffcc")
-    kutu_5.height = 85 
+    kutu_5.height = 85
 
     kutu_6 = kutu_olustur("🏆 TOP 5 COİN", "En çok düşen/yükselen", fonk=sayfaya_gec(top5_sayfasi_olustur, "Top 5 Radar"), neon_renk="#FBBF24")
     kutu_7 = kutu_olustur("🔥 ISI HARİTASI", "Genel piyasa sıcaklığı", fonk=sayfaya_gec(isi_haritasi_sayfasi_olustur, "RSI Isı Haritası"), neon_renk="#FF4500")
@@ -125,11 +126,11 @@ def ana_ekran_olustur(page: ft.Page):
     ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0)
     
     kutu_14 = ft.Container(
-        content=hareketli_logo, 
-        gradient=ft.LinearGradient(begin=ft.Alignment(0, -1), end=ft.Alignment(0, 1), colors=["#0A0A0E", "#021A13"]), 
-        border_radius=16, expand=2, border=cerceve_olustur(1, "#00ffcc"), 
+        content=hareketli_logo,
+        gradient=ft.LinearGradient(begin=ft.Alignment(0, -1), end=ft.Alignment(0, 1), colors=["#0A0A0E", "#021A13"]),
+        border_radius=16, expand=2, border=cerceve_olustur(1, "#00ffcc"),
         shadow=[ft.BoxShadow(spread_radius=2, blur_radius=30, color="#00ffcc", offset=ft.Offset(0, 0))]
-    ) 
+    )
     
     kutu_16 = kutu_olustur("🎵 MÜZİK", "Spotify Kontrolü", fonk=jenerik_sayfaya_gec("Müzik Kontrol", "🎵", "Spotify entegrasyonu ile işlem yaparken odaklanın."), esneklik=1, neon_renk="#1DB954")
     satir_15_14_16 = ft.Row([kutu_15, kutu_14, kutu_16], height=240)
@@ -156,19 +157,19 @@ def ana_ekran_olustur(page: ft.Page):
         # Ekrana Anlık Bildirim (Toast) Gönder
         page.snack_bar = ft.SnackBar(ft.Text(f"Sistem: AI Motoru {metin_kisa}"), bgcolor=renk)
         page.snack_bar.open = True
-        
         page.update()
 
     bot_salter = ft.Switch(value=True, active_color="#00ffcc", active_track_color="#006652", on_change=bot_durum_tetikle)
     kutu_8_yazi = ft.Text("🤖 AI BOT (AKTİF)", weight="900", color="#00ffcc", size=14)
     
     icerik_8 = ft.Row([kutu_8_yazi, bot_salter], alignment=ft.MainAxisAlignment.SPACE_EVENLY)
-    kutu_8 = ft.Container(content=icerik_8, bgcolor="#0A0A0E", border_radius=16, expand=1, border=cerceve_olustur(1, "#00ffcc"), padding=20) 
+    kutu_8 = ft.Container(content=icerik_8, bgcolor="#0A0A0E", border_radius=16, expand=1, border=cerceve_olustur(1, "#00ffcc"), padding=20)
     
     kutu_9 = kutu_olustur("💬 AI SOHBET", "Asistanla konuş", fonk=sayfaya_gec(ai_sohbet_sayfasi_olustur, "AI Sohbet Merkezi"), neon_renk="#3B82F6")
     satir_89 = ft.Row([kutu_8, kutu_9], height=95)
 
-    kutu_10 = kutu_olustur("💼 CÜZDAN ÖZETİ", "Tüm borsa hesaplarınızdaki toplam varlıklar (İçeri Gir)", fonk=jenerik_sayfaya_gec("Cüzdan Özeti", "💼", "Borsa hesaplarınızdaki toplam varlık değeriniz."), neon_renk="#EAB308")
+    # 🚀 YENİ CÜZDAN BAĞLANTISI BURAYA EKLENDİ 🚀
+    kutu_10 = kutu_olustur("💼 CÜZDAN ÖZETİ", "Tüm borsa hesaplarınızdaki toplam varlıklar (İçeri Gir)", fonk=sayfaya_gec(cuzdan_sayfasi_olustur, "Cüzdan Özeti"), neon_renk="#EAB308")
     kutu_10.height = 85
 
     kutu_11 = kutu_olustur("💰 VARLIK BÖLGESİ", "Portföy Dağılımı", fonk=jenerik_sayfaya_gec("Varlık Bölgesi", "💰", "Elinizdeki varlıkların oransal dağılım grafiği."), neon_renk="#8B5CF6")
@@ -179,8 +180,8 @@ def ana_ekran_olustur(page: ft.Page):
     # İçeriği ana konteynıra ekliyoruz (Üst bar en tepeye eklendi)
     merkez_kapsayici = ft.Container(
         content=ft.Column(
-            controls=[ust_bar, kutu_1, satir_234, kutu_5, satir_67, satir_15_14_16, satir_89, kutu_10, satir_1112_13], 
-            scroll=ft.ScrollMode.AUTO, 
+            controls=[ust_bar, kutu_1, satir_234, kutu_5, satir_67, satir_15_14_16, satir_89, kutu_10, satir_1112_13],
+            scroll=ft.ScrollMode.AUTO,
             spacing=15
         ),
         width=1100, alignment=ft.Alignment(0, -1)
