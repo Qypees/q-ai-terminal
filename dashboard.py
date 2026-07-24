@@ -187,4 +187,4 @@ def ana_ekran_olustur(page: ft.Page):
         width=1100, alignment=ft.Alignment(0, -1)
     )
 
-    return ft.Container(content=merkez_kapsayici, padding=20, expand=True, bgcolor="#030304", alignment=ft.Alignment(0, -1))
+    return ft.Container(content=merkez_kapsayici, padding=20, expand=True, bgcolor="#030304", alignment=ft.Alignment(0, -1))  
