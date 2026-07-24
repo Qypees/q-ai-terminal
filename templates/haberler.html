@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş AI Haber Radarı | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; }
+        .radar-card { background-color: #0A0A0E; transition: all 0.3s ease; }
+        .radar-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050507; }
+        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center overflow-x-hidden">
+
+    <div class="w-full max-w-[1100px] flex flex-col h-[95vh]">
+        
+        <!-- Üst Menü -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-[#1A1A24] shrink-0">
+            <div>
+                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-sm font-bold flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    ANA PANOYA DÖN
+                </a>
+                <h1 class="text-3xl font-black tracking-widest text-white">📰 KÜRESEL HABER AĞI</h1>
+            </div>
+            <div class="hidden md:block text-right">
+                <p class="text-[#A0A0A5] text-sm">Gerçek Zamanlı Çeviri & Analiz</p>
+                <div class="flex items-center justify-end gap-2 mt-1">
+                    <div class="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse"></div>
+                    <p class="text-[#3B82F6] text-xs font-bold" id="status-text">Bağlanıyor...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Haberlerin Geleceği Alan (JavaScript Dolduracak) -->
+        <div id="news-container" class="flex-grow overflow-y-auto pr-2 flex flex-col gap-6 pb-10">
+            <!-- Sayfa ilk açıldığında gösterilecek animasyon -->
+            <div class="text-center py-20 border border-[#1A1A24] rounded-xl bg-[#0A0A0E]">
+                <div class="w-16 h-16 border-4 border-t-[#3B82F6] border-r-transparent border-b-[#1A1A24] border-l-[#1A1A24] rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-[#3B82F6] font-black text-xl mb-2">AĞA BAĞLANILIYOR...</p>
+                <p class="text-[#737373] text-sm">Haberler analiz ediliyor ve çevriliyor. Lütfen bekleyin.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ASENKRON JS MOTORU -->
+    <script>
+        async function fetchNews() {
+            try {
+                const response = await fetch('/api/haberler');
+                const data = await response.json();
+                
+                document.getElementById('status-text').innerText = "Veri Akışı Aktif (Oto-Yenileme)";
+                renderNews(data);
+            } catch (error) {
+                document.getElementById('status-text').innerText = "Bağlantı Hatası!";
+                document.getElementById('status-text').className = "text-red-500 text-xs font-bold";
+            }
+        }
+
+        function renderNews(haberler) {
+            const container = document.getElementById('news-container');
+            let htmlContent = "";
+
+            haberler.forEach(h => {
+                htmlContent += `
+                <div class="radar-card p-6 rounded-xl border-l-4 border-b border-[#1A1A24] shadow-lg flex flex-col" style="border-left-color: ${h.onem_renk};">
+                    
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-[#1A1A24] text-gray-300 text-xs font-bold px-3 py-1 rounded-full">${h.kaynak}</span>
+                            <span class="text-[#737373] text-xs font-bold">${h.zaman}</span>
+                        </div>
+                        <span class="text-xs font-black tracking-widest px-3 py-1 rounded" style="color: ${h.onem_renk}; background-color: ${h.onem_renk}15;">
+                            ${h.onem}
+                        </span>
+                    </div>
+
+                    <a href="${h.url}" target="_blank" class="group block mb-6">
+                        <h2 class="text-white text-2xl font-black mb-3 leading-tight group-hover:text-blue-400 transition-colors">${h.baslik}</h2>
+                        <p class="text-[#A0A0A5] text-sm leading-relaxed text-justify">${h.ozet}</p>
+                    </a>
+
+                    <div class="mt-auto bg-[#050507] p-4 rounded-lg border border-[#1A1A24]">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🤖</span>
+                                <span class="text-white font-black text-sm tracking-widest">Q-AI AKSİYON PLANI</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-4">
+                                <div class="text-right">
+                                    <span class="block text-[#737373] text-[10px] font-bold uppercase mb-1">Önerilen Yön</span>
+                                    <span class="font-black text-base" style="color: ${h.yon_renk};">${h.yon}</span>
+                                </div>
+                                <div class="w-px h-8 bg-[#1A1A24]"></div>
+                                <div class="text-left">
+                                    <span class="block text-[#737373] text-[10px] font-bold uppercase mb-1">Kaldıraç & Marjin</span>
+                                    <span class="font-bold text-white text-sm">${h.kaldirac}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-[#1A1A24] pt-3">
+                            <span class="text-white text-xs font-bold mb-1 block">Yapay Zeka Yorumu:</span>
+                            <p class="text-[#94A3B8] text-xs leading-relaxed italic">"${h.ai_yorum}"</p>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = htmlContent;
+        }
+
+        // Sayfa açılır açılmaz veriyi çek
+        fetchNews();
+        
+        // Sayfayı yenilemeden her 30 saniyede bir arka planda haberleri güncelle!
+        setInterval(fetchNews, 30000);
+    </script>
+</body>
+</html>

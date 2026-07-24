@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fırsatları | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; }
+        .signal-card {
+            background: linear-gradient(135deg, #0A0A0E 0%, #050507 100%);
+            border: 1px solid #1A1A24;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        .signal-card:hover {
+            border-color: #10B981;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2);
+        }
+        .text-neon-green { color: #10B981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    </style>
+</head>
+<body class="min-h-screen p-6 flex flex-col items-center">
+
+    <div class="w-full max-w-[1100px]">
+        <!-- Geri Dönüş ve Başlık -->
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-800">
+            <div>
+                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-sm font-bold flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    ANA EKRANA DÖN
+                </a>
+                <h1 class="text-3xl font-black tracking-widest text-white">🧠 AI FIRSATLARI <span class="text-neon-green ml-2 text-xl">⚡ AKTİF</span></h1>
+            </div>
+            <div class="hidden md:block text-right">
+                <p class="text-[#A0A0A5] text-sm">Canlı Piyasa Filtresi Devrede</p>
+                <p class="text-[#00ffcc] text-xs font-bold mt-1">Sadece Volatil Varlıklar Gösteriliyor</p>
+            </div>
+        </div>
+
+        <!-- Sinyaller Grid Sistemi -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {% for sinyal in sinyaller %}
+            <div class="signal-card p-6 flex flex-col relative overflow-hidden group">
+                
+                <!-- Üst Kısım: Coin ve Yön -->
+                <div class="flex justify-between items-start mb-6 z-10">
+                    <div class="flex items-center gap-3">
+                        <img src="https://assets.coincap.io/assets/icons/{{ sinyal.coin|lower }}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-10 h-10 rounded-full bg-gray-800 p-1">
+                        <div>
+                            <h2 class="text-2xl font-black tracking-wider">{{ sinyal.coin }}<span class="text-gray-500 text-sm font-normal">/USDT</span></h2>
+                            <p class="text-xs text-gray-400 font-bold mt-1">Sinyal Gücü: %{{ sinyal.guc }}</p>
+                            <!-- Güç Barı -->
+                            <div class="w-24 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
+                                <div class="h-full rounded-full {% if sinyal.guc >= 80 %} bg-green-500 {% elif sinyal.guc >= 75 %} bg-yellow-500 {% else %} bg-blue-500 {% endif %}" style="width: {{ sinyal.guc }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        {% if sinyal.yon == 'LONG' %}
+                            <span class="bg-green-500/20 border border-green-500 text-green-500 text-sm font-black px-4 py-1.5 rounded-full tracking-widest shadow-[0_0_10px_rgba(34,197,94,0.3)] group-hover:bg-green-500 group-hover:text-black transition-all">LONG 🚀</span>
+                        {% else %}
+                            <span class="bg-red-500/20 border border-red-500 text-red-500 text-sm font-black px-4 py-1.5 rounded-full tracking-widest shadow-[0_0_10px_rgba(239,68,68,0.3)] group-hover:bg-red-500 group-hover:text-black transition-all">SHORT 🔻</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Orta Kısım: Hedefler -->
+                <div class="grid grid-cols-3 gap-4 mb-6 z-10">
+                    <div class="bg-[#030304] p-3 rounded-lg border border-gray-800 text-center">
+                        <span class="block text-gray-500 text-[10px] uppercase font-bold mb-1">Anlık Giriş</span>
+                        <span class="text-white font-bold">${{ sinyal.giris }}</span>
+                    </div>
+                    <div class="bg-[#030304] p-3 rounded-lg border border-gray-800 text-center">
+                        <span class="block text-green-500 text-[10px] uppercase font-bold mb-1">Kar Al (TP)</span>
+                        <span class="text-white font-bold">${{ sinyal.hedef }}</span>
+                    </div>
+                    <div class="bg-[#030304] p-3 rounded-lg border border-gray-800 text-center">
+                        <span class="block text-red-500 text-[10px] uppercase font-bold mb-1">Stop (SL)</span>
+                        <span class="text-white font-bold">${{ sinyal.stop }}</span>
+                    </div>
+                </div>
+
+                <!-- Alt Kısım: AI Yorumu -->
+                <div class="mt-auto p-4 rounded-lg z-10 {% if sinyal.yon == 'LONG' %} bg-[#10B981]/10 border-l-4 border-[#10B981] {% else %} bg-[#EF4444]/10 border-l-4 border-[#EF4444] {% endif %}">
+                    <p class="text-sm text-gray-300 font-medium leading-relaxed">
+                        <span class="font-bold {% if sinyal.yon == 'LONG' %} text-[#10B981] {% else %} text-[#EF4444] {% endif %}">Q-AI Analizi:</span> 
+                        {{ sinyal.yorum }}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Eğer Filtreye Takılan Hiçbir Coin Yoksa (Piyasa Durgunsa) -->
+            {% if not sinyaller %}
+            <div class="col-span-1 md:col-span-2 text-center py-20 border border-gray-800 rounded-2xl bg-[#0A0A0E]">
+                <span class="text-5xl mb-4 block opacity-50">😴</span>
+                <p class="text-gray-300 font-bold text-xl mb-2">Şu An Güçlü Bir Fırsat Yok</p>
+                <p class="text-gray-500 text-sm">Piyasa volatilitesi düşük. Algoritma %3'ten fazla dalgalanan ve yüksek hacimli varlık bulamadı. Lütfen daha sonra tekrar kontrol et.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</body>
+</html>

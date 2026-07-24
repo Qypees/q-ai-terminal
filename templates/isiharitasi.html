@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isı Haritası | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; overflow-x: hidden; }
+        .tf-btn { transition: all 0.2s; }
+        .tf-btn.active { background-color: #00ffcc; color: #050507; border-color: #00ffcc; font-weight: 900; }
+        
+        /* Isı Haritası Kutu Efektleri */
+        .heat-box {
+            transition: transform 0.2s ease, background-color 0.4s ease;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            cursor: crosshair;
+        }
+        .heat-box:hover {
+            transform: scale(1.03);
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            border: 2px solid white;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050507; }
+        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+
+    <div class="w-full max-w-[1300px] flex flex-col h-[95vh]">
+        
+        <!-- Üst Başlık ve Geri Dönüş -->
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b border-gray-800 gap-4 shrink-0">
+            <div>
+                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-sm font-bold flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    ANA PANOYA DÖN
+                </a>
+                <h1 class="text-3xl font-black tracking-widest text-white">🗺️ KÜRESEL ISI HARİTASI</h1>
+            </div>
+            
+            <!-- Zaman Dilimi Butonları -->
+            <div class="flex flex-wrap gap-2 bg-[#0A0A0E] p-1.5 rounded-xl border border-[#1A1A24]">
+                <button onclick="changeTimeframe('5m')" id="btn-5m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">5 DK</button>
+                <button onclick="changeTimeframe('15m')" id="btn-15m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">15 DK</button>
+                <button onclick="changeTimeframe('30m')" id="btn-30m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">30 DK</button>
+                <button onclick="changeTimeframe('1h')" id="btn-1h" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">1 SA</button>
+                <button onclick="changeTimeframe('4h')" id="btn-4h" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">4 SA</button>
+                <button onclick="changeTimeframe('1d')" id="btn-1d" class="tf-btn active px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">1 GÜN</button>
+            </div>
+        </div>
+
+        <!-- Renk Skalası Anahtarı -->
+        <div class="flex items-center justify-end gap-1 mb-4 shrink-0 text-[10px] font-bold text-gray-400">
+            <span>Düşüş</span>
+            <div class="w-6 h-3 bg-[#B91C1C]"></div> <!-- Çok Kırmızı -->
+            <div class="w-6 h-3 bg-[#EF4444]"></div> <!-- Kırmızı -->
+            <div class="w-6 h-3 bg-[#1F2937]"></div> <!-- Nötr -->
+            <div class="w-6 h-3 bg-[#10B981]"></div> <!-- Yeşil -->
+            <div class="w-6 h-3 bg-[#047857]"></div> <!-- Çok Yeşil -->
+            <span class="ml-1">Yükseliş</span>
+        </div>
+
+        <!-- Isı Haritası Alanı (Grid Sistemi) -->
+        <div class="flex-grow overflow-y-auto border border-[#1A1A24] bg-[#050507] rounded-xl p-2 relative">
+            
+            <div id="loading-indicator" class="absolute inset-0 flex items-center justify-center bg-[#050507]/80 z-20 hidden">
+                <span class="text-[#00ffcc] font-black tracking-widest text-xl animate-pulse">SİSTEM HESAPLIYOR...</span>
+            </div>
+
+            <!-- Coin Kutuları Buraya Gelecek -->
+            <div id="heatmap-container" class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 gap-1 h-full content-start">
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ASENKRON ISI HARİTASI MOTORU -->
+    <script>
+        let currentTimeframe = '1d';
+        let refreshInterval;
+
+        async function fetchHeatmapData() {
+            try {
+                const response = await fetch(`/api/isiharitasi_data?zaman=${currentTimeframe}`);
+                const data = await response.json();
+                renderHeatmap(data);
+                document.getElementById('loading-indicator').classList.add('hidden');
+            } catch (error) {
+                console.error("Isı Haritası Hatası:", error);
+            }
+        }
+
+        function getColorCode(change) {
+            // Değişim oranına göre renk şiddetini belirle (Tailwind renk kodlarına karşılık)
+            if (change >= 3) return "#047857"; // Koyu (Ateşli) Yeşil
+            if (change > 0 && change < 3) return "#10B981"; // Normal Yeşil
+            if (change === 0) return "#1F2937"; // Gri / Nötr
+            if (change < 0 && change > -3) return "#EF4444"; // Normal Kırmızı
+            if (change <= -3) return "#B91C1C"; // Koyu (Kan) Kırmızı
+            return "#1F2937";
+        }
+
+        function renderHeatmap(data) {
+            const container = document.getElementById('heatmap-container');
+            let htmlContent = "";
+            
+            const formatPrice = (price) => price < 1 ? price.toFixed(4) : price.toLocaleString('en-US', {minimumFractionDigits: 2});
+
+            // En büyük 10 coin (Bitcoin, Ethereum vb.) kutularda daha büyük (col-span-2) görünsün
+            data.forEach((coin, index) => {
+                const bgColor = getColorCode(coin.degisim);
+                const isSign = coin.degisim >= 0 ? "+" : "";
+                
+                // İlk 5 coini haritada daha devasa göster (Grid yerleşimi hilesi)
+                const sizeClass = index < 5 ? "col-span-2 row-span-2 h-32 md:h-40 text-2xl" : "col-span-1 row-span-1 h-20 md:h-24 text-lg";
+                const infoSize = index < 5 ? "text-base" : "text-[10px]";
+
+                htmlContent += `
+                <div class="heat-box ${sizeClass} rounded flex flex-col items-center justify-center text-white font-black overflow-hidden relative group" 
+                     style="background-color: ${bgColor}; border: 1px solid rgba(0,0,0,0.2);">
+                    
+                    <span class="z-10">${coin.sembol}</span>
+                    <span class="z-10 ${infoSize} opacity-90 font-bold">${isSign}${coin.degisim.toFixed(2)}%</span>
+                    
+                    <!-- Hover olduğunda çıkan gizli fiyat etiketi -->
+                    <div class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                        <span class="text-white text-sm">$${formatPrice(coin.fiyat)}</span>
+                        <span class="text-gray-400 text-[10px]">Hacim: $${coin.hacim.toFixed(0)}M</span>
+                    </div>
+                </div>`;
+            });
+            
+            container.innerHTML = htmlContent;
+        }
+
+        window.changeTimeframe = function(tf) {
+            currentTimeframe = tf;
+            
+            document.querySelectorAll('.tf-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + tf).classList.add('active');
+
+            // Bekleme ekranını göster
+            document.getElementById('loading-indicator').classList.remove('hidden');
+
+            fetchHeatmapData();
+            clearInterval(refreshInterval);
+            refreshInterval = setInterval(fetchHeatmapData, 6000); // 6 saniyede bir otomatik yenile
+        }
+
+        // Sayfa açıldığında ilk veriyi çek
+        fetchHeatmapData();
+        refreshInterval = setInterval(fetchHeatmapData, 6000);
+    </script>
+</body>
+</html>

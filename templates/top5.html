@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 5 Volatilite | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; overflow-x: hidden; }
+        .tf-btn { transition: all 0.2s; }
+        .tf-btn.active { background-color: #00ffcc; color: #050507; border-color: #00ffcc; font-weight: 900; }
+        .list-card {
+            background: linear-gradient(135deg, #0A0A0E 0%, #050507 100%);
+            border: 1px solid #1A1A24;
+            border-radius: 16px;
+        }
+        .coin-item { transition: transform 0.2s ease, background-color 0.2s; }
+        .coin-item:hover { transform: scale(1.02); background-color: rgba(255,255,255,0.02); z-index: 10;}
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050507; }
+        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+
+    <div class="w-full max-w-[1200px] flex flex-col h-full">
+        
+        <!-- Üst Başlık ve Geri Dönüş -->
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b border-gray-800 gap-4 shrink-0">
+            <div>
+                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-sm font-bold flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    ANA PANOYA DÖN
+                </a>
+                <h1 class="text-3xl font-black tracking-widest text-white">⚡ ZAMAN DİLİMİNE GÖRE TOP 5</h1>
+            </div>
+            
+            <!-- Zaman Dilimi Butonları -->
+            <div class="flex flex-wrap gap-2 bg-[#0A0A0E] p-1.5 rounded-xl border border-[#1A1A24]">
+                <button onclick="changeTimeframe('5m')" id="btn-5m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">5 DK</button>
+                <button onclick="changeTimeframe('15m')" id="btn-15m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">15 DK</button>
+                <button onclick="changeTimeframe('30m')" id="btn-30m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">30 DK</button>
+                <button onclick="changeTimeframe('1h')" id="btn-1h" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">1 SA</button>
+                <button onclick="changeTimeframe('4h')" id="btn-4h" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">4 SA</button>
+                <button onclick="changeTimeframe('1d')" id="btn-1d" class="tf-btn active px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">1 GÜN</button>
+            </div>
+        </div>
+
+        <!-- İki Sütunlu Grid: Artanlar ve Düşenler -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            
+            <!-- EN ÇOK ARTANLAR (SOL) -->
+            <div class="list-card w-full lg:w-1/2 p-6 border-t-4 border-t-[#10B981] shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-3xl">🚀</span>
+                    <div>
+                        <h2 class="text-xl font-black text-white">EN ÇOK ARTANLAR</h2>
+                        <p class="text-[#737373] text-xs font-bold mt-1">Seçili Zaman Diliminde Liderler</p>
+                    </div>
+                </div>
+                <div id="gainers-list" class="flex flex-col gap-3">
+                    <p class="text-gray-500 text-sm">Veriler çekiliyor...</p>
+                </div>
+            </div>
+
+            <!-- EN ÇOK DÜŞENLER (SAĞ) -->
+            <div class="list-card w-full lg:w-1/2 p-6 border-t-4 border-t-[#EF4444] shadow-[0_0_30px_-10px_rgba(239,68,68,0.3)]">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-3xl">🩸</span>
+                    <div>
+                        <h2 class="text-xl font-black text-white">EN ÇOK DÜŞENLER</h2>
+                        <p class="text-[#737373] text-xs font-bold mt-1">Seçili Zaman Diliminde Kaybedenler</p>
+                    </div>
+                </div>
+                <div id="losers-list" class="flex flex-col gap-3">
+                    <p class="text-gray-500 text-sm">Veriler çekiliyor...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ASENKRON OTOMATİK VERİ ÇEKME MOTORU -->
+    <script>
+        let currentTimeframe = '1d';
+        let refreshInterval;
+
+        async function fetchTop5Data() {
+            try {
+                const response = await fetch(`/api/top5?zaman=${currentTimeframe}`);
+                const data = await response.json();
+                renderLists(data);
+            } catch (error) {
+                console.error("Top5 API Hatası:", error);
+            }
+        }
+
+        function renderLists(data) {
+            const gainersContainer = document.getElementById('gainers-list');
+            const losersContainer = document.getElementById('losers-list');
+            
+            // Fiyat Formatlayıcı
+            const formatPrice = (price) => price < 1 ? price.toFixed(4) : price.toLocaleString('en-US', {minimumFractionDigits: 2});
+
+            // Artanları Çiz
+            let gainersHTML = "";
+            data.yukselenler.forEach((coin, index) => {
+                gainersHTML += `
+                <div class="coin-item flex items-center justify-between bg-[#050507] border border-[#1A1A24] p-4 rounded-xl shadow-md cursor-default">
+                    <div class="flex items-center gap-4">
+                        <span class="text-[#10B981] font-black text-xl w-6">#${index + 1}</span>
+                        <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-10 h-10 rounded-full bg-gray-900 p-1">
+                        <div>
+                            <h3 class="text-white font-black text-lg">${coin.sembol}</h3>
+                            <span class="text-gray-400 font-bold text-sm">$${formatPrice(coin.fiyat)}</span>
+                        </div>
+                    </div>
+                    <div class="bg-[#10B981]/20 border border-[#10B981] text-[#10B981] px-4 py-2 rounded-lg font-black text-lg shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                        +${coin.degisim.toFixed(2)}%
+                    </div>
+                </div>`;
+            });
+            gainersContainer.innerHTML = gainersHTML;
+
+            // Düşenleri Çiz
+            let losersHTML = "";
+            data.dusenler.forEach((coin, index) => {
+                losersHTML += `
+                <div class="coin-item flex items-center justify-between bg-[#050507] border border-[#1A1A24] p-4 rounded-xl shadow-md cursor-default">
+                    <div class="flex items-center gap-4">
+                        <span class="text-[#EF4444] font-black text-xl w-6">#${index + 1}</span>
+                        <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-10 h-10 rounded-full bg-gray-900 p-1">
+                        <div>
+                            <h3 class="text-white font-black text-lg">${coin.sembol}</h3>
+                            <span class="text-gray-400 font-bold text-sm">$${formatPrice(coin.fiyat)}</span>
+                        </div>
+                    </div>
+                    <div class="bg-[#EF4444]/20 border border-[#EF4444] text-[#EF4444] px-4 py-2 rounded-lg font-black text-lg shadow-[0_0_10px_rgba(239,68,68,0.3)]">
+                        ${coin.degisim.toFixed(2)}%
+                    </div>
+                </div>`;
+            });
+            losersContainer.innerHTML = losersHTML;
+        }
+
+        // Zaman Dilimi Değiştirme Fonksiyonu
+        window.changeTimeframe = function(tf) {
+            currentTimeframe = tf;
+            
+            // Butonların aktiflik durumunu (görselini) ayarla
+            document.querySelectorAll('.tf-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + tf).classList.add('active');
+
+            // Bekleme efekti yarat (kullanıcıya değiştiğini hissettir)
+            document.getElementById('gainers-list').innerHTML = '<p class="text-gray-500 text-sm">Hesaplanıyor...</p>';
+            document.getElementById('losers-list').innerHTML = '<p class="text-gray-500 text-sm">Hesaplanıyor...</p>';
+
+            // Veriyi anında çek ve periyodu sıfırla
+            fetchTop5Data();
+            clearInterval(refreshInterval);
+            refreshInterval = setInterval(fetchTop5Data, 5000); // Seçili periyotta her 5 saniyede bir canlansın
+        }
+
+        // Sayfa açıldığında ilk veriyi çek ve 5 saniyede bir otomatik yenile
+        fetchTop5Data();
+        refreshInterval = setInterval(fetchTop5Data, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cüzdan Kontrol Merkezi | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; overflow-x: hidden; }
+        .glass-panel { background: linear-gradient(135deg, #0A0A0E 0%, #050507 100%); border: 1px solid #1A1A24; border-radius: 16px; transition: all 0.3s ease; }
+        .glass-panel:hover { border-color: var(--hover-color, #00ffcc); transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050507; }
+        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+
+    <div class="w-full max-w-[1100px] flex flex-col h-[90vh]">
+        
+        <!-- Dinamik Görünüm Alanı -->
+        <div id="app-view" class="flex-grow flex flex-col overflow-hidden">
+            <!-- JavaScript burayı dolduracak -->
+        </div>
+
+    </div>
+
+    <!-- CÜZDAN JS MOTORU -->
+    <script>
+        let aktifSayfa = 'menu'; // 'menu', 'spot', 'vadeli', 'detay'
+        let seciliPozisyon = null;
+        let spotVarliklar = [];
+        let vadeliPozisyonlar = [];
+
+        async function veriGetir() {
+            try {
+                const sRes = await fetch('/api/cuzdan/spot');
+                spotVarliklar = await sRes.json();
+                const vRes = await fetch('/api/cuzdan/vadeli');
+                vadeliPozisyonlar = await vRes.json();
+            } catch(e) {}
+        }
+
+        async function render() {
+            await veriGetir();
+            const view = document.getElementById('app-view');
+            
+            if (aktifSayfa === 'menu') {
+                view.innerHTML = `
+                    <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-800 shrink-0">
+                        <a href="/" class="text-[#00ffcc] hover:underline text-sm font-black flex items-center gap-2">
+                            🏠 ANA PANOYA DÖN
+                        </a>
+                        <h1 class="text-2xl font-black tracking-widest text-white">CÜZDAN KONTROL MERKEZİ</h1>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+                        <!-- Spot Kutu -->
+                        <div onclick="aktifSayfa='spot'; render();" style="--hover-color: #EAB308;" class="glass-panel p-8 cursor-pointer flex flex-col items-center justify-center text-center">
+                            <span class="text-5xl mb-4">💼</span>
+                            <h2 class="text-2xl font-black text-white mb-2">SPOT CÜZDAN</h2>
+                            <p class="text-[#A0A0A5] text-sm">Borsa bakiyeleri, varlık dağılımı ve ekleme / silme işlemleri.</p>
+                        </div>
+                        
+                        <!-- Vadeli Kutu -->
+                        <div onclick="aktifSayfa='vadeli'; render();" style="--hover-color: #00ffcc;" class="glass-panel p-8 cursor-pointer flex flex-col items-center justify-center text-center">
+                            <span class="text-5xl mb-4">🤖</span>
+                            <h2 class="text-2xl font-black text-white mb-2">VADELİ POZİSYONLAR</h2>
+                            <p class="text-[#A0A0A5] text-sm">AI destekli açık işlem takibi, yönetimi ve strateji yorumları.</p>
+                        </div>
+                    </div>
+                `;
+            } 
+            else if (aktifSayfa === 'spot') {
+                let listHTML = spotVarliklar.length === 0 ? 
+                    `<p class="text-gray-500 italic p-4">Bakiye bulunmuyor. Sağ üstteki YENİ EKLE butonundan varlık ekleyin.</p>` : '';
+                
+                spotVarliklar.forEach((v, i) => {
+                    const ikons = {"Binance": "🟨", "OKX": "⬛", "Gate.io": "🟥", "MEXC": "🟩", "KuCoin": "🟦"};
+                    const ikon = ikons[v.borsa] || "🪙";
+                    listHTML += `
+                        <div class="bg-[#0A0A0E] border border-[#1A1A24] p-5 rounded-xl flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-4">
+                                <span class="text-2xl">${ikon}</span>
+                                <div>
+                                    <h3 class="font-black text-lg text-white">${v.borsa}</h3>
+                                    <p class="text-gray-400 text-xs">${v.detay}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6">
+                                <span class="font-bold text-lg text-yellow-500">$${v.bakiye}</span>
+                                <button onclick="spotSil(${i})" class="text-red-500 hover:text-red-400 text-sm font-bold">❌ SİL</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                view.innerHTML = `
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800 shrink-0">
+                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-sm font-bold flex items-center gap-2">⬅️ Cüzdan Menüsü</button>
+                        <h1 class="text-xl font-black text-yellow-500">💼 SPOT CÜZDAN</h1>
+                        <button onclick="toggleForm()" class="text-yellow-500 hover:underline font-black text-sm">➕ YENİ EKLE</button>
+                    </div>
+
+                    <!-- Gizli Form -->
+                    <div id="spot-form" class="hidden bg-[#050507] border border-yellow-500 p-5 rounded-xl mb-6 flex flex-col gap-4">
+                        <h3 class="text-yellow-500 font-bold text-sm">YENİ VARLIK EKLE</h3>
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <select id="f-borsa" class="bg-[#0A0A0E] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
+                                <option value="Binance">Binance</option><option value="OKX">OKX</option><option value="Gate.io">Gate.io</option><option value="MEXC">MEXC</option><option value="KuCoin">KuCoin</option><option value="Soğuk Cüzdan">Soğuk Cüzdan</option>
+                            </select>
+                            <input type="text" id="f-bakiye" placeholder="Miktar ($)" class="bg-[#0A0A0E] border border-gray-700 text-white rounded-lg p-3 text-sm flex-grow focus:outline-none">
+                            <input type="text" id="f-detay" placeholder="İçerik (Örn: 100 USDT, 0.5 SOL)" class="bg-[#0A0A0E] border border-gray-700 text-white rounded-lg p-3 text-sm flex-grow focus:outline-none">
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="spotEkle()" class="bg-yellow-500 hover:bg-yellow-600 text-black font-black px-6 py-2 rounded-lg text-sm">Kaydet</button>
+                            <button onclick="toggleForm()" class="text-gray-400 hover:text-white px-4 py-2 text-sm">İptal</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-y-auto flex-grow pr-2">${listHTML}</div>
+                `;
+            }
+            else if (aktifSayfa === 'vadeli') {
+                let pozListHTML = vadeliPozisyonlar.length === 0 ? 
+                    `<p class="text-gray-500 italic p-4">Henüz açık bir pozisyon bulunmuyor.</p>` : '';
+                
+                vadeliPozisyonlar.forEach((p, i) => {
+                    const renk = p.yon === 'LONG' ? '#10B981' : '#EF4444';
+                    pozListHTML += `
+                        <div onclick="seciliPozisyon=${i}; aktifSayfa='detay'; render();" class="bg-[#0A0A0E] border p-5 rounded-xl flex items-center justify-between mb-3 cursor-pointer hover:bg-[#111116] transition-colors" style="border-color: ${renk};">
+                            <div>
+                                <h3 class="font-black text-lg text-white">${p.coin} / USDT</h3>
+                                <p class="font-bold text-xs" style="color: ${renk};">${p.kaldirac} | ${p.yon}</p>
+                            </div>
+                            <div class="flex items-center gap-6 text-right">
+                                <div>
+                                    <span class="text-gray-500 text-[10px] block uppercase font-bold">Marjin</span>
+                                    <span class="font-bold text-lg text-white">$${p.miktar}</span>
+                                </div>
+                                <span class="text-gray-500 text-xl">➔</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                view.innerHTML = `
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800 shrink-0">
+                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-sm font-bold flex items-center gap-2">⬅️ Cüzdan Menüsü</button>
+                        <h1 class="text-xl font-black text-[#00ffcc]">🤖 VADELİ İŞLEMLER MERKEZİ</h1>
+                    </div>
+
+                    <!-- Pozisyon Ekleme Formu -->
+                    <div class="bg-[#0A0A0E] border border-[#1A1A24] p-5 rounded-xl mb-6 flex flex-col gap-4">
+                        <h3 class="text-[#00ffcc] font-bold text-sm">YAPAY ZEKAYA YENİ POZİSYON İŞLET</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <input type="text" id="v-coin" placeholder="Coin (Örn: BTC)" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none uppercase">
+                            <select id="v-kaldirac" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
+                                <option value="5x">5x</option><option value="10x">10x</option><option value="20x">20x</option><option value="50x">50x</option>
+                            </select>
+                            <select id="v-yon" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
+                                <option value="LONG">LONG</option><option value="SHORT">SHORT</option>
+                            </select>
+                            <input type="text" id="v-miktar" placeholder="Miktar ($)" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
+                        </div>
+                        <button onclick="vadeliEkle()" class="bg-[#00ffcc] hover:bg-[#00e6b8] text-black font-black py-3 rounded-lg text-sm transition-colors">Yapay Zekaya İşlet</button>
+                    </div>
+
+                    <h3 class="text-white font-bold text-sm mb-3">Aktif Pozisyonlarınız (Detaylar İçin Tıklayın):</h3>
+                    <div class="overflow-y-auto flex-grow pr-2">${pozListHTML}</div>
+                `;
+            }
+            else if (aktifSayfa === 'detay') {
+                const poz = vadeliPozisyonlar[seciliPozisyon];
+                const renk = poz.yon === 'LONG' ? '#10B981' : '#EF4444';
+
+                view.innerHTML = `
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800 shrink-0">
+                        <button onclick="aktifSayfa='vadeli'; render();" class="text-gray-400 hover:text-white text-sm font-bold flex items-center gap-2">⬅️ Vadeli İşlemlere Dön</button>
+                        <h1 class="text-xl font-black" style="color: ${renk};">⚡ İŞLEM MERKEZİ: ${poz.coin}</h1>
+                    </div>
+
+                    <div class="bg-[#050507] border p-6 rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center" style="border-color: ${renk};">
+                        <div><span class="text-gray-500 text-xs block mb-1">YÖN</span><span class="text-2xl font-black" style="color: ${renk};">${poz.yon}</span></div>
+                        <div><span class="text-gray-500 text-xs block mb-1">KALDIRAÇ</span><span class="text-2xl font-black text-white">${poz.kaldirac}</span></div>
+                        <div><span class="text-gray-500 text-xs block mb-1">MARJİN</span><span class="text-2xl font-black text-white">$${poz.miktar}</span></div>
+                        <div><span class="text-gray-500 text-xs block mb-1">GİRİŞ ZAMANI</span><span class="text-lg font-bold text-gray-400">${poz.zaman}</span></div>
+                    </div>
+
+                    <div class="bg-[#0A0A0E] border border-[#00ffcc] p-6 rounded-2xl mb-6 shadow-[0_0_15px_rgba(0,255,204,0.1)]">
+                        <div class="flex items-center gap-2 mb-3"><span class="text-xl">🤖</span><h3 class="text-[#00ffcc] font-black text-base">Q-AI STRATEJİ YORUMU</h3></div>
+                        <p class="text-gray-300 text-sm italic leading-relaxed">"${poz.ai_yorum}"</p>
+                    </div>
+
+                    <div class="mt-auto bg-[#0A0A0E] border border-[#1A1A24] p-5 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-2"><span class="text-gray-500 text-sm">Durum:</span><span class="text-green-500 font-bold text-sm">🟢 AKTİF TAKİPTE</span></div>
+                        <button onclick="vadeliSil(${seciliPozisyon})" class="bg-red-500 hover:bg-red-600 text-white font-black px-6 py-3 rounded-lg text-sm">İşlemi Kapat (Sil)</button>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleForm() {
+            const f = document.getElementById('spot-form');
+            f.classList.toggle('hidden');
+        }
+
+        async function spotEkle() {
+            const borsa = document.getElementById('f-borsa').value;
+            const bakiye = document.getElementById('f-bakiye').value;
+            const detay = document.getElementById('f-detay').value;
+            if(!bakiye) return alert('Lütfen miktar girin!');
+
+            await fetch('/api/cuzdan/spot', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({borsa, bakiye, detay})
+            });
+            render();
+        }
+
+        async function spotSil(index) {
+            await fetch(`/api/cuzdan/spot/${index}`, {method: 'DELETE'});
+            render();
+        }
+
+        async function vadeliEkle() {
+            const coin = document.getElementById('v-coin').value;
+            const kaldirac = document.getElementById('v-kaldirac').value;
+            const yon = document.getElementById('v-yon').value;
+            const miktar = document.getElementById('v-miktar').value;
+            if(!coin || !miktar) return alert('Lütfen tüm alanları doldurun!');
+
+            await fetch('/api/cuzdan/vadeli', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({coin, kaldirac, yon, miktar})
+            });
+            render();
+        }
+
+        async function vadeliSil(index) {
+            await fetch(`/api/cuzdan/vadeli/${index}`, {method: 'DELETE'});
+            aktifSayfa = 'vadeli';
+            render();
+        }
+
+        // İlk açılış
+        render();
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ sayfa }} | Modül Yükleniyor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; }</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 text-center">
+    <div class="border border-[#1A1A24] bg-[#0A0A0E] p-10 rounded-2xl max-w-lg w-full">
+        <svg class="animate-spin w-16 h-16 text-[#00ffcc] mx-auto mb-6" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+            <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z"></path>
+        </svg>
+        <h2 class="text-3xl font-black mb-2 text-[#00ffcc]">{{ sayfa }} MODÜLÜ</h2>
+        <p class="text-gray-400 mb-8">Eski Flet altyapısından yeni HTML/FastAPI çekirdeğine aktarılıyor. Arka plan verileri entegre ediliyor.</p>
+        <a href="/" class="bg-[#1A1A24] hover:bg-[#3f3f46] text-white px-6 py-3 rounded-lg font-bold transition-all">ANA EKRANA DÖN</a>
+    </div>
+</body>
+</html>
