@@ -50,8 +50,7 @@ def ana_ekran_olustur(page: ft.Page):
 
     def sayfaya_gec(olusturucu_fonksiyon, modul_adi="Modül"):
         def gecis(e):
-            page.snack_bar.content.value = f"⚡ {modul_adi} Başlatılıyor..."
-            page.snack_bar.bgcolor = "#00ffcc"
+            page.snack_bar = ft.SnackBar(ft.Text(f"⚡ {modul_adi} Başlatılıyor..."), bgcolor="#00ffcc")
             page.snack_bar.open = True
             page.update()
 
@@ -77,6 +76,24 @@ def ana_ekran_olustur(page: ft.Page):
             page.update()
         return gecis
 
+    # ==========================================
+    # 1. ÜST BAR VE SAĞ ÜST AI DURUM GÖSTERGESİ
+    # ==========================================
+    bot_durum_noktasi = ft.Container(width=10, height=10, border_radius=5, bgcolor="#00ffcc", shadow=ft.BoxShadow(blur_radius=8, color="#00ffcc"))
+    bot_durum_metni = ft.Text("BOT AKTİF", color="#00ffcc", size=12, weight="900")
+    sag_ust_bot_gostergesi = ft.Row([bot_durum_noktasi, bot_durum_metni], alignment=ft.MainAxisAlignment.END)
+
+    ust_bar = ft.Row(
+        [
+            ft.Row([ft.Text("⚡", size=24), ft.Text("Q-AI TERMİNAL", size=20, weight="900", color="white")]), 
+            sag_ust_bot_gostergesi
+        ], 
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+    )
+
+    # ==========================================
+    # 2. MEVCUT KUTULAR
+    # ==========================================
     simdi = datetime.now()
     tarih_metni = f"📍 İstanbul | {simdi.strftime('%d.%m.%Y - %H:%M')}"
     kutu_1 = ft.Container(
@@ -117,10 +134,37 @@ def ana_ekran_olustur(page: ft.Page):
     kutu_16 = kutu_olustur("🎵 MÜZİK", "Spotify Kontrolü", fonk=jenerik_sayfaya_gec("Müzik Kontrol", "🎵", "Spotify entegrasyonu ile işlem yaparken odaklanın."), esneklik=1, neon_renk="#1DB954")
     satir_15_14_16 = ft.Row([kutu_15, kutu_14, kutu_16], height=240)
 
-    icerik_8 = ft.Row([ft.Text("🤖 AI BOT DURUMU", weight="900", color="white", size=14), ft.Switch(value=True, active_color="#00ffcc", active_track_color="#006652")], alignment=ft.MainAxisAlignment.SPACE_EVENLY)
-    kutu_8 = ft.Container(content=icerik_8, bgcolor="#0A0A0E", border_radius=16, expand=1, border=cerceve_olustur(1, "#1A1A24"), padding=20) 
+    # ==========================================
+    # 3. AI BOT ŞALTER KUTUSU (SENKRONİZE EDİLMİŞ)
+    # ==========================================
+    def bot_durum_tetikle(e):
+        aktif_mi = bot_salter.value
+        renk = "#00ffcc" if aktif_mi else "#EF4444"
+        metin_kisa = "BOT AKTİF" if aktif_mi else "BOT KAPALI"
+        
+        # Sağ Üstteki Canlı Rozeti Güncelle
+        bot_durum_noktasi.bgcolor = renk
+        bot_durum_noktasi.shadow = ft.BoxShadow(blur_radius=8, color=renk)
+        bot_durum_metni.value = metin_kisa
+        bot_durum_metni.color = renk
+        
+        # Kutu 8'in Kendi İçini Güncelle
+        kutu_8.border = cerceve_olustur(1, renk)
+        kutu_8_yazi.value = f"🤖 AI BOT ({metin_kisa})"
+        kutu_8_yazi.color = renk
+        
+        # Ekrana Anlık Bildirim (Toast) Gönder
+        page.snack_bar = ft.SnackBar(ft.Text(f"Sistem: AI Motoru {metin_kisa}"), bgcolor=renk)
+        page.snack_bar.open = True
+        
+        page.update()
+
+    bot_salter = ft.Switch(value=True, active_color="#00ffcc", active_track_color="#006652", on_change=bot_durum_tetikle)
+    kutu_8_yazi = ft.Text("🤖 AI BOT (AKTİF)", weight="900", color="#00ffcc", size=14)
     
-    # HATA DÜZELTİLDİ: AI SOHBET SAYFASINA GERÇEK BAĞLANTI EKLENDİ
+    icerik_8 = ft.Row([kutu_8_yazi, bot_salter], alignment=ft.MainAxisAlignment.SPACE_EVENLY)
+    kutu_8 = ft.Container(content=icerik_8, bgcolor="#0A0A0E", border_radius=16, expand=1, border=cerceve_olustur(1, "#00ffcc"), padding=20) 
+    
     kutu_9 = kutu_olustur("💬 AI SOHBET", "Asistanla konuş", fonk=sayfaya_gec(ai_sohbet_sayfasi_olustur, "AI Sohbet Merkezi"), neon_renk="#3B82F6")
     satir_89 = ft.Row([kutu_8, kutu_9], height=95)
 
@@ -132,8 +176,13 @@ def ana_ekran_olustur(page: ft.Page):
     kutu_13 = kutu_olustur("👤 PROFİL", "Güvenlik ve Hesap", fonk=jenerik_sayfaya_gec("Profil", "👤", "Kişisel hesap bilgileriniz ve güvenlik ayarları."), esneklik=2, neon_renk="#EC4899")
     satir_1112_13 = ft.Row([ft.Column([kutu_11, kutu_12], expand=2, spacing=15), kutu_13], height=210)
 
+    # İçeriği ana konteynıra ekliyoruz (Üst bar en tepeye eklendi)
     merkez_kapsayici = ft.Container(
-        content=ft.Column(controls=[kutu_1, satir_234, kutu_5, satir_67, satir_15_14_16, satir_89, kutu_10, satir_1112_13], scroll=ft.ScrollMode.AUTO, spacing=15),
+        content=ft.Column(
+            controls=[ust_bar, kutu_1, satir_234, kutu_5, satir_67, satir_15_14_16, satir_89, kutu_10, satir_1112_13], 
+            scroll=ft.ScrollMode.AUTO, 
+            spacing=15
+        ),
         width=1100, alignment=ft.Alignment(0, -1)
     )
 
