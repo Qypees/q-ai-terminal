@@ -24,7 +24,7 @@ def main(page: ft.Page):
     )
 
     # --- SİSTEM GEÇİŞ (ROUTING) MİMARİSİ ---
-    def ana_ekrana_gecis_yap():
+    def ana_ekrana_gecis_yap():   
         page.controls.clear()
         ana_ekran = ana_ekran_olustur(page)
         page.add(ana_ekran)
