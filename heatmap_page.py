@@ -2,17 +2,19 @@ import flet as ft
 import random
 import threading
 import time
+from veritabani import COINLER
 
 def isi_haritasi_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
     sayfa_aktif = [True] 
 
     def cerceve(k, r): return ft.Border(ft.BorderSide(k, r), ft.BorderSide(k, r), ft.BorderSide(k, r), ft.BorderSide(k, r))
     MERKEZ, G_GENISLIK, G_YUKSEKLIK = ft.Alignment(0, 0), 950, 450
-    coin_havuzu = ["BTC", "ETH", "SOL", "XRP", "ADA", "AVAX", "LINK", "DOT", "MATIC", "DOGE", "SHIB", "PEPE", "WIF", "RNDR", "FET"]
 
     def ai_rsi_uret(zaman):
         vol = 5 if "Dakika" in zaman else 15
-        return [{"coin": c, "rsi": max(20, min(80, 50 + random.uniform(-vol*2, vol*2))), "x": max(10, min(G_GENISLIK-30, i*(G_GENISLIK/len(coin_havuzu)) + random.uniform(-10, 10)))} for i, c in enumerate(coin_havuzu)]
+        # Her yenilemede rastgele 30 coin göster (Matrix Etkisi)
+        aktif_coinler = random.sample(COINLER, 30)
+        return [{"coin": c, "rsi": max(20, min(80, 50 + random.uniform(-vol*2, vol*2))), "x": max(10, min(G_GENISLIK-30, i*(G_GENISLIK/len(aktif_coinler)) + random.uniform(-10, 10)))} for i, c in enumerate(aktif_coinler)]
 
     grafik_katmani = ft.Stack(width=G_GENISLIK, height=G_YUKSEKLIK)
 
@@ -32,13 +34,11 @@ def isi_haritasi_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
             renk = "#ef4444" if v["rsi"]>=70 else "#f472b6" if v["rsi"]>=60 else "#9ca3af" if v["rsi"]>=40 else "#34d399" if v["rsi"]>=30 else "#10b981"
             grafik_katmani.controls.append(ft.Container(top=min(y_pos, orta_y), left=v["x"]+4, width=1, height=abs(y_pos - orta_y), bgcolor=renk, opacity=0.2))
             grafik_katmani.controls.append(ft.Container(top=y_pos-10, left=v["x"]-10, content=ft.Column([ft.Text(v["coin"], size=9, color="white", weight="bold"), ft.Container(width=10, height=10, border_radius=10, bgcolor=renk, shadow=ft.BoxShadow(blur_radius=10, color=renk, spread_radius=2))], spacing=2, alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER)))
-        page.update()
+        try: page.update()
+        except: pass
 
     zaman_dropdown = ft.Dropdown(options=[ft.dropdown.Option("15 Dakikalık"), ft.dropdown.Option("1 Saatlik"), ft.dropdown.Option("1 Günlük")], value="1 Saatlik", width=150, bgcolor="#0A0A0E", border_color="#1A1A24", color="white")
-    
-    def dropdown_degisti(e):
-        grafigi_ciz(ai_rsi_uret(e.control.value))
-    zaman_dropdown.on_change = dropdown_degisti
+    zaman_dropdown.on_change = lambda e: grafigi_ciz(ai_rsi_uret(e.control.value))
 
     ana_icerik = ft.Container(content=ft.Column([
         ft.Row([
@@ -52,8 +52,7 @@ def isi_haritasi_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
     def otomatik_yenile():
         while sayfa_aktif[0]:
             time.sleep(5)
-            if sayfa_aktif[0]:
-                grafigi_ciz(ai_rsi_uret(zaman_dropdown.value))
+            if sayfa_aktif[0]: grafigi_ciz(ai_rsi_uret(zaman_dropdown.value))
 
     threading.Thread(target=otomatik_yenile, daemon=True).start()
 
