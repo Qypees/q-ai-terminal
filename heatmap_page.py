@@ -1,10 +1,14 @@
 import flet as ft
 import random
+import threading
+import time
 
 def isi_haritasi_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
+    sayfa_aktif = [True] 
+
     def cerceve(k, r): return ft.Border(ft.BorderSide(k, r), ft.BorderSide(k, r), ft.BorderSide(k, r), ft.BorderSide(k, r))
     MERKEZ, G_GENISLIK, G_YUKSEKLIK = ft.Alignment(0, 0), 950, 450
-    coin_havuzu = ["BTC", "ETH", "SOL", "XRP", "ADA", "AVAX", "LINK", "DOT", "MATIC", "DOGE", "SHIB", "PEPE", "WIF", "RNDR", "FET", "AGIX", "OP", "ARB", "SUI", "APT"]
+    coin_havuzu = ["BTC", "ETH", "SOL", "XRP", "ADA", "AVAX", "LINK", "DOT", "MATIC", "DOGE", "SHIB", "PEPE", "WIF", "RNDR", "FET"]
 
     def ai_rsi_uret(zaman):
         vol = 5 if "Dakika" in zaman else 15
@@ -26,19 +30,37 @@ def isi_haritasi_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
         for v in veriler:
             y_pos = G_YUKSEKLIK - ((v["rsi"] - 20) / 60) * G_YUKSEKLIK
             renk = "#ef4444" if v["rsi"]>=70 else "#f472b6" if v["rsi"]>=60 else "#9ca3af" if v["rsi"]>=40 else "#34d399" if v["rsi"]>=30 else "#10b981"
-            
             grafik_katmani.controls.append(ft.Container(top=min(y_pos, orta_y), left=v["x"]+4, width=1, height=abs(y_pos - orta_y), bgcolor=renk, opacity=0.2))
             grafik_katmani.controls.append(ft.Container(top=y_pos-10, left=v["x"]-10, content=ft.Column([ft.Text(v["coin"], size=9, color="white", weight="bold"), ft.Container(width=10, height=10, border_radius=10, bgcolor=renk, shadow=ft.BoxShadow(blur_radius=10, color=renk, spread_radius=2))], spacing=2, alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER)))
         page.update()
 
     zaman_dropdown = ft.Dropdown(options=[ft.dropdown.Option("15 Dakikalık"), ft.dropdown.Option("1 Saatlik"), ft.dropdown.Option("1 Günlük")], value="1 Saatlik", width=150, bgcolor="#0A0A0E", border_color="#1A1A24", color="white")
-    zaman_dropdown.on_change = lambda e: grafigi_ciz(ai_rsi_uret(e.control.value))
+    
+    def dropdown_degisti(e):
+        grafigi_ciz(ai_rsi_uret(e.control.value))
+    zaman_dropdown.on_change = dropdown_degisti
 
     ana_icerik = ft.Container(content=ft.Column([
-        ft.Row([ft.Text("🔥 GLOW ISI HARİTASI", size=24, weight="900", color="white"), zaman_dropdown], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+        ft.Row([
+            ft.Row([ft.Text("🔥 GLOW ISI HARİTASI", size=24, weight="900", color="white")]), 
+            ft.Row([ft.Text("🔄", size=16), ft.Text("Canlı", color="#00ffcc", size=12, weight="bold"), zaman_dropdown])
+        ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
         ft.Divider(color="#1A1A24"),
         ft.Container(content=grafik_katmani, bgcolor="#050507", border=cerceve(1, "#1A1A24"), border_radius=12, padding=10, width=G_GENISLIK+20, height=G_YUKSEKLIK+20, alignment=MERKEZ)
     ], horizontal_alignment=ft.CrossAxisAlignment.CENTER), bgcolor="#030304", padding=20, expand=True, alignment=ft.Alignment(0, -1))
 
-    grafigi_ciz(ai_rsi_uret("1 Saatlik"))
-    return ft.Container(content=ft.Column([ft.TextButton(content=ft.Text("⬅️ Panoya Dön", color="#00ffcc"), on_click=lambda e: geri_don_fonksiyonu()), ana_icerik], expand=True, scroll=ft.ScrollMode.AUTO), bgcolor="#030304", padding=10, expand=True)
+    def otomatik_yenile():
+        while sayfa_aktif[0]:
+            time.sleep(5)
+            if sayfa_aktif[0]:
+                grafigi_ciz(ai_rsi_uret(zaman_dropdown.value))
+
+    threading.Thread(target=otomatik_yenile, daemon=True).start()
+
+    def guvenli_cikis():
+        sayfa_aktif[0] = False
+        geri_don_fonksiyonu()
+
+    grafigi_ciz(ai_rsi_uret(zaman_dropdown.value))
+
+    return ft.Container(content=ft.Column([ft.TextButton(content=ft.Text("⬅️ Panoya Dön", color="#00ffcc"), on_click=lambda e: guvenli_cikis()), ana_icerik], expand=True, scroll=ft.ScrollMode.AUTO), bgcolor="#030304", padding=10, expand=True)
