@@ -5,9 +5,12 @@ import urllib.request
 import urllib.error
 import json
 import concurrent.futures
+import os
+from dotenv import load_dotenv
 
-# GITHUB'A YÜKLERKEN ŞİFRE BURADA KESİNLİKLE OLMAMALI
-GROQ_API_KEY = "API_SIFRENIZI_BURAYA_GIRIN"
+# GİZLİ ŞİFREYİ ARTIK .ENV DOSYASINDAN ÇEKİYORUZ (GITHUB GÖREMEZ)
+load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 def ai_sohbet_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
     
@@ -128,33 +131,36 @@ def ai_sohbet_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
         def konseyi_yonet():
             ai_cevap = ""
             try:
-                rol_teknik = "Sen bir kripto teknik analistisin. Sadece fiyata, destek-direnç noktalarına ve formasyonlara odaklan. Çok kısa özet geç."
-                model_teknik = "llama-3.1-8b-instant"
+                if not GROQ_API_KEY:
+                    ai_cevap = "⚠️ HATA: Şifre bulunamadı! Lütfen '.env' dosyanızı kontrol edin."
+                else:
+                    rol_teknik = "Sen bir kripto teknik analistisin. Sadece fiyata, destek-direnç noktalarına ve formasyonlara odaklan. Çok kısa özet geç."
+                    model_teknik = "llama-3.1-8b-instant"
 
-                rol_duygu = "Sen bir kripto piyasa araştırmacısısın. Hacimlere, piyasa duyarlılığına, balina hareketlerine ve genel trende odaklan. Kısa özet geç."
-                model_duygu = "mixtral-8x7b-32768"
+                    rol_duygu = "Sen bir kripto piyasa araştırmacısısın. Hacimlere, piyasa duyarlılığına, balina hareketlerine ve genel trende odaklan. Kısa özet geç."
+                    model_duygu = "mixtral-8x7b-32768"
 
-                rol_risk = "Sen bir kripto risk yöneticisisin. Sadece potansiyel düşüş senaryolarına, stop-loss seviyelerine ve risklere odaklan. Kısa özet geç."
-                model_risk = "gemma2-9b-it"
+                    rol_risk = "Sen bir kripto risk yöneticisisin. Sadece potansiyel düşüş senaryolarına, stop-loss seviyelerine ve risklere odaklan. Kısa özet geç."
+                    model_risk = "gemma2-9b-it"
 
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    gorev_teknik = executor.submit(groq_ajani_cagir, rol_teknik, model_teknik, mesaj)
-                    gorev_duygu = executor.submit(groq_ajani_cagir, rol_duygu, model_duygu, mesaj)
-                    gorev_risk = executor.submit(groq_ajani_cagir, rol_risk, model_risk, mesaj)
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        gorev_teknik = executor.submit(groq_ajani_cagir, rol_teknik, model_teknik, mesaj)
+                        gorev_duygu = executor.submit(groq_ajani_cagir, rol_duygu, model_duygu, mesaj)
+                        gorev_risk = executor.submit(groq_ajani_cagir, rol_risk, model_risk, mesaj)
 
-                    cevap_teknik = gorev_teknik.result()
-                    cevap_duygu = gorev_duygu.result()
-                    cevap_risk = gorev_risk.result()
+                        cevap_teknik = gorev_teknik.result()
+                        cevap_duygu = gorev_duygu.result()
+                        cevap_risk = gorev_risk.result()
 
-                rol_mudur = (
-                    "Sen siberpunk tarzı, zeki bir kripto asistanısın (Adın Q-AI). Kullanıcıya 'patron' de. "
-                    "Arka plandaki 3 ajanının sana sunduğu aşağıdaki analizleri oku ve bunları birleştirerek "
-                    "kullanıcıya tek, akıcı, kendinden emin ve havalı bir nihai cevap yaz. "
-                    "Asla 'Uzmanlar böyle diyor' deme. Analizleri sen yapmışsın gibi doğrudan konuş. Çok uzatma.\n\n"
-                    f"Teknik Analiz: {cevap_teknik}\nPiyasa Durumu: {cevap_duygu}\nRisk Analizi: {cevap_risk}"
-                )
-                
-                ai_cevap = groq_ajani_cagir(rol_mudur, "llama-3.1-8b-instant", mesaj)
+                    rol_mudur = (
+                        "Sen siberpunk tarzı, zeki bir kripto asistanısın (Adın Q-AI). Kullanıcıya 'patron' de. "
+                        "Arka plandaki 3 ajanının sana sunduğu aşağıdaki analizleri oku ve bunları birleştirerek "
+                        "kullanıcıya tek, akıcı, kendinden emin ve havalı bir nihai cevap yaz. "
+                        "Asla 'Uzmanlar böyle diyor' deme. Analizleri sen yapmışsın gibi doğrudan konuş. Çok uzatma.\n\n"
+                        f"Teknik Analiz: {cevap_teknik}\nPiyasa Durumu: {cevap_duygu}\nRisk Analizi: {cevap_risk}"
+                    )
+                    
+                    ai_cevap = groq_ajani_cagir(rol_mudur, "llama-3.1-8b-instant", mesaj)
 
             except Exception as hata:
                 ai_cevap = f"Konsey toplanamadı. Ağ bağlantısı koptu: {str(hata)}"
@@ -162,7 +168,7 @@ def ai_sohbet_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
             sohbet_gecmisi.controls.remove(yaziyor_gostergesi)
             sohbet_gecmisi.controls.append(mesaj_balonu_olustur(ai_cevap, "ai"))
             
-            if sesli_yanit_aktif and "Hata" not in ai_cevap:
+            if sesli_yanit_aktif and "Hata" not in ai_cevap and "HATA" not in ai_cevap:
                 konus_motoru(ai_cevap)
 
             page.update()
@@ -220,7 +226,6 @@ def ai_sohbet_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
             ], spacing=2)
         ]),
         ft.Row([
-            # İKON MODÜLÜ TAMAMEN DEVRE DIŞI BIRAKILDI, YERİNE EMOJİ BUTONU EKLENDİ
             ft.Container(content=ft.Text("🗑️", size=20), tooltip="Sohbeti Temizle", on_click=sohbeti_temizle, ink=True, padding=5, border_radius=5),
             ft.Text("Ses:", color="#737373", size=12),
             ft.Switch(value=False, active_color="#00ffcc", on_change=ses_modunu_degistir)
