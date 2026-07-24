@@ -45,4 +45,4 @@ if __name__ == "__main__":
     if "PORT" in os.environ:
         ft.run(main, view=ft.AppView.WEB_BROWSER, port=port, host="0.0.0.0")
     else:
-        ft.run(main)
+        ft.run(main)    

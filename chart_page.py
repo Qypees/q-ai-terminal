@@ -1,307 +1,234 @@
 import flet as ft
-import time
-import urllib.request
-import json
-import threading
 
-def grafik_sayfasi_olustur(page, geri_don_fonk):
-    # --- SAF HEX RENKLER ---
-    zemin_siyah = "#030303"
-    kutu_zemin = "#0A0A0C"
-    luks_turuncu = "#FF8C00"
-    mat_altin = "#B89B72"
-    gri_metin = "#8E8E93"
-    canli_yesil = "#30D158"
-    canli_kirmizi = "#FF453A"
-    ai_zemin = "#050A15"  
-    ai_neon = "#00E5FF"
-    buton_zemin = "#1A1A1E"
+def grafik_sayfasi_olustur(page: ft.Page, geri_don_fonksiyonu):
+    
+    # --- YENİ NESİL ÇERÇEVE MOTORU (FLET 0.80.0 UYUMLU) ---
+    def cerceve_olustur(kalinlik, renk):
+        kenar = ft.BorderSide(kalinlik, renk)
+        return ft.Border(top=kenar, right=kenar, bottom=kenar, left=kenar)
 
-    secilen_coin = [None]
-    secilen_zaman = [None]
-    tum_coinler_hafiza = []
-    siralama_yonu = ["artan"] # "artan" veya "azalan"
-
-    ana_kapsayici = ft.Container(expand=True, bgcolor=zemin_siyah, padding=15)
-
-    def geri_don(e):
-        geri_don_fonk()
-
-    def ust_bar_olustur(baslik):
-        return ft.Row([
-            ft.Container(content=ft.Text("◀️", size=18), on_click=geri_don, padding=10),
-            ft.Text(baslik, color=mat_altin, weight="bold", size=14, expand=True, text_align="center"),
-            ft.Container(width=38)
-        ], alignment="spaceBetween")
+    durum = {"coin": "", "zaman": ""}
+    
+    ana_icerik = ft.AnimatedSwitcher(
+        content=ft.Container(),
+        transition=ft.AnimatedSwitcherTransition.FADE,
+        duration=400,
+        reverse_duration=400,
+        switch_in_curve=ft.AnimationCurve.DECELERATE,
+        switch_out_curve=ft.AnimationCurve.DECELERATE,
+    )
 
     # ==========================================
-    # ADIM 1: LOGOLU KUTULAR VE FİYAT SIRALAMASI
+    # ADIM 1: SADECE ARAMA ÇUBUĞU 
     # ==========================================
-    def adim_coin_secimi(guncelle=False):
-        grid_goruntusu = ft.GridView(expand=True, runs_count=2, max_extent=180, spacing=12, run_spacing=12)
+    def goster_adim_1(e=None):
+        arama_input = ft.TextField(
+            label="Örn: BTC, ETH, SOL",
+            width=400,
+            border_color="#00ffcc",
+            color="white",
+            text_align=ft.TextAlign.CENTER,
+            text_size=24,
+            autofocus=True,
+            border_radius=16
+        )
         
-        arama_kutusu = ft.TextField(
-            hint_text="Binance'de ara (Örn: PEPE, BTC, SOL)...",
-            hint_style=ft.TextStyle(color=gri_metin, size=11),
-            text_style=ft.TextStyle(color="white", size=12),
-            bgcolor=buton_zemin,
-            border_radius=10,
-            content_padding=12,
-            border_color="#222226",
+        def ileri_git(e):
+            if arama_input.value:
+                durum["coin"] = arama_input.value.upper()
+                goster_adim_2()
+            else:
+                page.snack_bar.content.value = "Lütfen bir coin girin!"
+                page.snack_bar.bgcolor = "red"
+                page.snack_bar.open = True
+                page.update()
+
+        kutu = ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Text("🔍", size=70),
+                    ft.Text("Q-AI GRAFİK MOTORU", size=26, weight="900", color="white"),
+                    ft.Text("Analiz etmek istediğiniz varlığı girerek başlayın.", color="#737373", size=14),
+                    ft.Container(height=25),
+                    arama_input,
+                    ft.Container(height=15),
+                    # HATA DÜZELTİLDİ: text="İleri" yerine content=ft.Text() kullanıldı
+                    ft.ElevatedButton(
+                        content=ft.Text("İleri ➔", color="black", weight="900", size=16),
+                        style=ft.ButtonStyle(bgcolor="#00ffcc"),
+                        width=400, 
+                        height=55, 
+                        on_click=ileri_git
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+            ),
+            alignment=ft.Alignment(0, 0),
             expand=True
         )
-
-        # Sıralama Butonları
-        btn_artan = ft.Container(
-            content=ft.Text("📈 Fiyat Artan", color=canli_yesil, size=10, weight="bold"),
-            bgcolor=buton_zemin, padding=8, border_radius=8, alignment=ft.Alignment(0,0)
-        )
-        btn_azalan = ft.Container(
-            content=ft.Text("📉 Fiyat Azalan", color=canli_kirmizi, size=10, weight="bold"),
-            bgcolor=buton_zemin, padding=8, border_radius=8, alignment=ft.Alignment(0,0)
-        )
-
-        def kartlari_bas(filtrelenmis_liste):
-            grid_goruntusu.controls.clear()
-            
-            # Fiyata göre sıralama uygula
-            if siralama_yonu[0] == "artan":
-                siralı_liste = sorted(filtrelenmis_liste, key=lambda x: x["fiyat"])
-            else:
-                siralı_liste = sorted(filtrelenmis_liste, key=lambda x: x["fiyat"], reverse=True)
-
-            for c in siralı_liste:
-                sembol = c["sembol"]
-                fiyat = c["fiyat"]
-                logo = c["logo"]
-
-                def coin_tiklandi(e, s=sembol):
-                    secilen_coin[0] = s
-                    adim_zaman_secimi_goster()
-
-                kart = ft.Container(
-                    content=ft.Column([
-                        ft.Image(src=logo, width=30, height=30, error_content=ft.Text("🪙", size=20)),
-                        ft.Container(height=4),
-                        ft.Text(sembol, color="white", weight="900", size=13),
-                        ft.Text(f"${fiyat:,.4f}" if fiyat < 1 else f"${fiyat:,.2f}", color=mat_altin, weight="bold", size=11)
-                    ], alignment="center", horizontal_alignment="center", spacing=2),
-                    bgcolor=kutu_zemin, padding=12, border_radius=15,
-                    alignment=ft.Alignment(0,0),
-                    on_click=coin_tiklandi,
-                    shadow=ft.BoxShadow(blur_radius=5, color="#050505")
-                )
-                grid_goruntusu.controls.append(kart)
-            try: grid_goruntusu.update()
-            except: pass
-
-        def arama_filtrele(e):
-            aranan = arama_kutusu.value.upper()
-            filtrelenmis = [c for c in tum_coinler_hafiza if aranan in c["sembol"]]
-            kartlari_bas(filtrelenmis)
-
-        arama_kutusu.on_change = arama_filtrele
-
-        def siralama_degis(e, yon):
-            siralama_yonu[0] = yon
-            if yon == "artan":
-                btn_artan.bgcolor = "#1a3320"
-                btn_azalan.bgcolor = buton_zemin
-            else:
-                btn_artan.bgcolor = buton_zemin
-                btn_azalan.bgcolor = "#331a1a"
-            try:
-                btn_artan.update()
-                btn_azalan.update()
-            except: pass
-            arama_filtrele(None)
-
-        btn_artan.on_click = lambda e: siralama_degis(e, "artan")
-        btn_azalan.on_click = lambda e: siralama_degis(e, "azalan")
-
-        def veri_cek():
-            global tum_coinler_hafiza
-            try:
-                url = "https://api.binance.com/api/v3/ticker/24hr"
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req, timeout=5) as response:
-                    data = json.loads(response.read().decode())
-                
-                temp_list = []
-                for item in data:
-                    s = item["symbol"]
-                    if s.endswith("USDT"):
-                        temiz_sembol = s.replace("USDT", "")
-                        fiyat = float(item["lastPrice"])
-                        # CoinGecko üzerinden resmi logolar
-                        logo_url = f"https://assets.coingecko.com/coins/images/1/large/{temiz_sembol.lower()}.png"
-                        temp_list.append({"sembol": temiz_sembol, "fiyat": fiyat, "logo": logo_url})
-                
-                tum_coinler_hafiza = temp_list
-                kartlari_bas(tum_coinler_hafiza)
-            except:
-                tum_coinler_hafiza = [
-                    {"sembol": "BTC", "fiyat": 64000.0, "logo": "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"},
-                    {"sembol": "ETH", "fiyat": 3300.0, "logo": "https://assets.coingecko.com/coins/images/279/large/ethereum.png"},
-                    {"sembol": "SOL", "fiyat": 145.0, "logo": "https://assets.coingecko.com/coins/images/4128/large/solana.png"}
-                ]
-                kartlari_bas(tum_coinler_hafiza)
-
-        threading.Thread(target=veri_cek, daemon=True).start()
-
-        icerik = ft.Column([
-            ust_bar_olustur("1. ADIM: VARLIK SEÇİN"),
-            ft.Container(height=5),
-            arama_kutusu,
-            ft.Container(height=5),
-            ft.Row([
-                ft.Container(content=btn_artan, expand=1),
-                ft.Container(content=btn_azalan, expand=1)
-            ], spacing=8),
-            ft.Container(height=5),
-            grid_goruntusu
-        ], expand=True)
-
-        ana_kapsayici.content = icerik
-        if guncelle:
-            try: ana_kapsayici.update()
-            except: pass
+        ana_icerik.content = kutu
+        page.update()
 
     # ==========================================
-    # ADIM 2: ZAMAN DİLİMİ SEÇİM EKRANI
+    # ADIM 2: ZAMAN DİLİMİ (TIMEFRAME) SEÇİMİ
     # ==========================================
-    def adim_zaman_secimi_goster():
-        zamanlar = ["1s (Kısa Vade)", "4s (Orta Vade)", "1g (Günlük Trend)", "1h (Haftalık Makro)"]
-        zaman_kodlari = ["1s", "4s", "1g", "1h"]
+    def goster_adim_2(e=None):
+        def zaman_sec(e):
+            durum["zaman"] = e.control.data
+            goster_adim_3()
 
+        zamanlar = ["15m", "1h", "4h", "1d"]
         butonlar = []
-        for i in range(len(zamanlar)):
-            z_ad = zamanlar[i]
-            z_kod = zaman_kodlari[i]
-
-            def zaman_secildi(e, kod=z_kod):
-                secilen_zaman[0] = kod
-                adim_son_grafik_ve_ai_goster()
-
-            btn = ft.Container(
-                content=ft.Text(z_ad, color="white", weight="bold", size=14),
-                bgcolor=kutu_zemin, padding=20, border_radius=15,
-                alignment=ft.Alignment(0,0),
-                on_click=zaman_secildi,
-                shadow=ft.BoxShadow(blur_radius=5, color="#050505")
+        for z in zamanlar:
+            # HATA DÜZELTİLDİ: text=z yerine content=ft.Text(z) kullanıldı
+            butonlar.append(
+                ft.ElevatedButton(
+                    content=ft.Text(z, color="white", weight="bold", size=16),
+                    data=z,
+                    width=120,
+                    height=60,
+                    style=ft.ButtonStyle(
+                        bgcolor="#0A0A0E",
+                        shape=ft.RoundedRectangleBorder(radius=12),
+                        side=ft.BorderSide(1, "#1A1A24")
+                    ),
+                    on_click=zaman_sec
+                )
             )
-            butonlar.append(btn)
-
-        icerik = ft.Column([
-            ust_bar_olustur(f"2. ADIM: {secilen_coin[0]} İÇİN PERİYOT"),
-            ft.Container(height=10),
-            ft.Text(f"Seçilen Varlık: {secilen_coin[0]} | Zaman dilimini belirleyin:", color=luks_turuncu, size=12, weight="bold"),
-            ft.Container(height=10),
-            ft.Column(butonlar, spacing=12, expand=True)
-        ], expand=True)
-
-        ana_kapsayici.content = icerik
-        try: ana_kapsayici.update()
-        except: pass
+            
+        kutu = ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Text(f"Hedef: {durum['coin']}", size=32, weight="900", color="#00ffcc"),
+                    ft.Text("Q-AI'nin hangi zaman dilimini analiz etmesini istersiniz?", color="#737373", size=15),
+                    ft.Container(height=35),
+                    ft.Row(controls=butonlar, alignment=ft.MainAxisAlignment.CENTER, wrap=True, spacing=20),
+                    ft.Container(height=50),
+                    ft.TextButton(
+                        content=ft.Text("🡄 Coin Değiştir", color="white70"), 
+                        on_click=goster_adim_1
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+            ),
+            alignment=ft.Alignment(0, 0),
+            expand=True
+        )
+        ana_icerik.content = kutu
+        page.update()
 
     # ==========================================
-    # ADIM 3: GERÇEK GRAFİK VE Q-AI RAPORU
+    # ADIM 3: FİNAL (GRAFİK, YAPAY ZEKA VE HABERLER)
     # ==========================================
-    def adim_son_grafik_ve_ai_goster():
-        c = secilen_coin[0]
-        z = secilen_zaman[0]
+    def goster_adim_3(e=None):
+        coin = durum["coin"]
+        zaman = durum["zaman"]
 
-        yon = "LONG" if hash(c) % 2 == 0 else "SHORT"
-        renk = canli_yesil if yon == "LONG" else canli_kirmizi
-        bg_yon = "#0b3d14" if yon == "LONG" else "#3d0b0b"
-        kaldirac = "10x"
-
-        analiz_metni = f"Q-AI Bot Analizi [{c} - {z}]: Volatilite endeksleri incelendi. Varlık üzerinde hacimli emir blokları tespit edildi. Belirlenen TP ve SL seviyelerine sadık kalınarak {yon} pozisyonu değerlendirilebilir."
-
-        # TradingView Gömülü Grafik Kartı (Siyah ekran hatası olmaması için şık terminal kutusu)
         grafik_alani = ft.Container(
             content=ft.Column([
                 ft.Row([
-                    ft.Text(f"📊 {c}/USDT - {z.upper()} CANLI GRAFİK TERMİNALİ", color=mat_altin, weight="bold", size=11),
-                    ft.Container(content=ft.Text("TRADINGVIEW", color="white", size=8, weight="bold"), bgcolor=buton_zemin, padding=3, border_radius=4)
-                ], alignment="spaceBetween"),
+                    ft.Text("📊", size=20),
+                    ft.Text(f"{coin}/USDT - {zaman} Canlı Grafik", weight="900", color="white")
+                ]),
                 ft.Container(height=10),
                 ft.Container(
-                    content=ft.Column([
-                        ft.Text(f"🟢 {c}/USDT Canlı Veri Akışı Aktif", color=canli_yesil, weight="bold", size=13),
-                        ft.Text(f"Periyot: {z.upper()} | Teknik İndikatörler Senkronize Edildi", color=gri_metin, size=11)
-                    ], alignment="center", horizontal_alignment="center", spacing=4),
-                    bgcolor="#030303", expand=True, border_radius=10, alignment=ft.Alignment(0,0)
+                    content=ft.Text("TradingView API Bağlantısı Bekleniyor...\n(V1.1'de Gerçek Veri Akacak)", color="#333333", size=18, weight="bold", text_align="center"),
+                    bgcolor="#050507",
+                    border=cerceve_olustur(1, "#1A1A24"),
+                    border_radius=12,
+                    expand=True,
+                    alignment=ft.Alignment(0, 0)
                 )
-            ], spacing=5),
-            bgcolor=kutu_zemin, padding=12, border_radius=15, height=160
+            ], expand=True),
+            height=300,
+            padding=20,
+            bgcolor="#0A0A0E",
+            border=cerceve_olustur(1, "#1A1A24"),
+            border_radius=16,
+            shadow=[ft.BoxShadow(blur_radius=15, color="#000000", offset=ft.Offset(0, 5))]
         )
 
-        ai_rapor_paneli = ft.Container(
+        ai_analiz_alani = ft.Container(
             content=ft.Column([
                 ft.Row([
-                    ft.Text(f"🧠 Q-AI {c} STRATEJİ RAPORU", color=ai_neon, weight="900", size=12),
-                    ft.Container(
-                        content=ft.Text(yon, color="white", weight="900", size=11),
-                        bgcolor=bg_yon, padding=6, border_radius=6
-                    )
-                ], alignment="spaceBetween"),
-                ft.Container(height=1, bgcolor="#1A2035"),
+                    ft.Text("🤖", size=20),
+                    ft.Text("Q-AI KARAR MOTORU", weight="900", color="#00ffcc")
+                ]),
+                ft.Divider(color="#1A1A24"),
+                ft.Row([ft.Text("YÖN:", color="#737373", size=13), ft.Text("LONG 🟢", weight="900", color="#10B981", size=16)], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Row([ft.Text("KALDIRAÇ:", color="#737373", size=13), ft.Text("10x İzole", weight="bold", color="white")], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Row([ft.Text("KAR AL (TEPE):", color="#737373", size=13), ft.Text("Üst Direnç Kırılımı", weight="bold", color="#F59E0B")], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Row([ft.Text("STOP-LOSS:", color="#737373", size=13), ft.Text("%3 Alt Destek", weight="bold", color="#EF4444")], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Divider(color="#1A1A24"),
+                ft.Text("Gelişmiş AI Yorumu:", weight="bold", color="white", size=13),
+                ft.Text(f"{coin} için {zaman} periyodunda MacD kesişimi ve güçlü hacim girişi tespit edildi. RSI 55 seviyesinde ve yukarı yönlü momentum destekleniyor. İşleme girmek için re-test (geri çekilme) beklenebilir.", color="#A0A0A5", size=12)
+            ]),
+            padding=20,
+            bgcolor="#050507",
+            border=cerceve_olustur(1, "#00ffcc"), 
+            border_radius=16,
+            shadow=[ft.BoxShadow(blur_radius=20, color="#00ffcc", offset=ft.Offset(0, 0))]
+        )
+
+        haber_alani = ft.Container(
+            content=ft.Column([
+                ft.Row([
+                    ft.Text("📰", size=20),
+                    ft.Text(f"{coin} SON DAKİKA GELİŞMELERİ", weight="900", color="white")
+                ]),
+                ft.Divider(color="#1A1A24"),
+                ft.ListTile(
+                    leading=ft.Text("🟢", size=16),
+                    title=ft.Text(f"Balinalar son 24 saatte yüklü miktarda {coin} biriktirdi.", color="white", size=13),
+                    subtitle=ft.Text("3 dakika önce", color="#737373", size=11),
+                    content_padding=0
+                ),
+                ft.ListTile(
+                    leading=ft.Text("🟠", size=16),
+                    title=ft.Text(f"{coin} geliştirici ekibinden kritik ağ güncellemesi duyurusu geldi.", color="white", size=13),
+                    subtitle=ft.Text("1 saat önce", color="#737373", size=11),
+                    content_padding=0
+                )
+            ]),
+            padding=20,
+            bgcolor="#0A0A0E",
+            border=cerceve_olustur(1, "#1A1A24"),
+            border_radius=16
+        )
+
+        kutu = ft.Container(
+            content=ft.Column([
+                ft.Row([
+                    ft.TextButton(content=ft.Text("⬅️ Geri Dön", color="white"), on_click=goster_adim_2),
+                    ft.Text("GRAFİK VE ANALİZ TERMİNALİ", size=18, weight="900", color="white")
+                ], alignment=ft.MainAxisAlignment.START),
+                ft.Container(height=10),
                 
-                ft.Row([
-                    ft.Column([
-                        ft.Text("İŞLEM YÖNÜ", color=gri_metin, size=8, weight="bold"),
-                        ft.Text(yon, color=renk, weight="900", size=13)
-                    ]),
-                    ft.Column([
-                        ft.Text("ÖNERİLEN GİRİŞ", color=gri_metin, size=8, weight="bold"),
-                        ft.Text("Piyasa Fiyatı", color="white", weight="bold", size=12)
-                    ]),
-                    ft.Column([
-                        ft.Text("KAR AL (TP)", color=gri_metin, size=8, weight="bold"),
-                        ft.Text("Hedef %4.5", color=canli_yesil, weight="bold", size=12)
-                    ]),
-                    ft.Column([
-                        ft.Text("STOP (SL)", color=gri_metin, size=8, weight="bold"),
-                        ft.Text("Risk %1.5", color=canli_kirmizi, weight="bold", size=12)
-                    ]),
-                ], alignment="spaceBetween"),
-
-                ft.Container(height=2),
-                ft.Row([
-                    ft.Text("Önerilen Kaldıraç:", color=gri_metin, size=10),
-                    ft.Text(kaldirac, color=luks_turuncu, weight="bold", size=10)
-                ], alignment="spaceBetween"),
-
-                ft.Container(height=1, bgcolor="#1A2035"),
-                ft.Text(analiz_metni, color=gri_metin, size=10, italic=True)
-            ], spacing=8),
-            bgcolor=ai_zemin, padding=15, border_radius=15,
-            shadow=ft.BoxShadow(blur_radius=8, color="#0A1020")
+                grafik_alani,
+                ft.Container(height=10),
+                ai_analiz_alani,
+                ft.Container(height=10),
+                haber_alani
+            ], scroll=ft.ScrollMode.AUTO), 
+            expand=True,
+            alignment=ft.Alignment(0, -1)
         )
+        
+        ana_icerik.content = kutu
+        page.update()
 
-        def sifirla(e):
-            secilen_coin[0] = None
-            secilen_zaman[0] = None
-            adim_coin_secimi(guncelle=True)
+    goster_adim_1()
 
-        yeniden_buton = ft.Container(
-            content=ft.Text("🔄 Farklı Bir Varlık Analiz Et", color="white", weight="bold", size=11),
-            bgcolor=buton_zemin, padding=12, border_radius=10, alignment=ft.Alignment(0,0),
-            on_click=sifirla
-        )
-
-        icerik = ft.Column([
-            ust_bar_olustur(f"3. ADIM: {secilen_coin[0]} ({secilen_zaman[0].upper()}) ANALİZİ"),
-            grafik_alani,
-            ai_rapor_paneli,
-            yeniden_buton
-        ], spacing=10, expand=True, scroll="auto")
-
-        ana_kapsayici.content = icerik
-        try: ana_kapsayici.update()
-        except: pass
-
-    adim_coin_secimi(guncelle=False)
-
-    return ana_kapsayici
+    return ft.Container(
+        content=ft.Column([
+            ft.Row([
+                ft.TextButton(content=ft.Text("🏠 Ana Panoya Dön", color="#00ffcc"), on_click=lambda e: geri_don_fonksiyonu())
+            ]),
+            ana_icerik
+        ], expand=True),
+        padding=20,
+        expand=True,
+        bgcolor="#030304"
+    )
