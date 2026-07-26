@@ -11,37 +11,18 @@ import time
 import re
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-import json
-import os
 
 app = FastAPI(title="Q-AI Terminal Core")
 templates = Jinja2Templates(directory="templates")
 
-# ==========================================
-# YEREL VERİTABANI SİSTEMİ (JSON)
-# ==========================================
-DB_DOSYASI = "cuzdan.json"
+# Cüzdan Hafızası
+aktif_pozisyonlar = []
+spot_varliklar = []
 
-def veritabani_yukle():
-    if os.path.exists(DB_DOSYASI):
-        with open(DB_DOSYASI, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"spot": [], "vadeli": []}
-
-def veritabani_kaydet():
-    veri = {"spot": spot_varliklar, "vadeli": aktif_pozisyonlar}
-    with open(DB_DOSYASI, "w", encoding="utf-8") as f:
-        json.dump(veri, f, ensure_ascii=False, indent=4)
-
-# Cüzdan Hafızasını Veritabanından Çek
-db_veri = veritabani_yukle()
-spot_varliklar = db_veri["spot"]
-aktif_pozisyonlar = db_veri["vadeli"]
-
-# Oturum durumunu takip eden hafıza
+# Oturum durumunu takip eden hafıza (F5 atıldığında veya sekme yenilendiğinde sıfırlanır)
 onayli_kullanicilar = set()
 
-# Spotify Token Hafızası
+# Spotify Token Hafızası (Senin hesabının anahtarını tutacak)
 spotify_tokens = {}
 
 # Spotify API Kimlik Bilgileri
@@ -219,7 +200,11 @@ def uclu_ai_birlesik_yanit(mesaj: str):
     if any(k in mesaj_k for k in ["selam", "merhaba", "hi", "naber", "günaydın"]):
         return f"Merhaba Patron! Q-AI Terminal Çekirdek Sistemi tam kapasiteyle emrinizde. Şu an Bitcoin (BTC) anlık olarak **${btc_fiyat:,.2f}** seviyesinde işlem görüyor."
     elif "btc" in mesaj_k or "bitcoin" in mesaj_k:
-        return f"👑 **Q-AI Kurumsal Piyasa Raporu: Bitcoin (BTC)**\n\n• **Anlık Fiyat:** ${btc_fiyat:,.2f}\n• **Teknik Görünüm:** MACD histogramı pozitif. 64,200$ destek çalışıyor.\n• **Temel Analiz:** Borsalardaki rezerv çıkışları arz sıkışması yaratıyor."
+        return f"👑 **Q-AI Kurumsal Piyasa Raporu: Bitcoin (BTC)**
+
+• **Anlık Fiyat:** ${btc_fiyat:,.2f}
+• **Teknik Görünüm:** MACD histogramı pozitif. 64,200$ destek çalışıyor.
+• **Temel Analiz:** Borsalardaki rezerv çıkışları arz sıkışması yaratıyor."
     else:
         return f"🔍 **Q-AI Değerlendirmesi:** '{mesaj}' talebiniz incelendi. Bitcoin **${btc_fiyat:,.2f}** seviyesindeyken risk/ödül oranına dikkat edilmelidir."
 
@@ -250,14 +235,11 @@ async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
 @app.post("/api/cuzdan/spot")
 async def api_cuzdan_spot_post(req: SpotVarlikRequest):
     spot_varliklar.append({"borsa": req.borsa, "bakiye": req.bakiye, "detay": req.detay if req.detay else "Detay girilmedi"})
-    veritabani_kaydet() # Kayıt işlemi
     return JSONResponse(content={"durum": "basarili"})
 
 @app.delete("/api/cuzdan/spot/{index}")
 async def api_cuzdan_spot_delete(index: int):
-    if 0 <= index < len(spot_varliklar): 
-        spot_varliklar.pop(index)
-        veritabani_kaydet() # Silme sonrası kayıt
+    if 0 <= index < len(spot_varliklar): spot_varliklar.pop(index)
     return JSONResponse(content={"durum": "silindi"})
 
 @app.get("/api/cuzdan/vadeli")
@@ -270,14 +252,11 @@ async def api_cuzdan_vadeli_post(req: VadeliPozisyonRequest):
     kaldirac = req.kaldirac
     ai_yorum = f"Q-AI Analizi: {coin} için {kaldirac} kaldıraçlı {yon} pozisyonu sisteme kaydedildi. Algoritmalar mevcut destek seviyesinde tutunma ihtimalini %74 olarak hesaplıyor."
     aktif_pozisyonlar.append({"coin": coin, "kaldirac": kaldirac, "yon": yon, "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M"), "ai_yorum": ai_yorum})
-    veritabani_kaydet() # Kayıt işlemi
     return JSONResponse(content={"durum": "basarili"})
 
 @app.delete("/api/cuzdan/vadeli/{index}")
 async def api_cuzdan_vadeli_delete(index: int):
-    if 0 <= index < len(aktif_pozisyonlar): 
-        aktif_pozisyonlar.pop(index)
-        veritabani_kaydet() # Silme sonrası kayıt
+    if 0 <= index < len(aktif_pozisyonlar): aktif_pozisyonlar.pop(index)
     return JSONResponse(content={"durum": "silindi"})
 
 # --- SPOTIFY API NOKTALARI ---
