@@ -5,7 +5,6 @@ from pydantic import BaseModel
 import requests
 import uvicorn
 import datetime
-import random
 import urllib.parse
 import time
 import re
@@ -14,11 +13,11 @@ from spotipy.oauth2 import SpotifyOAuth
 import json
 import os
 
-app = FastAPI(title="Q-AI Terminal Core")
+app = FastAPI(title="Qypees Terminal Core")
 templates = Jinja2Templates(directory="templates")
 
 # ==========================================
-# YEREL VERİTABANI SİSTEMİ (JSON)
+# YEREL VERİTABANI SİSTEMİ (JSON) - SİMÜLASYON KAYIT
 # ==========================================
 DB_DOSYASI = "cuzdan.json"
 
@@ -33,21 +32,17 @@ def veritabani_kaydet():
     with open(DB_DOSYASI, "w", encoding="utf-8") as f:
         json.dump(veri, f, ensure_ascii=False, indent=4)
 
-# Cüzdan Hafızasını Veritabanından Çek
 db_veri = veritabani_yukle()
 spot_varliklar = db_veri["spot"]
 aktif_pozisyonlar = db_veri["vadeli"]
 
-# Oturum durumunu takip eden hafıza
 onayli_kullanicilar = set()
-
-# Spotify Token Hafızası
 spotify_tokens = {}
 
 # Spotify API Kimlik Bilgileri
 SPOTIFY_CLIENT_ID = "d560d37532284575a7933231cf7166f3"
 SPOTIFY_CLIENT_SECRET = "BURAYA_CLIENT_SECRET_DEGERINI_YAZ"
-SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback"
+SPOTIFY_REDIRECT_URI = "https://q-ai-terminal.onrender.com/callback"
 
 sp_oauth = SpotifyOAuth(
     client_id=SPOTIFY_CLIENT_ID,
@@ -71,9 +66,10 @@ class VadeliPozisyonRequest(BaseModel):
     miktar: str
 
 # ==========================================
-# 1. ANA ÇEKİRDEK VERİTABANI (100 COIN)
+# 1. ANA ÇEKİRDEK VERİTABANI (200 COIN)
 # ==========================================
 COIN_FIYATLARI = {
+    # Mevcut 100 Coin
     "BTC": 64500.0, "ETH": 3100.0, "USDT": 1.0, "BNB": 580.0, "SOL": 145.0,
     "USDC": 1.0, "XRP": 0.60, "TON": 6.5, "DOGE": 0.15, "ADA": 0.45,
     "SHIB": 0.000025, "AVAX": 35.0, "DOT": 7.0, "LINK": 14.0, "BCH": 450.0,
@@ -93,13 +89,34 @@ COIN_FIYATLARI = {
     "CHZ": 0.11, "APE": 1.2, "ILV": 85.0, "IOTA": 0.22, "AXS": 7.5,
     "COMP": 55.0, "NEO": 14.5, "MINA": 0.85, "FLOW": 0.95, "WEMIX": 1.5,
     "CAKE": 2.5, "KAVA": 0.70, "GNO": 300.0, "ONDO": 0.95, "BOME": 0.012,
-    "JASMY": 0.02, "ROSE": 0.09, "GLM": 0.45, "CORE": 1.8, "RON": 2.8
+    "JASMY": 0.02, "ROSE": 0.09, "GLM": 0.45, "CORE": 1.8, "RON": 2.8,
+
+    # Yeni Eklenen 100 Coin (Veritabanı 200'e Yükseltildi)
+    "ZEC": 25.0, "DASH": 30.0, "XEC": 0.00004, "KSM": 35.0, "ENJ": 0.3,
+    "BAT": 0.25, "ZIL": 0.02, "RVN": 0.03, "HOT": 0.002, "1INCH": 0.4,
+    "LRC": 0.25, "YFI": 7000.0, "SUSHI": 1.2, "CRV": 0.45, "CHR": 0.3,
+    "ALICE": 1.5, "REEF": 0.002, "DENT": 0.001, "CKB": 0.015, "TFUEL": 0.08,
+    "ONT": 0.25, "IOST": 0.01, "SKL": 0.08, "CVC": 0.15, "SXP": 0.35,
+    "OCEAN": 0.9, "BAND": 1.5, "NKN": 0.1, "COTI": 0.1, "CTSI": 0.2,
+    "AR": 25.0, "KDA": 1.2, "LUNC": 0.0001, "USTC": 0.02, "ZEN": 12.0,
+    "CELO": 0.8, "GTC": 1.5, "MTL": 1.8, "DGB": 0.01, "ICX": 0.25,
+    "OMG": 0.8, "QTUM": 3.5, "SC": 0.008, "BNT": 0.7, "STORJ": 0.6,
+    "ANT": 5.5, "BAL": 4.0, "REN": 0.08, "KNC": 0.6, "NMR": 20.0,
+    "UMA": 2.8, "RLC": 2.5, "MASK": 3.5, "GAL": 3.0, "API3": 2.2,
+    "DAR": 0.15, "TLM": 0.02, "GHST": 1.5, "LPT": 15.0, "RAD": 1.8,
+    "SUPER": 1.0, "RSR": 0.006, "ALPHA": 0.15, "BEL": 0.8, "LIT": 1.2,
+    "UNFI": 4.5, "BAKE": 0.3, "DODO": 0.2, "PERP": 1.2, "BADGER": 4.0,
+    "TRB": 80.0, "TWT": 1.2, "SFP": 0.8, "XVS": 8.0, "MBOX": 0.35,
+    "FRONT": 0.8, "FORTH": 3.5, "OGN": 0.15, "LINA": 0.008, "AKRO": 0.005,
+    "OXT": 0.08, "STPT": 0.05, "DATA": 0.05, "TROY": 0.003, "VITE": 0.02,
+    "WRX": 0.2, "WTC": 0.02, "GXS": 0.3, "AION": 0.02, "LTO": 0.15,
+    "VTHO": 0.003, "FIO": 0.03, "TCT": 0.01, "PNT": 0.15, "DOCK": 0.02,
+    "HIVE": 0.35, "TKO": 0.4, "COS": 0.01, "KEY": 0.006, "MDT": 0.05
 }
 COINLER = list(COIN_FIYATLARI.keys())
-YORUMLAR = ["Balina aktivitesi", "Direnç kırılımı", "Aşırı alım (RSI)", "MACD kesişimi"]
 
 # ==========================================
-# 2. CANLI BİNANCE VE ÖNBELLEK SİSTEMİ
+# 2. CANLI BİNANCE VE ÖNBELLEK SİSTEMİ (%100 GERÇEK PİYASA OKUMA)
 # ==========================================
 binance_cache = {"data": [], "last_update": 0}
 haberler_cache = {"data": [], "last_update": 0}
@@ -119,6 +136,7 @@ def coklu_piyasa_verilerini_cek():
     live_data = get_live_binance_data()
     piyasa_verileri = []
     binance_dict = {item['symbol']: item for item in live_data}
+    
     for coin in COINLER:
         symbol_usdt = f"{coin}USDT"
         if symbol_usdt in binance_dict:
@@ -130,8 +148,29 @@ def coklu_piyasa_verilerini_cek():
             fiyat = 1.0 if coin in ["USDT", "USDC", "DAI"] else 0.0
             degisim = 0.0
             hacim = 0.0
-        yon = "LONG 🟢" if degisim > 2.0 else "SHORT 🔴" if degisim < -2.0 else "YATAY 🟡"
-        piyasa_verileri.append({"sembol": coin, "fiyat": fiyat, "degisim": degisim, "hacim": hacim, "ai_yon": yon, "ai_yorum": random.choice(YORUMLAR)})
+        
+        # %100 GERÇEK VERİYE DAYALI MATEMATİKSEL YORUM SİSTEMİ (Rastgelelik KALDIRILDI)
+        if degisim >= 7.0:
+            yon = "STRONG LONG 🚀"
+            ai_yorum = "Güçlü Trend / Hacim Kırılımı"
+        elif degisim >= 2.0:
+            yon = "LONG 🟢"
+            ai_yorum = "Pozitif İvme"
+        elif degisim <= -7.0:
+            yon = "STRONG SHORT 🩸"
+            ai_yorum = "Sert Düşüş / Destek Kaybı"
+        elif degisim <= -2.0:
+            yon = "SHORT 🔴"
+            ai_yorum = "Negatif Baskı"
+        else:
+            yon = "YATAY 🟡"
+            if hacim > 250:
+                ai_yorum = "Yüksek Hacimli Sıkışma"
+            else:
+                ai_yorum = "Düşük Hacimli Konsolidasyon"
+                
+        piyasa_verileri.append({"sembol": coin, "fiyat": fiyat, "degisim": degisim, "hacim": hacim, "ai_yon": yon, "ai_yorum": ai_yorum})
+    
     piyasa_verileri.sort(key=lambda x: x["hacim"], reverse=True)
     return piyasa_verileri
 
@@ -144,30 +183,12 @@ def gercek_piyasa_verisi_cek():
 def top5_verilerini_cek(zaman="1d"):
     tum_coinler = coklu_piyasa_verilerini_cek()
     hareketli_coinler = [c for c in tum_coinler if c["sembol"] not in ["USDT", "USDC", "DAI"]]
-    carpanlar = {"5m": 0.05, "15m": 0.1, "30m": 0.15, "1h": 0.25, "4h": 0.5, "1d": 1.0}
-    c = carpanlar.get(zaman, 1.0)
-    for coin in hareketli_coinler:
-        gercek_degisim = coin["degisim"]
-        if zaman != "1d":
-            gurultu = random.uniform(-0.8, 0.8) if c < 0.2 else random.uniform(-2.0, 2.0)
-            coin["degisim"] = round((gercek_degisim * c) + gurultu, 2)
-        else:
-            coin["degisim"] = round(gercek_degisim, 2)
     sirali = sorted(hareketli_coinler, key=lambda x: x['degisim'])
     return {"yukselenler": list(reversed(sirali[-5:])), "dusenler": sirali[:5]}
 
 def isiharitasi_verilerini_cek(zaman="1d"):
     tum_coinler = coklu_piyasa_verilerini_cek()
     hareketli_coinler = [c for c in tum_coinler if c["sembol"] not in ["USDT", "USDC", "DAI"]]
-    carpanlar = {"5m": 0.05, "15m": 0.1, "30m": 0.15, "1h": 0.25, "4h": 0.5, "1d": 1.0}
-    c = carpanlar.get(zaman, 1.0)
-    for coin in hareketli_coinler:
-        gercek_degisim = coin["degisim"]
-        if zaman != "1d":
-            gurultu = random.uniform(-0.8, 0.8) if c < 0.2 else random.uniform(-2.0, 2.0)
-            coin["degisim"] = round((gercek_degisim * c) + gurultu, 2)
-        else:
-            coin["degisim"] = round(gercek_degisim, 2)
     return sorted(hareketli_coinler, key=lambda x: x['hacim'], reverse=True)
 
 # ==========================================
@@ -185,10 +206,10 @@ def ai_haber_analizi(metin):
     metin_kucuk = metin.lower()
     yuksek_onemli = ["sec", "etf", "onay", "yasadışı", "faiz", "enflasyon", "kara para", "hack", "çöküş", "iflas", "yasak", "dava"]
     onemli = ["güncelleme", "ortaklık", "listeleme", "ağ", "balina", "transfer", "entegrasyon", "yakım"]
-    if any(kelime in metin_kucuk for kelime in yuksek_onemli): onem, onem_renk, kaldirac = "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "5x - 10x İzole"
-    elif any(kelime in metin_kucuk for kelime in onemli): onem, onem_renk, kaldirac = "ÖNEMLİ ⚠️", "#F59E0B", "10x - 20x İzole"
-    else: onem, onem_renk, kaldirac = "STANDART ℹ️", "#3B82F6", "20x - 50x Çapraz"
-    return onem, onem_renk, "LONG 🟢", "#10B981", kaldirac, "Piyasa analizi güncel."
+    if any(kelime in metin_kucuk for kelime in yuksek_onemli): onem, onem_renk, kaldirac = "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "Temel Analiz: Yüksek Volatilite Beklentisi"
+    elif any(kelime in metin_kucuk for kelime in onemli): onem, onem_renk, kaldirac = "ÖNEMLİ ⚠️", "#F59E0B", "Temel Analiz: Orta Volatilite Beklentisi"
+    else: onem, onem_renk, kaldirac = "STANDART ℹ️", "#3B82F6", "Temel Analiz: Olağan Akış"
+    return onem, onem_renk, "GERÇEK ZAMANLI 🟢", "#10B981", kaldirac, "Piyasa analizi güncel."
 
 def son_dakika_haberlerini_cek():
     now = time.time()
@@ -210,7 +231,7 @@ def son_dakika_haberlerini_cek():
         haberler_cache["last_update"] = now
         return haberler
     except:
-        return [{"baslik": "Bitcoin Analizi", "ozet": "Piyasa kırılım bekliyor.", "kaynak": "AI", "url": "#", "zaman": "Şimdi", "onem": "ÖNEMLİ ⚠️", "onem_renk": "#F59E0B", "yon": "LONG 🟢", "yon_renk": "#10B981", "kaldirac": "10x", "ai_yorum": "İşlem aranabilir."}]
+        return [{"baslik": "Veri Çekiliyor...", "ozet": "Haber akışı güncelleniyor.", "kaynak": "Sistem", "url": "#", "zaman": "Şimdi", "onem": "BEKLEYİN", "onem_renk": "#6B7280", "yon": "YÜKLENİYOR", "yon_renk": "#6B7280", "kaldirac": "-", "ai_yorum": "İletişim kuruluyor."}]
 
 def uclu_ai_birlesik_yanit(mesaj: str):
     mesaj_k = mesaj.lower()
@@ -219,12 +240,12 @@ def uclu_ai_birlesik_yanit(mesaj: str):
     if any(k in mesaj_k for k in ["selam", "merhaba", "hi", "naber", "günaydın"]):
         return f"Merhaba Patron! Q-AI Terminal Çekirdek Sistemi tam kapasiteyle emrinizde. Şu an Bitcoin (BTC) anlık olarak **${btc_fiyat:,.2f}** seviyesinde işlem görüyor."
     elif "btc" in mesaj_k or "bitcoin" in mesaj_k:
-        return f"👑 **Q-AI Kurumsal Piyasa Raporu: Bitcoin (BTC)**\n\n• **Anlık Fiyat:** ${btc_fiyat:,.2f}\n• **Teknik Görünüm:** MACD histogramı pozitif. 64,200$ destek çalışıyor.\n• **Temel Analiz:** Borsalardaki rezerv çıkışları arz sıkışması yaratıyor."
+        return f"👑 **Q-AI Kurumsal Piyasa Raporu: Bitcoin (BTC)**\n\n• **Anlık Fiyat:** ${btc_fiyat:,.2f}\n• **Sistem Notu:** Ekrandaki tüm veriler Binance API'sinden gelen filtrelenmemiş, gerçek verilerdir."
     else:
-        return f"🔍 **Q-AI Değerlendirmesi:** '{mesaj}' talebiniz incelendi. Bitcoin **${btc_fiyat:,.2f}** seviyesindeyken risk/ödül oranına dikkat edilmelidir."
+        return f"🔍 **Q-AI Değerlendirmesi:** '{mesaj}' talebiniz incelendi. İşlemlerinizi Binance üzerinden manuel yaparken Terminal verilerini referans alabilirsiniz."
 
 # ==========================================
-# 4. JSON API UÇ NOKTALARI & SPOTIFY
+# 4. JSON API UÇ NOKTALARI 
 # ==========================================
 @app.get("/api/piyasa")
 async def api_piyasa(): return JSONResponse(content=coklu_piyasa_verilerini_cek())
@@ -250,14 +271,14 @@ async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
 @app.post("/api/cuzdan/spot")
 async def api_cuzdan_spot_post(req: SpotVarlikRequest):
     spot_varliklar.append({"borsa": req.borsa, "bakiye": req.bakiye, "detay": req.detay if req.detay else "Detay girilmedi"})
-    veritabani_kaydet() # Kayıt işlemi
+    veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili"})
 
 @app.delete("/api/cuzdan/spot/{index}")
 async def api_cuzdan_spot_delete(index: int):
     if 0 <= index < len(spot_varliklar): 
         spot_varliklar.pop(index)
-        veritabani_kaydet() # Silme sonrası kayıt
+        veritabani_kaydet()
     return JSONResponse(content={"durum": "silindi"})
 
 @app.get("/api/cuzdan/vadeli")
@@ -268,16 +289,16 @@ async def api_cuzdan_vadeli_post(req: VadeliPozisyonRequest):
     coin = req.coin.upper()
     yon = req.yon
     kaldirac = req.kaldirac
-    ai_yorum = f"Q-AI Analizi: {coin} için {kaldirac} kaldıraçlı {yon} pozisyonu sisteme kaydedildi. Algoritmalar mevcut destek seviyesinde tutunma ihtimalini %74 olarak hesaplıyor."
+    ai_yorum = f"Terminal Kaydı: {coin} / {kaldirac}X {yon}. Bu işlem borsaya iletilmemiş, manuel takibiniz için panoya kaydedilmiştir."
     aktif_pozisyonlar.append({"coin": coin, "kaldirac": kaldirac, "yon": yon, "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M"), "ai_yorum": ai_yorum})
-    veritabani_kaydet() # Kayıt işlemi
+    veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili"})
 
 @app.delete("/api/cuzdan/vadeli/{index}")
 async def api_cuzdan_vadeli_delete(index: int):
     if 0 <= index < len(aktif_pozisyonlar): 
         aktif_pozisyonlar.pop(index)
-        veritabani_kaydet() # Silme sonrası kayıt
+        veritabani_kaydet()
     return JSONResponse(content={"durum": "silindi"})
 
 # --- SPOTIFY API NOKTALARI ---
@@ -385,4 +406,4 @@ async def sayfa_yonlendir(request: Request, sayfa_adi: str):
     except: return templates.TemplateResponse(request=request, name="yapim_asamasinda.html", context={"request": request, "sayfa": sayfa_adi.upper()})
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)   
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
