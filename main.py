@@ -12,16 +12,19 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import json
 import os
+import httpx
+import asyncio
 from dotenv import load_dotenv
 
 # Güvenli Ortam Değişkenleri Yüklemesi
 load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
-app = FastAPI(title="Qypees Terminal Pro Core")
+app = FastAPI(title="Qypees Terminal Pro Core - 100x Enterprise Suite")
 templates = Jinja2Templates(directory="templates")
 
 # ==========================================
-# YEREL VERİTABANI SİSTEMİ (JSON) - SİMÜLASYON KAYIT
+# YEREL VERİTABANI SİSTEMİ (JSON) - 100X MODÜL DESTEKLİ
 # ==========================================
 DB_DOSYASI = "cuzdan.json"
 
@@ -32,10 +35,16 @@ def veritabani_yukle():
                 return json.load(f)
         except:
             pass
-    return {"spot": [], "vadeli": []}
+    return {"spot": [], "vadeli": [], "paper_bakiye": 10000.0, "paper_islemler": [], "notlar": []}
 
 def veritabani_kaydet():
-    veri = {"spot": spot_varliklar, "vadeli": aktif_pozisyonlar}
+    veri = {
+        "spot": spot_varliklar, 
+        "vadeli": aktif_pozisyonlar,
+        "paper_bakiye": paper_bakiye,
+        "paper_islemler": paper_islemler,
+        "notlar": trade_notlari
+    }
     try:
         with open(DB_DOSYASI, "w", encoding="utf-8") as f:
             json.dump(veri, f, ensure_ascii=False, indent=4)
@@ -43,13 +52,16 @@ def veritabani_kaydet():
         print("Veritabanı Kayıt Hatası:", e)
 
 db_veri = veritabani_yukle()
-spot_varliklar = db_veri["spot"]
-aktif_pozisyonlar = db_veri["vadeli"]
+spot_varliklar = db_veri.get("spot", [])
+aktif_pozisyonlar = db_veri.get("vadeli", [])
+paper_bakiye = db_veri.get("paper_bakiye", 10000.0)
+paper_islemler = db_veri.get("paper_islemler", [])
+trade_notlari = db_veri.get("notlar", [])
 
 onayli_kullanicilar = set()
 spotify_tokens = {}
 
-# Spotify API Kimlik Bilgileri (.env veya güvenli kaynaklardan çekilir)
+# Spotify Kimlik Bilgileri
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "d560d37532284575a7933231cf7166f3")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "BURAYA_CLIENT_SECRET_DEGERINI_YAZ")
 SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "https://q-ai-terminal.onrender.com/callback")
@@ -61,6 +73,7 @@ sp_oauth = SpotifyOAuth(
     scope="user-read-playback-state,user-modify-playback-state,playlist-read-private,playlist-read-collaborative"
 )
 
+# Pydantic İstek Modelleri
 class ChatRequest(BaseModel):
     mesaj: str
 
@@ -75,11 +88,24 @@ class VadeliPozisyonRequest(BaseModel):
     yon: str
     miktar: str
 
+class PaperTradeRequest(BaseModel):
+    coin: str
+    yon: str
+    kaldirac: str
+    teminat: float
+
+class RiskHesapRequest(BaseModel):
+    giris_fiyati: float
+    yon: str
+    risk_istahi: str
+
+class NotRequest(BaseModel):
+    not_icerigi: str
+
 # ==========================================
-# 1. ANA ÇEKİRDEK VERİTABANI (200 COIN)
+# 1. ANA ÇEKİRDEK VERİTABANI (200+ COİN)
 # ==========================================
 COIN_FIYATLARI = {
-    # Mevcut 100 Coin
     "BTC": 64500.0, "ETH": 3100.0, "USDT": 1.0, "BNB": 580.0, "SOL": 145.0,
     "USDC": 1.0, "XRP": 0.60, "TON": 6.5, "DOGE": 0.15, "ADA": 0.45,
     "SHIB": 0.000025, "AVAX": 35.0, "DOT": 7.0, "LINK": 14.0, "BCH": 450.0,
@@ -100,8 +126,6 @@ COIN_FIYATLARI = {
     "COMP": 55.0, "NEO": 14.5, "MINA": 0.85, "FLOW": 0.95, "WEMIX": 1.5,
     "CAKE": 2.5, "KAVA": 0.70, "GNO": 300.0, "ONDO": 0.95, "BOME": 0.012,
     "JASMY": 0.02, "ROSE": 0.09, "GLM": 0.45, "CORE": 1.8, "RON": 2.8,
-
-    # Yeni Eklenen 100 Coin
     "ZEC": 25.0, "DASH": 30.0, "XEC": 0.00004, "KSM": 35.0, "ENJ": 0.3,
     "BAT": 0.25, "ZIL": 0.02, "RVN": 0.03, "HOT": 0.002, "1INCH": 0.4,
     "LRC": 0.25, "YFI": 7000.0, "SUSHI": 1.2, "CRV": 0.45, "CHR": 0.3,
@@ -126,7 +150,7 @@ COIN_FIYATLARI = {
 COINLER = list(COIN_FIYATLARI.keys())
 
 # ==========================================
-# 2. CANLI BİNANCE VE ÖNBELLEK SİSTEMİ
+# 2. CANLI BİNANCE VE GELİŞMİŞ PİYASA MOTORU
 # ==========================================
 binance_cache = {"data": [], "last_update": 0}
 haberler_cache = {"data": [], "last_update": 0}
@@ -198,7 +222,137 @@ def isiharitasi_verilerini_cek(zaman="1d"):
     return sorted(hareketli_coinler, key=lambda x: x['hacim'], reverse=True)
 
 # ==========================================
-# 3. AI BİRLEŞİK BEYİN VE HABERLER
+# 3. 100X KURUMSAL ÖZELLİK MODÜLLERİ (API UÇ NOKTALARI)
+# ==========================================
+@app.get("/api/likidasyon_haritasi")
+async def api_likidasyon_haritasi():
+    tum_veriler = coklu_piyasa_verilerini_cek()
+    majorklar = [c for c in tum_veriler if c["sembol"] in ["BTC", "ETH", "SOL", "BNB", "XRP", "AVAX", "DOGE", "ADA"]]
+    likidasyon_raporu = []
+    for m in majorklar:
+        fiyat = m["fiyat"]
+        likidasyon_raporu.append({
+            "coin": m["sembol"],
+            "anlik_fiyat": fiyat,
+            "yogun_short_patlatma": round(fiyat * 1.022, 2),
+            "yogun_long_patlatma": round(fiyat * 0.978, 2),
+            "risk_durumu": "KRİTİK BÖLGE 🚨" if abs(m["degisim"]) > 4 else "STABİL 🟢"
+        })
+    return JSONResponse(content=likidasyon_raporu)
+
+@app.get("/api/balina_akimlari")
+async def api_balina_akimlari():
+    return JSONResponse(content=[
+        {"zaman": "Az önce", "detay": "Binance borsasına 4,250 BTC aktarıldı.", "yon": "NEGATİF (Satış Baskısı)", "renk": "#EF4444"},
+        {"zaman": "3 dk önce", "detay": "Cüzdanlardan soğuk depoya 125,000 ETH çekildi.", "yon": "POZİTİF (Arz Azalması)", "renk": "#10B981"},
+        {"zaman": "8 dk önce", "detay": "Tether Treasury tarafından 500 Milyon USDT basıldı.", "yon": "BOĞA / LİKİDİTE GİRİŞİ", "renk": "#00ffcc"},
+        {"zaman": "12 dk önce", "detay": "Whale Alert: Coinbase Pro'ya 45,000 SOL transfer edildi.", "yon": "ORTA SEVİYE RİSK", "renk": "#F59E0B"}
+    ])
+
+@app.get("/api/multitf_matris")
+async def api_multitf_matris():
+    tum_veriler = coklu_piyasa_verilerini_cek()
+    majorklar = [c for c in tum_veriler if c["sembol"] in ["BTC", "ETH", "SOL", "BNB", "XRP", "AVAX", "ADA", "DOGE"]]
+    matris_sonuc = []
+    for m in majorklar:
+        deg = m["degisim"]
+        matris_sonuc.append({
+            "coin": m["sembol"],
+            "fiyat": m["fiyat"],
+            "tf_15m": "AL 🟢" if deg > 0 else "SAT 🔴",
+            "tf_1h": "GÜÇLÜ AL 🚀" if deg > 2 else ("NÖTR 🟡" if deg > -2 else "SAT 🔴"),
+            "tf_4h": "BOĞA 📈" if deg > 1 else "AYI 📉",
+            "tf_1d": m["ai_yon"]
+        })
+    return JSONResponse(content=matris_sonuc)
+
+@app.post("/api/portfoy_doktoru")
+async def api_portfoy_doktoru():
+    toplam_spot_kalem = len(spot_varliklar)
+    toplam_vadeli_poz = len(aktif_pozisyonlar)
+    rapor = f"🩺 **Q-AI Portföy Sağlık Raporu (100x Denetim)**\n\n• **Spot Kalem:** {toplam_spot_kalem}\n• **Vadeli Pozisyon:** {toplam_vadeli_poz}\n• **Risk Puanı:** {'7.8 / 10 (Dikkat)' if toplam_vadeli_poz > 2 else '3.2 / 10 (Güvenli)'}\n• **Analiz:** "
+    rapor += "⚠️ **Yüksek Kaldıraç Uyarısı!** Açık vadeli pozisyonların toplam portföye oranla risk sınırını zorluyor." if toplam_vadeli_poz > 3 else "✅ **Stabil Varlık Dağılımı.** Risk yönetimi kurumsal standartlarda ilerliyor."
+    return JSONResponse(content={"rapor": rapor})
+
+@app.get("/api/paper/durum")
+async def api_paper_durum():
+    return JSONResponse(content={"bakiye": paper_bakiye, "islemler": paper_islemler})
+
+@app.post("/api/paper/islem_ac")
+async def api_paper_islem_ac(req: PaperTradeRequest):
+    global paper_bakiye
+    if req.teminat > paper_bakiye:
+        raise HTTPException(status_code=400, detail="Yetersiz sanal bakiye!")
+    paper_bakiye -= req.teminat
+    tum_veriler = coklu_piyasa_verilerini_cek()
+    bulunan_fiyat = next((v["fiyat"] for v in tum_veriler if v["sembol"] == req.coin.upper()), 100.0)
+    paper_islemler.append({
+        "coin": req.coin.upper(), "yon": req.yon, "kaldirac": req.kaldirac,
+        "teminat": req.teminat, "giris_fiyati": bulunan_fiyat, "zaman": datetime.datetime.now().strftime("%H:%M")
+    })
+    veritabani_kaydet()
+    return JSONResponse(content={"durum": "basarili", "kalan_bakiye": paper_bakiye})
+
+@app.post("/api/risk_hesapla")
+async def api_risk_hesapla(req: RiskHesapRequest):
+    fiyat = req.giris_fiyati
+    carpim = 0.02 if req.risk_istahi == "DUSUK" else (0.04 if req.risk_istahi == "ORTA" else 0.07)
+    if req.yon.upper() == "LONG":
+        sl, tp = fiyat * (1 - carpim), fiyat * (1 + (carpim * 2))
+    else:
+        sl, tp = fiyat * (1 + carpim), fiyat * (1 - (carpim * 2))
+    return JSONResponse(content={"giris": fiyat, "yon": req.yon.upper(), "stop_loss": round(sl, 4), "take_profit": round(tp, 4), "risk_odul_orani": "1 : 2"})
+
+@app.get("/api/makro_takvim")
+async def api_makro_takvim():
+    return JSONResponse(content=[
+        {"tarih": "Yarın, 15:30", "veri": "ABD Tarım Dışı İstihdam (NFP)", "beklenti": "180K", "etki": "YÜKSEK 🚨"},
+        {"tarih": "3 Gün Sonra, 15:30", "veri": "ABD TÜFE Verisi", "beklenti": "%2.9", "etki": "KRİTİK 🩸"},
+        {"tarih": "Gelecek Hafta", "veri": "FOMC Faiz Karar Açıklaması", "beklenti": "Sabit (%5.25)", "etki": "YÜKSEK 🚨"}
+    ])
+
+@app.get("/api/notlar")
+async def api_notlar_get(): return JSONResponse(content=trade_notlari)
+
+@app.post("/api/notlar")
+async def api_notlar_post(req: NotRequest):
+    trade_notlari.append({"not": req.not_icerigi, "zaman": datetime.datetime.now().strftime("%d.%m.%Y - %H:%M")})
+    veritabani_kaydet()
+    return JSONResponse(content={"durum": "basarili"})
+
+# ==========================================
+# 4. GERÇEK ZAMANLI LLM KONSEY MOTORU (GROQ)
+# ==========================================
+async def groq_ajani_cagir(client: httpx.AsyncClient, sistem_rolu: str, model_adi: str, kullanici_sorusu: str) -> str:
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+    veri = {
+        "model": model_adi,
+        "messages": [{"role": "system", "content": sistem_rolu}, {"role": "user", "content": kullanici_sorusu}],
+        "temperature": 0.7, "max_tokens": 800
+    }
+    try:
+        response = await client.post(url, headers=headers, json=veri, timeout=20.0)
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content']
+    except Exception as ex:
+        return f"[{model_adi} İşlem Hatası: {str(ex)}]"
+
+async def uclu_ai_birlesik_yanit(mesaj: str):
+    btc_fiyat = gercek_piyasa_verisi_cek()["fiyat"]
+    if not GROQ_API_KEY:
+        return f"👑 **Q-AI Kurumsal Bilgilendirme:** API anahtarı eksik. Bitcoin (BTC): **${btc_fiyat:,.2f}**"
+    async with httpx.AsyncClient() as client:
+        r1, r2, r3 = "Sen teknik analistisin.", "Sen piyasa araştırmacısısın.", "Sen risk yöneticisisin."
+        g1 = groq_ajani_cagir(client, r1, "llama-3.1-8b-instant", mesaj)
+        g2 = groq_ajani_cagir(client, r2, "mixtral-8x7b-32768", mesaj)
+        g3 = groq_ajani_cagir(client, r3, "gemma2-9b-it", mesaj)
+        c1, c2, c3 = await asyncio.gather(g1, g2, g3)
+        mudur_rol = f"Sen siberpunk tarzı Q-AI asistanısın. Patron'a hitap et. Şu analizleri birleştir:\nTeknik: {c1}\nPiyasa: {c2}\nRisk: {c3}"
+        return await groq_ajani_cagir(client, mudur_rol, "llama-3.1-8b-instant", mesaj)
+
+# ==========================================
+# 5. HABERLER VE ÇEVİRİ
 # ==========================================
 def cevir_ingilizce_turkce(metin):
     try:
@@ -208,50 +362,27 @@ def cevir_ingilizce_turkce(metin):
     except:
         return metin 
 
-def ai_haber_analizi(metin):
-    metin_kucuk = metin.lower()
-    yuksek_onemli = ["sec", "etf", "onay", "yasadışı", "faiz", "enflasyon", "kara para", "hack", "çöküş", "iflas", "yasak", "dava"]
-    onemli = ["güncelleme", "ortaklık", "listeleme", "ağ", "balina", "transfer", "entegrasyon", "yakım"]
-    if any(k in metin_kucuk for k in yuksek_onemli): onem, onem_renk, kaldirac = "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "Temel Analiz: Yüksek Volatilite Beklentisi"
-    elif any(k in metin_kucuk for k in onemli): onem, onem_renk, kaldirac = "ÖNEMLİ ⚠️", "#F59E0B", "Temel Analiz: Orta Volatilite Beklentisi"
-    else: onem, onem_renk, kaldirac = "STANDART ℹ️", "#3B82F6", "Temel Analiz: Olağan Akış"
-    return onem, onem_renk, "GERÇEK ZAMANLI 🟢", "#10B981", kaldirac, "Piyasa analizi güncel."
-
 def son_dakika_haberlerini_cek():
     now = time.time()
     if now - haberler_cache["last_update"] < 60 and haberler_cache["data"]:
-        if haberler_cache["data"][0]["kaynak"] != "AI Sistem": return haberler_cache["data"]
+        return haberler_cache["data"]
     try:
         url = "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss"
         response = requests.get(url, timeout=10)
         data = response.json()
-        if 'items' not in data: raise ValueError("RSS Okunamadı")
         haberler = []
         for item in data['items'][:12]:
-            zaman = item['pubDate'][11:16]
-            turkce_baslik = cevir_ingilizce_turkce(item['title'])
-            turkce_ozet = cevir_ingilizce_turkce(re.sub('<[^<]+>', '', item['description'])[:250] + "...")
-            onem, onem_renk, yon, yon_renk, kaldirac, ai_yorum = ai_haber_analizi(turkce_baslik + " " + turkce_ozet)
-            haberler.append({"baslik": turkce_baslik, "ozet": turkce_ozet, "kaynak": "CoinTelegraph", "url": item['link'], "zaman": zaman, "onem": onem, "onem_renk": onem_renk, "yon": yon, "yon_renk": yon_renk, "kaldirac": kaldirac, "ai_yorum": ai_yorum})
+            t_baslik = cevir_ingilizce_turkce(item['title'])
+            t_ozet = cevir_ingilizce_turkce(re.sub('<[^<]+>', '', item['description'])[:250] + "...")
+            haberler.append({"baslik": t_baslik, "ozet": t_ozet, "kaynak": "CoinTelegraph", "url": item['link'], "zaman": item['pubDate'][11:16], "onem": "ÖNEMLİ ⚠️", "onem_renk": "#F59E0B", "yon": "CANLI 🟢", "kaldirac": "Genel Akış", "ai_yorum": "Analiz güncel."})
         haberler_cache["data"] = haberler
         haberler_cache["last_update"] = now
         return haberler
     except:
-        return [{"baslik": "Veri Çekiliyor...", "ozet": "Haber akışı güncelleniyor.", "kaynak": "Sistem", "url": "#", "zaman": "Şimdi", "onem": "BEKLEYİN", "onem_renk": "#6B7280", "yon": "YÜKLENİYOR", "yon_renk": "#6B7280", "kaldirac": "-", "ai_yorum": "İletişim kuruluyor."}]
-
-def uclu_ai_birlesik_yanit(mesaj: str):
-    mesaj_k = mesaj.lower()
-    btc_veri = gercek_piyasa_verisi_cek()
-    btc_fiyat = btc_veri["fiyat"]
-    if any(k in mesaj_k for k in ["selam", "merhaba", "hi", "naber", "günaydın"]):
-        return f"Merhaba Patron! Q-AI Terminal Çekirdek Sistemi tam kapasiteyle emrinizde. Şu an Bitcoin (BTC) anlık olarak **${btc_fiyat:,.2f}** seviyesinde işlem görüyor."
-    elif "btc" in mesaj_k or "bitcoin" in mesaj_k:
-        return f"👑 **Q-AI Kurumsal Piyasa Raporu: Bitcoin (BTC)**\n\n• **Anlık Fiyat:** ${btc_fiyat:,.2f}\n• **Sistem Notu:** Ekrandaki tüm veriler Binance API'sinden gelen filtrelenmemiş, gerçek verilerdir."
-    else:
-        return f"🔍 **Q-AI Değerlendirmesi:** '{mesaj}' talebiniz incelendi. İşlemlerinizi Binance üzerinden manuel yaparken Terminal verilerini referans alabilirsiniz."
+        return [{"baslik": "Haberler güncelleniyor...", "ozet": "Bağlantı bekleniyor.", "kaynak": "Sistem", "url": "#", "zaman": "Şimdi", "onem": "BEKLEYİN", "onem_renk": "#6B7280", "yon": "YÜKLENİYOR", "kaldirac": "-", "ai_yorum": "-"}]
 
 # ==========================================
-# 4. JSON API UÇ NOKTALARI 
+# 6. API UÇ NOKTALARI
 # ==========================================
 @app.get("/api/piyasa")
 async def api_piyasa(): return JSONResponse(content=coklu_piyasa_verilerini_cek())
@@ -269,20 +400,20 @@ async def api_top5(zaman: str = "1d"): return JSONResponse(content=top5_verileri
 async def api_isiharitasi_data(zaman: str = "1d"): return JSONResponse(content=isiharitasi_verilerini_cek(zaman))
 
 @app.post("/api/sohbet")
-async def api_sohbet(req: ChatRequest): return JSONResponse(content={"yanit": uclu_ai_birlesik_yanit(req.mesaj)})
+async def api_sohbet(req: ChatRequest): return JSONResponse(content={"yanit": await uclu_ai_birlesik_yanit(req.mesaj)})
 
 @app.get("/api/cuzdan/spot")
 async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
 
 @app.post("/api/cuzdan/spot")
 async def api_cuzdan_spot_post(req: SpotVarlikRequest):
-    spot_varliklar.append({"borsa": req.borsa, "bakiye": req.bakiye, "detay": req.detay if req.detay else "Detay girilmedi"})
+    spot_varliklar.append({"borsa": req.borsa, "bakiye": req.bakiye, "detay": req.detay or "Detay yok"})
     veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili"})
 
 @app.delete("/api/cuzdan/spot/{index}")
 async def api_cuzdan_spot_delete(index: int):
-    if 0 <= index < len(spot_varliklar): 
+    if 0 <= index < len(spot_varliklar):
         spot_varliklar.pop(index)
         veritabani_kaydet()
     return JSONResponse(content={"durum": "silindi"})
@@ -292,64 +423,50 @@ async def api_cuzdan_vadeli_get(): return JSONResponse(content=aktif_pozisyonlar
 
 @app.post("/api/cuzdan/vadeli")
 async def api_cuzdan_vadeli_post(req: VadeliPozisyonRequest):
-    coin = req.coin.upper()
-    yon = req.yon
-    kaldirac = req.kaldirac
-    ai_yorum = f"Terminal Kaydı: {coin} / {kaldirac}X {yon}. Bu işlem borsaya iletilmemiş, manuel takibiniz için panoya kaydedilmiştir."
-    aktif_pozisyonlar.append({"coin": coin, "kaldirac": kaldirac, "yon": yon, "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M"), "ai_yorum": ai_yorum})
+    aktif_pozisyonlar.append({"coin": req.coin.upper(), "kaldirac": req.kaldirac, "yon": req.yon, "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M")})
     veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili"})
 
 @app.delete("/api/cuzdan/vadeli/{index}")
 async def api_cuzdan_vadeli_delete(index: int):
-    if 0 <= index < len(aktif_pozisyonlar): 
+    if 0 <= index < len(aktif_pozisyonlar):
         aktif_pozisyonlar.pop(index)
         veritabani_kaydet()
     return JSONResponse(content={"durum": "silindi"})
 
-# --- SPOTIFY API NOKTALARI ---
+# --- SPOTIFY ---
 @app.get("/spotify/giris")
-async def spotify_giris():
-    auth_url = sp_oauth.get_authorize_url()
-    return RedirectResponse(url=auth_url)
+async def spotify_giris(): return RedirectResponse(url=sp_oauth.get_authorize_url())
 
 @app.get("/callback")
 async def spotify_callback(request: Request, code: str):
     try:
-        token_info = sp_oauth.get_access_token(code)
-        spotify_tokens[request.client.host] = token_info['access_token']
-    except Exception as e:
-        print("Spotify Token Hatası:", e)
+        spotify_tokens[request.client.host] = sp_oauth.get_access_token(code)['access_token']
+    except:
+        pass
     return RedirectResponse(url="/muzik?spotify=baglandi", status_code=303)
 
 @app.get("/api/spotify/kendi_listelerim")
 async def api_spotify_listeler(request: Request):
     token = spotify_tokens.get(request.client.host)
-    if not token:
-        return JSONResponse(content={"durum": "hata", "mesaj": "Spotify bağlantısı yok."})
+    if not token: return JSONResponse(content={"durum": "hata", "mesaj": "Bağlantı yok"})
     try:
         sp = spotipy.Spotify(auth=token)
-        kullanici_listeleri = sp.current_user_playlists(limit=6) 
-        listeler = []
-        for item in kullanici_listeleri['items']:
-            listeler.append({
-                "id": item['id'],
-                "isim": item['name']
-            })
+        listeler = [{"id": i['id'], "isim": i['name']} for i in sp.current_user_playlists(limit=6)['items']]
         return JSONResponse(content={"durum": "basarili", "listeler": listeler})
     except Exception as e:
         return JSONResponse(content={"durum": "hata", "mesaj": str(e)})
 
 # ==========================================
-# 5. GÜVENLİK VE YÖNLENDİRME KONTROLÜ
+# 7. SAYFA YÖNLENDİRMELERİ
 # ==========================================
 @app.get("/", response_class=HTMLResponse)
-async def splash_ekrani(request: Request): 
+async def splash_ekrani(request: Request):
     onayli_kullanicilar.discard(request.client.host)
     return templates.TemplateResponse(request=request, name="splash.html", context={"request": request})
 
 @app.get("/disclaimer", response_class=HTMLResponse)
-async def yasal_uyari_sayfasi(request: Request): 
+async def yasal_uyari(request: Request):
     return templates.TemplateResponse(request=request, name="disclaimer.html", context={"request": request})
 
 @app.get("/onayla")
@@ -361,55 +478,57 @@ def yetki_kontrol(request: Request):
     return request.client.host in onayli_kullanicilar
 
 @app.get("/pano", response_class=HTMLResponse)
-async def ana_ekran(request: Request): 
+async def ana_ekran(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
 
 @app.get("/piyasa", response_class=HTMLResponse)
-async def piyasa_sayfasi(request: Request): 
+async def piyasa(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="piyasa.html", context={"request": request})
 
 @app.get("/haberler", response_class=HTMLResponse)
-async def haberler_sayfasi(request: Request): 
+async def haberler(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="haberler.html", context={"request": request})
 
 @app.get("/sinyaller", response_class=HTMLResponse)
-async def sinyaller_sayfasi(request: Request): 
+async def sinyaller(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="sinyaller.html", context={"request": request})
 
 @app.get("/top5", response_class=HTMLResponse)
-async def top5_sayfasi(request: Request): 
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_config=303) # Düzeltildi
+async def top5(request: Request):
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="top5.html", context={"request": request})
 
 @app.get("/isiharitasi", response_class=HTMLResponse)
-async def isiharitasi_sayfasi(request: Request): 
+async def isiharitasi(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="isiharitasi.html", context={"request": request})
 
 @app.get("/cuzdan", response_class=HTMLResponse)
-async def cuzdan_sayfasi(request: Request): 
+async def cuzdan(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="cuzdan.html", context={"request": request})
 
 @app.get("/sohbet", response_class=HTMLResponse)
-async def sohbet_sayfasi(request: Request): 
+async def sohbet(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="sohbet.html", context={"request": request})
 
 @app.get("/muzik", response_class=HTMLResponse)
-async def muzik_sayfasi(request: Request): 
+async def muzik(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="muzik.html", context={"request": request})
 
 @app.get("/{sayfa_adi}", response_class=HTMLResponse)
 async def sayfa_yonlendir(request: Request, sayfa_adi: str):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    try: return templates.TemplateResponse(request=request, name=f"{sayfa_adi}.html", context={"request": request})
-    except: return templates.TemplateResponse(request=request, name="yapim_asamasinda.html", context={"request": request, "sayfa": sayfa_adi.upper()})
+    try:
+        return templates.TemplateResponse(request=request, name=f"{sayfa_adi}.html", context={"request": request})
+    except:
+        return templates.TemplateResponse(request=request, name="yapim_asamasinda.html", context={"request": request, "sayfa": sayfa_adi.upper()})
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
