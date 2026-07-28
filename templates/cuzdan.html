@@ -3,24 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cüzdan Kontrol Merkezi | Q-AI Terminal</title>
+    <title>Cüzdan & Portföy Merkezi | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; overflow-x: hidden; }
-        .glass-panel { background: linear-gradient(135deg, #0A0A0E 0%, #050507 100%); border: 1px solid #1A1A24; border-radius: 16px; transition: all 0.3s ease; }
-        .glass-panel:hover { border-color: var(--hover-color, #00ffcc); transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); }
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; overflow-x: hidden; margin: 0; }
+        
+        /* Zemin Katmanları */
+        .crypto-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
+            z-index: 0; pointer-events: none;
+        }
+        .dot-grid {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            z-index: 1; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; }
+
+        /* Neomorphic Glass Panel */
+        .glass-panel {
+            background: rgba(10, 15, 26, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-btn:hover {
+            transform: translateY(-3px);
+            background: rgba(15, 22, 35, 0.7);
+            border-color: var(--hover-color, rgba(255,255,255,0.2));
+            box-shadow: 0 15px 30px -10px var(--hover-shadow, rgba(0,0,0,0.5));
+        }
+
+        /* Modern Form Inputları */
+        .pro-input {
+            background: rgba(3, 4, 7, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .pro-input:focus {
+            border-color: #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
+            background: rgba(10, 15, 26, 0.8);
+        }
+
+        /* Liste Öğeleri */
+        .list-item {
+            background: rgba(5, 7, 12, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+        }
+        .list-item:hover {
+            background: rgba(10, 15, 26, 0.8);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050507; }
-        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* Sayfa Geçiş Animasyonu */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
 
-    <div class="w-full max-w-[1100px] flex flex-col h-[90vh]">
+    <div class="crypto-bg"></div>
+    <div class="dot-grid"></div>
+
+    <div class="content-layer w-full max-w-[1100px] flex flex-col h-[90vh]">
         
         <!-- Dinamik Görünüm Alanı -->
-        <div id="app-view" class="flex-grow flex flex-col overflow-hidden">
+        <div id="app-view" class="flex-grow flex flex-col overflow-hidden fade-in">
             <!-- JavaScript burayı dolduracak -->
         </div>
 
@@ -44,7 +117,6 @@
         }
 
         async function render() {
-            // Sayfa detayda değilse canlı fiyat döngüsünü durdur
             if (aktifSayfa !== 'detay' && canliFiyatTimer) {
                 clearInterval(canliFiyatTimer);
                 canliFiyatTimer = null;
@@ -53,76 +125,81 @@
             await veriGetir();
             const view = document.getElementById('app-view');
             
+            // Animasyon tetikleyici
+            view.classList.remove('fade-in');
+            void view.offsetWidth; 
+            view.classList.add('fade-in');
+            
             if (aktifSayfa === 'menu') {
                 view.innerHTML = `
-                    <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-800 shrink-0">
-                        <a href="/" class="text-[#00ffcc] hover:underline text-sm font-black flex items-center gap-2">
-                            🏠 ANA PANOYA DÖN
+                    <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0">
+                        <a href="/" class="text-[#00ffcc] hover:text-white transition-colors text-sm font-black flex items-center gap-2 uppercase tracking-widest">
+                            <span class="text-lg">←</span> ANA PANOYA DÖN
                         </a>
-                        <h1 class="text-2xl font-black tracking-widest text-white">CÜZDAN KONTROL MERKEZİ</h1>
+                        <h1 class="text-xl md:text-2xl font-black tracking-[0.15em] text-white">PORTFÖY <span class="text-gray-500">KONTROL</span></h1>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-auto">
                         <!-- Spot Kutu -->
-                        <div onclick="aktifSayfa='spot'; render();" style="--hover-color: #EAB308;" class="glass-panel p-8 cursor-pointer flex flex-col items-center justify-center text-center">
-                            <span class="text-5xl mb-4">💼</span>
-                            <h2 class="text-2xl font-black text-white mb-2">SPOT CÜZDAN</h2>
-                            <p class="text-[#A0A0A5] text-sm">Borsa bakiyeleri, varlık dağılımı ve ekleme / silme işlemleri.</p>
+                        <div onclick="aktifSayfa='spot'; render();" style="--hover-color: rgba(251, 191, 36, 0.5); --hover-shadow: rgba(251, 191, 36, 0.15);" class="glass-panel glass-btn p-10 cursor-pointer flex flex-col items-center justify-center text-center">
+                            <div class="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-4xl mb-6 shadow-[0_0_30px_rgba(251,191,36,0.1)]">💼</div>
+                            <h2 class="text-2xl font-black text-white mb-3 tracking-wide">SPOT CÜZDAN</h2>
+                            <p class="text-gray-400 text-sm font-medium leading-relaxed max-w-xs">Borsa bakiyeleri, uzun vade sepetleri ve manuel varlık yönetimi.</p>
                         </div>
                         
                         <!-- Vadeli Kutu -->
-                        <div onclick="aktifSayfa='vadeli'; render();" style="--hover-color: #00ffcc;" class="glass-panel p-8 cursor-pointer flex flex-col items-center justify-center text-center">
-                            <span class="text-5xl mb-4">🤖</span>
-                            <h2 class="text-2xl font-black text-white mb-2">VADELİ POZİSYONLAR</h2>
-                            <p class="text-[#A0A0A5] text-sm">AI destekli açık işlem takibi, yönetimi ve strateji yorumları.</p>
+                        <div onclick="aktifSayfa='vadeli'; render();" style="--hover-color: rgba(0, 255, 204, 0.5); --hover-shadow: rgba(0, 255, 204, 0.15);" class="glass-panel glass-btn p-10 cursor-pointer flex flex-col items-center justify-center text-center">
+                            <div class="w-20 h-20 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/20 flex items-center justify-center text-4xl mb-6 shadow-[0_0_30px_rgba(0,255,204,0.1)]">🤖</div>
+                            <h2 class="text-2xl font-black text-white mb-3 tracking-wide">VADELİ RADARI</h2>
+                            <p class="text-gray-400 text-sm font-medium leading-relaxed max-w-xs">AI destekli saniyelik PnL takibi, risk yönetimi ve strateji hedefleri.</p>
                         </div>
                     </div>
                 `;
             } 
             else if (aktifSayfa === 'spot') {
                 let listHTML = spotVarliklar.length === 0 ? 
-                    `<p class="text-gray-500 italic p-4">Bakiye bulunmuyor. Sağ üstteki YENİ EKLE butonundan varlık ekleyin.</p>` : '';
+                    `<div class="flex flex-col items-center justify-center h-40 opacity-50"><span class="text-4xl mb-3">📭</span><p class="text-gray-400 text-sm font-bold tracking-widest uppercase">Cüzdan Boş</p></div>` : '';
                 
                 spotVarliklar.forEach((v, i) => {
                     const ikons = {"Binance": "🟨", "OKX": "⬛", "Gate.io": "🟥", "MEXC": "🟩", "KuCoin": "🟦"};
                     const ikon = ikons[v.borsa] || "🪙";
                     listHTML += `
-                        <div class="bg-[#0A0A0E] border border-[#1A1A24] p-5 rounded-xl flex items-center justify-between mb-3">
+                        <div class="list-item p-5 flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
                             <div class="flex items-center gap-4">
-                                <span class="text-2xl">${ikon}</span>
+                                <span class="text-3xl drop-shadow-md">${ikon}</span>
                                 <div>
-                                    <h3 class="font-black text-lg text-white">${v.borsa}</h3>
-                                    <p class="text-gray-400 text-xs">${v.detay}</p>
+                                    <h3 class="font-black text-lg text-white tracking-wide">${v.borsa}</h3>
+                                    <p class="text-gray-400 text-xs mt-0.5 font-medium">${v.detay}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-6">
-                                <span class="font-bold text-lg text-yellow-500">$${v.bakiye}</span>
-                                <button onclick="spotSil(${i})" class="text-red-500 hover:text-red-400 text-sm font-bold">❌ SİL</button>
+                            <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-none border-white/5 pt-3 md:pt-0 mt-2 md:mt-0">
+                                <span class="font-black text-xl text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]">$${v.bakiye}</span>
+                                <button onclick="spotSil(${i})" class="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-lg text-xs font-bold transition-colors">SİL</button>
                             </div>
                         </div>
                     `;
                 });
 
                 view.innerHTML = `
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800 shrink-0">
-                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-sm font-bold flex items-center gap-2">⬅️ Cüzdan Menüsü</button>
-                        <h1 class="text-xl font-black text-yellow-500">💼 SPOT CÜZDAN</h1>
-                        <button onclick="toggleForm()" class="text-yellow-500 hover:underline font-black text-sm">➕ YENİ EKLE</button>
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
+                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 uppercase tracking-wider transition-colors"><span class="text-lg">←</span> Menü</button>
+                        <h1 class="text-lg md:text-xl font-black text-amber-400 tracking-widest drop-shadow-[0_0_15px_rgba(251,191,36,0.2)]">💼 SPOT CÜZDAN</h1>
+                        <button onclick="toggleForm()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-lg font-bold text-xs transition-colors">➕ YENİ</button>
                     </div>
 
                     <!-- Gizli Form -->
-                    <div id="spot-form" class="hidden bg-[#050507] border border-yellow-500 p-5 rounded-xl mb-6 flex flex-col gap-4">
-                        <h3 class="text-yellow-500 font-bold text-sm">YENİ VARLIK EKLE</h3>
-                        <div class="flex flex-col md:flex-row gap-3">
-                            <select id="f-borsa" class="bg-[#0A0A0E] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
+                    <div id="spot-form" class="hidden glass-panel p-6 mb-6 flex flex-col gap-4 border-amber-500/30 shadow-[0_0_30px_rgba(251,191,36,0.05)]">
+                        <h3 class="text-amber-400 font-black text-xs tracking-widest uppercase">Kayıt Ekle</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <select id="f-borsa" class="pro-input">
                                 <option value="Binance">Binance</option><option value="OKX">OKX</option><option value="Gate.io">Gate.io</option><option value="MEXC">MEXC</option><option value="KuCoin">KuCoin</option><option value="Soğuk Cüzdan">Soğuk Cüzdan</option>
                             </select>
-                            <input type="text" id="f-bakiye" placeholder="Miktar ($)" class="bg-[#0A0A0E] border border-gray-700 text-white rounded-lg p-3 text-sm flex-grow focus:outline-none">
-                            <input type="text" id="f-detay" placeholder="İçerik (Örn: 100 USDT, 0.5 SOL)" class="bg-[#0A0A0E] border border-gray-700 text-white rounded-lg p-3 text-sm flex-grow focus:outline-none">
+                            <input type="text" id="f-bakiye" placeholder="Toplam Miktar ($)" class="pro-input">
+                            <input type="text" id="f-detay" placeholder="Detay (Örn: 100 USDT, 0.5 SOL)" class="pro-input">
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="spotEkle()" class="bg-yellow-500 hover:bg-yellow-600 text-black font-black px-6 py-2 rounded-lg text-sm">Kaydet</button>
-                            <button onclick="toggleForm()" class="text-gray-400 hover:text-white px-4 py-2 text-sm">İptal</button>
+                        <div class="flex gap-3 justify-end mt-2">
+                            <button onclick="toggleForm()" class="text-gray-400 hover:text-white px-5 py-2.5 text-xs font-bold transition-colors">İPTAL</button>
+                            <button onclick="spotEkle()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-black px-8 py-2.5 rounded-xl text-xs tracking-wider shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all">KAYDET</button>
                         </div>
                     </div>
 
@@ -131,119 +208,135 @@
             }
             else if (aktifSayfa === 'vadeli') {
                 let pozListHTML = vadeliPozisyonlar.length === 0 ? 
-                    `<p class="text-gray-500 italic p-4">Henüz açık bir pozisyon bulunmuyor.</p>` : '';
+                    `<div class="flex flex-col items-center justify-center h-40 opacity-50"><span class="text-4xl mb-3">📡</span><p class="text-gray-400 text-sm font-bold tracking-widest uppercase">Sinyal Bekleniyor</p></div>` : '';
                 
                 vadeliPozisyonlar.forEach((p, i) => {
-                    const renk = p.yon === 'LONG' ? '#10B981' : '#EF4444';
+                    const renk = p.yon === 'LONG' ? '#00ffcc' : '#EF4444';
+                    const bgGlow = p.yon === 'LONG' ? 'rgba(0,255,204,0.05)' : 'rgba(239,68,68,0.05)';
+                    
                     pozListHTML += `
-                        <div onclick="seciliPozisyon=${i}; aktifSayfa='detay'; render();" class="bg-[#0A0A0E] border p-5 rounded-xl flex items-center justify-between mb-3 cursor-pointer hover:bg-[#111116] transition-colors" style="border-color: ${renk};">
-                            <div>
-                                <h3 class="font-black text-lg text-white">${p.coin} / USDT</h3>
-                                <p class="font-bold text-xs" style="color: ${renk};">${p.kaldirac} | ${p.yon}</p>
+                        <div onclick="seciliPozisyon=${i}; aktifSayfa='detay'; render();" class="list-item p-5 flex items-center justify-between mb-4 cursor-pointer relative overflow-hidden group" style="background: ${bgGlow}; border-left: 4px solid ${renk};">
+                            <div class="relative z-10">
+                                <h3 class="font-black text-xl text-white tracking-wide drop-shadow-md">${p.coin} <span class="text-gray-500 text-sm">/USDT</span></h3>
+                                <p class="font-bold text-xs mt-1 tracking-widest" style="color: ${renk};">${p.kaldirac} | ${p.yon}</p>
                             </div>
-                            <div class="flex items-center gap-6 text-right">
-                                <div>
-                                    <span class="text-gray-500 text-[10px] block uppercase font-bold">Marjin</span>
-                                    <span class="font-bold text-lg text-white">$${p.miktar}</span>
+                            <div class="flex items-center gap-8 text-right relative z-10">
+                                <div class="hidden md:block">
+                                    <span class="text-gray-500 text-[10px] block uppercase font-bold tracking-widest mb-0.5">Marjin</span>
+                                    <span class="font-black text-lg text-white">$${p.miktar}</span>
                                 </div>
-                                <span class="text-gray-500 text-xl">➔</span>
+                                <span class="text-white/20 text-2xl group-hover:text-white group-hover:translate-x-1 transition-all">➔</span>
                             </div>
                         </div>
                     `;
                 });
 
                 view.innerHTML = `
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800 shrink-0">
-                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-sm font-bold flex items-center gap-2">⬅️ Cüzdan Menüsü</button>
-                        <h1 class="text-xl font-black text-[#00ffcc]">🤖 VADELİ İŞLEMLER MERKEZİ</h1>
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
+                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 uppercase tracking-wider transition-colors"><span class="text-lg">←</span> Menü</button>
+                        <h1 class="text-lg md:text-xl font-black text-[#00ffcc] tracking-widest drop-shadow-[0_0_15px_rgba(0,255,204,0.2)]">🤖 VADELİ RADARI</h1>
                     </div>
 
                     <!-- Pozisyon Ekleme Formu -->
-                    <div class="bg-[#0A0A0E] border border-[#1A1A24] p-5 rounded-xl mb-6 flex flex-col gap-4">
-                        <h3 class="text-[#00ffcc] font-bold text-sm">YAPAY ZEKAYA YENİ POZİSYON İŞLET</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                            <input type="text" id="v-coin" placeholder="Coin (Örn: BTC)" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none uppercase">
-                            <select id="v-kaldirac" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
-                                <option value="5x">5x</option><option value="10x">10x</option><option value="20x">20x</option><option value="50x">50x</option>
+                    <div class="glass-panel p-6 mb-8 flex flex-col gap-4 border-[#00ffcc]/30 shadow-[0_0_30px_rgba(0,255,204,0.05)]">
+                        <h3 class="text-[#00ffcc] font-black text-xs tracking-widest uppercase">Yapay Zekaya İşlet (Simülasyon)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <input type="text" id="v-coin" placeholder="COIN (Örn: BTC)" class="pro-input uppercase font-bold">
+                            <select id="v-kaldirac" class="pro-input font-bold">
+                                <option value="5x">5x</option><option value="10x">10x</option><option value="20x">20x</option><option value="50x">50x</option><option value="100x">100x</option>
                             </select>
-                            <select id="v-yon" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
-                                <option value="LONG">LONG</option><option value="SHORT">SHORT</option>
+                            <select id="v-yon" class="pro-input font-bold">
+                                <option value="LONG">LONG (Yükseliş)</option><option value="SHORT">SHORT (Düşüş)</option>
                             </select>
-                            <input type="text" id="v-miktar" placeholder="Miktar ($)" class="bg-[#030304] border border-gray-700 text-white rounded-lg p-3 text-sm focus:outline-none">
+                            <input type="number" id="v-miktar" placeholder="Marjin ($)" class="pro-input font-bold">
                         </div>
-                        <button onclick="vadeliEkle()" class="bg-[#00ffcc] hover:bg-[#00e6b8] text-black font-black py-3 rounded-lg text-sm transition-colors">Yapay Zekaya İşlet</button>
+                        <button onclick="vadeliEkle()" class="mt-2 bg-gradient-to-r from-[#00ffcc] to-[#00b386] hover:from-[#33ffdb] hover:to-[#00ffcc] text-[#030407] font-black py-3.5 rounded-xl text-xs tracking-widest uppercase shadow-[0_0_20px_rgba(0,255,204,0.3)] transition-all">Sisteme Kaydet ve Radarı Başlat</button>
                     </div>
 
-                    <h3 class="text-white font-bold text-sm mb-3">Aktif Pozisyonlarınız (Detaylar İçin Tıklayın):</h3>
+                    <h3 class="text-gray-400 font-bold text-xs tracking-widest uppercase mb-4">Açık Pozisyonlar (Detay için tıkla)</h3>
                     <div class="overflow-y-auto flex-grow pr-2">${pozListHTML}</div>
                 `;
             }
             else if (aktifSayfa === 'detay') {
                 const poz = vadeliPozisyonlar[seciliPozisyon];
-                const renk = poz.yon === 'LONG' ? '#10B981' : '#EF4444';
+                const renk = poz.yon === 'LONG' ? '#00ffcc' : '#EF4444';
+                const shadow = poz.yon === 'LONG' ? 'rgba(0,255,204,0.2)' : 'rgba(239,68,68,0.2)';
 
                 view.innerHTML = `
-                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-800 shrink-0">
-                        <button onclick="aktifSayfa='vadeli'; render();" class="text-gray-400 hover:text-white text-sm font-bold flex items-center gap-2">⬅️ Vadeli İşlemlere Dön</button>
-                        <h1 class="text-xl font-black" style="color: ${renk};">⚡ İŞLEM MERKEZİ: ${poz.coin}</h1>
+                    <div class="flex items-center justify-between mb-5 pb-4 border-b border-white/10 shrink-0">
+                        <button onclick="aktifSayfa='vadeli'; render();" class="text-gray-400 hover:text-white text-xs font-bold flex items-center gap-2 uppercase tracking-wider transition-colors"><span class="text-lg">←</span> Radara Dön</button>
+                        <h1 class="text-xl md:text-2xl font-black tracking-widest uppercase drop-shadow-md" style="color: ${renk}; text-shadow: 0 0 20px ${shadow};">
+                            ⚡ ${poz.coin}
+                        </h1>
                     </div>
 
-                    <div class="overflow-y-auto flex-grow pr-1 flex flex-col gap-4">
+                    <div class="overflow-y-auto flex-grow pr-2 flex flex-col gap-5">
+                        
                         <!-- Üst Özet Barı -->
-                        <div class="bg-[#050507] border p-5 rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-4 text-center shrink-0" style="border-color: ${renk};">
-                            <div><span class="text-gray-500 text-xs block mb-1">YÖN</span><span class="text-xl font-black" style="color: ${renk};">${poz.yon}</span></div>
-                            <div><span class="text-gray-500 text-xs block mb-1">KALDIRAÇ</span><span class="text-xl font-black text-white">${poz.kaldirac}</span></div>
-                            <div><span class="text-gray-500 text-xs block mb-1">MARJİN</span><span class="text-xl font-black text-white">$${poz.miktar}</span></div>
-                            <div><span class="text-gray-500 text-xs block mb-1">GİRİŞ ZAMANI</span><span class="text-base font-bold text-gray-400">${poz.zaman}</span></div>
+                        <div class="glass-panel !rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-4 p-5 text-center shrink-0 border-t-2" style="border-top-color: ${renk};">
+                            <div><span class="text-gray-500 text-[10px] font-bold tracking-widest uppercase block mb-1">Yön</span><span class="text-xl font-black drop-shadow-md" style="color: ${renk};">${poz.yon}</span></div>
+                            <div><span class="text-gray-500 text-[10px] font-bold tracking-widest uppercase block mb-1">Kaldıraç</span><span class="text-xl font-black text-white">${poz.kaldirac}</span></div>
+                            <div><span class="text-gray-500 text-[10px] font-bold tracking-widest uppercase block mb-1">Marjin</span><span class="text-xl font-black text-white">$${poz.miktar}</span></div>
+                            <div><span class="text-gray-500 text-[10px] font-bold tracking-widest uppercase block mb-1">Giriş Saati</span><span class="text-lg font-bold text-gray-400">${poz.zaman}</span></div>
                         </div>
 
-                        <!-- SANİYELİK CANLI TAKİP VE PNL PANELI -->
-                        <div class="bg-[#0A0A0E] border border-gray-800 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-4 text-center items-center shrink-0">
-                            <div>
-                                <span class="text-gray-500 text-xs block mb-1 uppercase font-bold">Anlık Fiyat (Binance)</span>
-                                <span id="canli-fiyat" class="text-2xl font-black text-white">Yükleniyor...</span>
+                        <!-- SANİYELİK CANLI TAKİP VE PNL PANELI (Yüksek Odak) -->
+                        <div class="glass-panel !rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-6 p-6 text-center items-center shrink-0 bg-[#020203]/80 border-white/10 relative overflow-hidden">
+                            <!-- Arka plan hafif radar efekti -->
+                            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0,transparent_100%)] pointer-events-none"></div>
+                            
+                            <div class="relative z-10">
+                                <span class="text-gray-400 text-[10px] font-black tracking-widest uppercase block mb-2">Anlık Fiyat (Binance)</span>
+                                <span id="canli-fiyat" class="text-3xl font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">---</span>
                             </div>
-                            <div>
-                                <span class="text-gray-500 text-xs block mb-1 uppercase font-bold">Anlık Kâr / Zarar ($)</span>
-                                <span id="canli-pnl" class="text-2xl font-black text-gray-400">$0.00</span>
+                            <div class="relative z-10 border-y md:border-y-0 md:border-x border-white/10 py-4 md:py-0">
+                                <span class="text-gray-400 text-[10px] font-black tracking-widest uppercase block mb-2">Net Kâr / Zarar</span>
+                                <span id="canli-pnl" class="text-4xl font-black text-gray-500">$0.00</span>
                             </div>
-                            <div>
-                                <span class="text-gray-500 text-xs block mb-1 uppercase font-bold">Getiri Oranı (%)</span>
-                                <span id="canli-yuzde" class="text-xl font-black text-gray-400">%0.00</span>
+                            <div class="relative z-10">
+                                <span class="text-gray-400 text-[10px] font-black tracking-widest uppercase block mb-2">Özkaynak Getirisi (ROE)</span>
+                                <span id="canli-yuzde" class="text-3xl font-black text-gray-500">%0.00</span>
                             </div>
                         </div>
 
                         <!-- YAPAY ZEKA STOP LOSS & TAKE PROFIT -->
-                        <div class="bg-[#0A0A0E] border border-purple-500/40 p-5 rounded-2xl shrink-0">
-                            <div class="flex items-center gap-2 mb-3"><span class="text-lg">🛡️</span><h3 class="text-purple-400 font-black text-sm">AI RİSK YÖNETİMİ & SEVİYELER</h3></div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="bg-[#050507] border border-red-500/30 p-3 rounded-xl flex items-center justify-center">
-                                    <span class="text-red-400 text-xs font-bold mr-2">STOP-LOSS (Zarar Durdur):</span>
-                                    <span id="ai-sl" class="text-white font-black text-sm">Hesaplanıyor...</span>
+                        <div class="glass-panel !rounded-2xl p-6 shrink-0 border-purple-500/30">
+                            <div class="flex items-center gap-3 mb-4 border-b border-white/5 pb-3">
+                                <span class="text-xl">🛡️</span>
+                                <h3 class="text-purple-400 font-black text-xs tracking-widest uppercase drop-shadow-[0_0_10px_rgba(168,85,247,0.4)]">Algoritmik Risk Seviyeleri</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="bg-[#050507] border border-red-500/20 p-4 rounded-xl flex items-center justify-between">
+                                    <span class="text-red-400/80 text-[10px] font-black tracking-widest uppercase">Zarar Durdur (SL)</span>
+                                    <span id="ai-sl" class="text-white font-black text-base tracking-wide">Hesaplanıyor...</span>
                                 </div>
-                                <div class="bg-[#050507] border border-green-500/30 p-3 rounded-xl flex items-center justify-center">
-                                    <span class="text-green-400 text-xs font-bold mr-2">TAKE-PROFIT (Tepe Hedef):</span>
-                                    <span id="ai-tp" class="text-white font-black text-sm">Hesaplanıyor...</span>
+                                <div class="bg-[#050507] border border-[#00ffcc]/20 p-4 rounded-xl flex items-center justify-between">
+                                    <span class="text-[#00ffcc]/80 text-[10px] font-black tracking-widest uppercase">Tepe Hedef (TP)</span>
+                                    <span id="ai-tp" class="text-white font-black text-base tracking-wide">Hesaplanıyor...</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- ANLIK HABER RADARI -->
-                        <div id="haber-radari" class="bg-[#0A0A0E] border border-blue-500/30 p-5 rounded-2xl shrink-0 hidden">
-                            <div class="flex items-center gap-2 mb-2"><span class="text-lg">📰</span><h3 class="text-blue-400 font-black text-sm">PİYASA HABER RADARI (${poz.coin})</h3></div>
-                            <p id="haber-metni" class="text-gray-300 text-xs leading-relaxed"></p>
+                        <div id="haber-radari" class="glass-panel !rounded-2xl p-5 shrink-0 border-blue-500/30 hidden">
+                            <div class="flex items-center gap-3 mb-2"><span class="text-xl">📰</span><h3 class="text-blue-400 font-black text-xs tracking-widest uppercase">Haber Radarı Eşleşmesi</h3></div>
+                            <p id="haber-metni" class="text-gray-300 text-sm leading-relaxed mt-2"></p>
                         </div>
 
                         <!-- Q-AI STRATEJİ YORUMU -->
-                        <div class="bg-[#0A0A0E] border border-[#00ffcc] p-5 rounded-2xl shadow-[0_0_15px_rgba(0,255,204,0.1)] shrink-0">
-                            <div class="flex items-center gap-2 mb-2"><span class="text-lg">🤖</span><h3 class="text-[#00ffcc] font-black text-sm">Q-AI STRATEJİ YORUMU</h3></div>
-                            <p class="text-gray-300 text-xs italic leading-relaxed">"${poz.ai_yorum}"</p>
+                        <div class="glass-panel !rounded-2xl p-5 shrink-0 border-[#00ffcc]/30 shadow-[0_0_20px_rgba(0,255,204,0.05)] bg-[rgba(0,255,204,0.02)]">
+                            <div class="flex items-center gap-3 mb-2"><span class="text-xl">🧠</span><h3 class="text-[#00ffcc] font-black text-xs tracking-widest uppercase">Sistem Notu</h3></div>
+                            <p class="text-gray-300 text-sm italic leading-relaxed mt-1">"${poz.ai_yorum}"</p>
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-gray-800 bg-[#030304] shrink-0 flex items-center justify-between">
-                        <div class="flex items-center gap-2"><span class="text-gray-500 text-xs">Durum:</span><span class="text-green-500 font-bold text-xs">🟢 Saniyelik Canlı Takipte</span></div>
-                        <button onclick="vadeliSil(${seciliPozisyon})" class="bg-red-500 hover:bg-red-600 text-white font-black px-5 py-2 rounded-lg text-xs">İşlemi Kapat (Sil)</button>
+                    <!-- Alt Kontrol Barı -->
+                    <div class="mt-4 pt-4 border-t border-white/10 shrink-0 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
+                            <span class="text-green-500 font-black tracking-widest text-[10px] uppercase">Radar Aktif</span>
+                        </div>
+                        <button onclick="vadeliSil(${seciliPozisyon})" class="bg-red-500/10 hover:bg-red-500 border border-red-500/30 text-red-500 hover:text-white font-black px-6 py-2.5 rounded-lg text-xs tracking-widest transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]">İŞLEMİ KAPAT (SİL)</button>
                     </div>
                 `;
 
@@ -258,16 +351,14 @@
             
             async function guncelle() {
                 try {
-                    // 1. Binance Canlı Fiyat Çekme
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${coinSembol}`);
                     const data = await res.json();
                     if(!data.price) return;
                     
                     const guncelFiyat = parseFloat(data.price);
                     
-                    // Rastgele veya varsayılan bir giriş fiyatı simüle edelim (veya coinin güncel fiyatının %1 altı/üstü)
-                    // Gerçek bir senaryoda giriş fiyatı pozisyon nesnesine kaydedilebilir, burada anlık değişime göre hesaplıyoruz:
-                    const girisFiyati = guncelFiyat * (poz.yon === 'LONG' ? 0.995 : 1.005);
+                    // Rastgele marjinal simülasyon giriş fiyatı
+                    const girisFiyati = guncelFiyat * (poz.yon === 'LONG' ? 0.998 : 1.002);
                     const kaldiracSayi = parseInt(poz.kaldirac.replace('x', ''));
                     const marjin = parseFloat(poz.miktar);
 
@@ -283,26 +374,29 @@
                     const slEl = document.getElementById('ai-sl');
                     const tpEl = document.getElementById('ai-tp');
 
-                    if(fiyatEl) fiyatEl.innerText = `$${guncelFiyat >= 1 ? guncelFiyat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : guncelFiyat.toFixed(6)}`;
+                    if(fiyatEl) fiyatEl.innerText = `$${guncelFiyat >= 1 ? guncelFiyat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4}) : guncelFiyat.toFixed(6)}`;
                     
                     if(pnlEl && yuzdeEl) {
-                        const renkSinif = pnlDolar >= 0 ? 'text-green-500' : 'text-red-500';
-                        pnlEl.className = `text-2xl font-black ${renkSinif}`;
-                        yuzdeEl.className = `text-xl font-black ${renkSinif}`;
+                        const isProfit = pnlDolar >= 0;
+                        const renkHex = isProfit ? '#00ffcc' : '#EF4444';
                         
-                        pnlEl.innerText = `${pnlDolar >= 0 ? '+' : ''}$${pnlDolar.toFixed(2)}`;
-                        yuzdeEl.innerText = `${pnlYuzde >= 0 ? '+' : ''}${pnlYuzde.toFixed(2)}%`;
+                        pnlEl.style.color = renkHex;
+                        pnlEl.style.textShadow = `0 0 20px ${isProfit ? 'rgba(0,255,204,0.4)' : 'rgba(239,68,68,0.4)'}`;
+                        yuzdeEl.style.color = renkHex;
+                        
+                        pnlEl.innerText = `${isProfit ? '+' : ''}$${pnlDolar.toFixed(2)}`;
+                        yuzdeEl.innerText = `${isProfit ? '+' : ''}${pnlYuzde.toFixed(2)}%`;
                     }
 
-                    // AI Stop-Loss ve Tepe (Take-Profit) Hesaplama
+                    // AI Seviye Hesaplama
                     if(slEl && tpEl) {
                         let slFiyat, tpFiyat;
                         if(poz.yon === 'LONG') {
-                            slFiyat = guncelFiyat * (1 - (0.03 / kaldiracSayi)); // Kaldıraca göre dinamik SL
-                            tpFiyat = guncelFiyat * (1 + (0.06 / kaldiracSayi));
+                            slFiyat = guncelFiyat * (1 - (0.04 / kaldiracSayi)); 
+                            tpFiyat = guncelFiyat * (1 + (0.08 / kaldiracSayi));
                         } else {
-                            slFiyat = guncelFiyat * (1 + (0.03 / kaldiracSayi));
-                            tpFiyat = guncelFiyat * (1 - (0.06 / kaldiracSayi));
+                            slFiyat = guncelFiyat * (1 + (0.04 / kaldiracSayi));
+                            tpFiyat = guncelFiyat * (1 - (0.08 / kaldiracSayi));
                         }
                         slEl.innerText = `$${slFiyat >= 1 ? slFiyat.toFixed(2) : slFiyat.toFixed(6)}`;
                         tpEl.innerText = `$${tpFiyat >= 1 ? tpFiyat.toFixed(2) : tpFiyat.toFixed(6)}`;
@@ -311,15 +405,11 @@
                 } catch(e) {}
             }
 
-            // Anlık bir kez çalıştır, sonra her 1 saniyede bir tetikle
             guncelle();
             canliFiyatTimer = setInterval(guncelle, 1000);
-
-            // Haberleri kontrol et
             haberleriKontrolEt(poz.coin);
         }
 
-        // İlgili Coine Ait Son Dakika Haberlerini Çekme
         async function haberleriKontrolEt(coin) {
             try {
                 const res = await fetch('/api/haberler');
@@ -330,7 +420,7 @@
                 const metinEl = document.getElementById('haber-metni');
                 
                 if(ilgiliHaber && radarEl && metinEl) {
-                    metinEl.innerHTML = `<b>${ilgiliHaber.baslik}</b><br><span class="text-gray-400">${ilgiliHaber.ozet}</span>`;
+                    metinEl.innerHTML = `<span class="font-bold text-white">${ilgiliHaber.baslik}</span><br><span class="text-gray-400 text-xs mt-1 block">${ilgiliHaber.ozet}</span>`;
                     radarEl.classList.remove('hidden');
                 }
             } catch(e) {}
@@ -338,7 +428,12 @@
 
         function toggleForm() {
             const f = document.getElementById('spot-form');
-            f.classList.toggle('hidden');
+            if(f.classList.contains('hidden')) {
+                f.classList.remove('hidden');
+                f.classList.add('fade-in');
+            } else {
+                f.classList.add('hidden');
+            }
         }
 
         async function spotEkle() {
@@ -382,7 +477,7 @@
             render();
         }
 
-        // İlk açılış
+        // Başlangıç
         render();
     </script>
 </body>

@@ -1,13 +1,13 @@
 import flet as ft
 from datetime import datetime
-from ai_signal_page import ai_signal_sayfasi_olustur
+from api_sinyaller import ai_signal_sayfasi_olustur
 from chart_page import grafik_sayfasi_olustur
 from generic_page import genel_sayfa_olustur
 from market_page import piyasa_sayfasi_olustur
 from news_page import haber_sayfasi_olustur
 from top5_page import top5_sayfasi_olustur
 from heatmap_page import isi_haritasi_sayfasi_olustur
-from ai_chat_page import ai_sohbet_sayfasi_olustur
+from api_sohbet import ai_sohbet_sayfasi_olustur
 from wallet_page import cuzdan_sayfasi_olustur # CÜZDAN SAYFASI BAĞLANTISI EKLENDİ
 
 def ana_ekran_olustur(page: ft.Page):

@@ -3,234 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qypees Terminal</title>
+    <title>Qypees Terminal Pro | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; margin: 0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
         
-        /* 1. KATMAN: Sabit, Derin ve Mat Siyah Zemin */
+        /* 1. KATMAN: Zemin */
         .crypto-bg {
             position: fixed; inset: 0;
-            background: #030305;
+            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
             z-index: 0; pointer-events: none;
         }
 
-        /* 2. KATMAN: Çok Hafif Nokta Izgarası (Göz Yormaz) */
+        /* 2. KATMAN: Nokta Izgarası (High-Tech Feel) */
         .dot-grid {
             position: fixed; inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
             z-index: 1; pointer-events: none;
         }
 
-        /* 3. KATMAN: Mouse'u Takip Eden Yumuşak Parlama (Glow) */
+        /* 3. KATMAN: Mouse Işığı */
         #glowCanvas {
             position: fixed; inset: 0; width: 100%; height: 100%;
-            z-index: 2; pointer-events: none;
+            z-index: 2; pointer-events: none; mix-blend-mode: screen;
         }
 
-        /* 4. KATMAN: Ana İçerik */
+        /* 4. KATMAN: İçerik */
         .content-layer { position: relative; z-index: 10; }
 
-        /* YENİ NESİL GLASSMORPHISM KUTU TASARIMI (Mat ve Dinlendirici) */
-        .terminal-box {
-            background: rgba(13, 17, 26, 0.4);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        /* YENİ NESİL GLASSMORPHISM KARTLARI */
+        .glass-panel {
+            background: rgba(10, 15, 26, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center; text-align: center; padding: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.02);
             cursor: pointer; position: relative; overflow: hidden;
         }
 
-        .terminal-box::before {
+        .glass-panel::before {
             content: ''; position: absolute; inset: 0;
             background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            opacity: 0; transition: opacity 0.4s; pointer-events: none;
         }
 
-        .terminal-box:hover::before { opacity: 1; }
-        .terminal-box:hover { transform: translateY(-2px); background: rgba(17, 24, 39, 0.6); }
+        .glass-panel:hover::before { opacity: 1; }
+        .glass-panel:hover { transform: translateY(-4px); background: rgba(15, 22, 35, 0.7); }
 
-        /* Göz Yormayan Soft Hover Efektleri */
-        .hover-red:hover { border-color: rgba(239, 68, 68, 0.3); }
-        .hover-amber:hover { border-color: rgba(245, 158, 11, 0.3); }
-        .hover-green:hover { border-color: rgba(16, 185, 129, 0.3); }
-        .hover-cyan:hover { border-color: rgba(0, 255, 204, 0.3); }
-        .hover-yellow:hover { border-color: rgba(251, 191, 36, 0.3); }
-        .hover-orange:hover { border-color: rgba(255, 69, 0, 0.3); }
-        .hover-gray:hover { border-color: rgba(156, 163, 175, 0.3); }
-        .hover-spotify:hover { border-color: rgba(29, 185, 84, 0.3); }
-        .hover-blue:hover { border-color: rgba(59, 130, 246, 0.3); }
-        .hover-purple:hover { border-color: rgba(139, 92, 246, 0.3); }
-        .hover-pink:hover { border-color: rgba(236, 72, 153, 0.3); }
+        /* Neon Hover Glow Efektleri */
+        .hover-red:hover { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 15px 35px -10px rgba(239, 68, 68, 0.2); }
+        .hover-amber:hover { border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 15px 35px -10px rgba(245, 158, 11, 0.2); }
+        .hover-green:hover { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 15px 35px -10px rgba(16, 185, 129, 0.2); }
+        .hover-cyan:hover { border-color: rgba(0, 255, 204, 0.4); box-shadow: 0 15px 35px -10px rgba(0, 255, 204, 0.2); }
+        .hover-yellow:hover { border-color: rgba(251, 191, 36, 0.4); box-shadow: 0 15px 35px -10px rgba(251, 191, 36, 0.2); }
+        .hover-orange:hover { border-color: rgba(255, 69, 0, 0.4); box-shadow: 0 15px 35px -10px rgba(255, 69, 0, 0.2); }
+        .hover-gray:hover { border-color: rgba(156, 163, 175, 0.4); box-shadow: 0 15px 35px -10px rgba(156, 163, 175, 0.1); }
+        .hover-spotify:hover { border-color: rgba(29, 185, 84, 0.4); box-shadow: 0 15px 35px -10px rgba(29, 185, 84, 0.2); }
+        .hover-blue:hover { border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 15px 35px -10px rgba(59, 130, 246, 0.2); }
+        .hover-purple:hover { border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 15px 35px -10px rgba(139, 92, 246, 0.2); }
+        .hover-pink:hover { border-color: rgba(236, 72, 153, 0.4); box-shadow: 0 15px 35px -10px rgba(236, 72, 153, 0.2); }
 
         .center-logo-box { 
-            background: radial-gradient(circle at center, rgba(0, 255, 204, 0.05) 0%, rgba(10, 14, 23, 0.5) 100%); 
-            border: 1px solid rgba(0, 255, 204, 0.15); 
+            background: radial-gradient(circle at center, rgba(0, 255, 204, 0.08) 0%, rgba(10, 15, 26, 0.5) 100%); 
+            border: 1px solid rgba(0, 255, 204, 0.2); 
         }
         .center-logo-box:hover { 
-            border-color: rgba(0, 255, 204, 0.4);
+            border-color: rgba(0, 255, 204, 0.5);
             transform: scale(1.02); 
+            box-shadow: 0 0 40px rgba(0, 255, 204, 0.15);
         }
 
+        /* Modern Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #00ffcc; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #006652; }
-        .toggle-checkbox:checked + .toggle-label:after { transform: translateX(100%); background-color: #00ffcc; }
+        .toggle-checkbox:checked + .toggle-label { background-color: rgba(0, 255, 204, 0.2); }
+        .toggle-checkbox:checked + .toggle-label:after { transform: translateX(100%); background-color: #00ffcc; box-shadow: 0 0 10px #00ffcc; }
+        .toggle-label { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.05); }
 
-        .text-soft-white { color: #E2E8F0; }
-        .text-muted { color: #8492A6; }
+        /* Yazı Renkleri */
+        .text-soft-white { color: #F1F5F9; }
+        .text-muted { color: #94A3B8; }
+
+        /* Staggered Animasyonlar (Sayfa açılışında elementlerin süzülerek gelmesi) */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-item { animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.15s; }
+        .delay-3 { animation-delay: 0.2s; }
+        .delay-4 { animation-delay: 0.25s; }
+        .delay-5 { animation-delay: 0.3s; }
+        .delay-6 { animation-delay: 0.35s; }
+        .delay-7 { animation-delay: 0.4s; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center py-6 px-4">
+<body class="min-h-screen flex flex-col items-center py-8 px-4 md:px-6">
 
-    <!-- Göz Yormayan Arka Plan Katmanları -->
+    <!-- Zemin Katmanları -->
     <div class="crypto-bg"></div>
     <div class="dot-grid"></div>
     <canvas id="glowCanvas"></canvas>
 
-    <!-- Ana İçerik Katmanı -->
-    <div class="content-layer w-full max-w-[1100px] flex flex-col gap-5">
+    <!-- Ana Pano İçeriği -->
+    <div class="content-layer w-full max-w-[1150px] flex flex-col gap-5">
         
-        <div class="terminal-box !h-[55px] !flex-row cursor-default !py-0">
-            <span class="text-muted text-sm font-semibold tracking-wider flex items-center gap-2" id="live-clock">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                📍 İstanbul | Yükleniyor...
+        <!-- Üst Bilgi Barı -->
+        <div class="glass-panel !h-[50px] !flex-row cursor-default !py-0 justify-between px-6 animate-item delay-1">
+            <span class="text-muted text-xs md:text-sm font-semibold tracking-widest flex items-center gap-3" id="live-clock">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ffcc] opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00ffcc]"></span>
+                </span>
+                SİSTEM BAŞLATILIYOR...
             </span>
+            <span class="hidden md:block text-[#00ffcc] text-xs font-black tracking-widest uppercase">Güvenli Bağlantı</span>
         </div>
 
+        <!-- 1. Satır: Canlı Piyasa & Haberler / Sinyaller -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 h-auto md:h-[220px]">
-            <a href="/piyasa" class="terminal-box hover-red md:col-span-2 h-[220px] md:h-auto">
-                <h2 class="text-soft-white text-lg font-black mb-1.5 tracking-wide">📈 CANLI PİYASA <span class="text-red-500 animate-pulse inline-block ml-1">●</span> LİVE</h2>
-                <p class="text-muted text-xs font-medium leading-relaxed">Derinlik tablosu ve anlık tahta verileri<br><span class="text-red-400/80 mt-1 inline-block">(İçeri Gir)</span></p>
+            <a href="/piyasa" class="glass-panel hover-red md:col-span-2 h-[220px] md:h-auto animate-item delay-2">
+                <h2 class="text-soft-white text-xl font-black mb-2 tracking-wide flex items-center justify-center gap-2">
+                    📈 CANLI PİYASA <span class="text-red-500 animate-pulse text-sm">● LIVE</span>
+                </h2>
+                <p class="text-muted text-sm font-medium leading-relaxed max-w-sm">Algoritmik derinlik tablosu ve anlık tahta verileri<br><span class="text-red-400/80 mt-2 font-bold inline-block border border-red-500/30 bg-red-500/10 px-3 py-1 rounded-full text-xs">Piyasaya Gir ➔</span></p>
             </a>
             <div class="flex flex-col gap-5 h-full md:col-span-1">
-                <a href="/haberler" class="terminal-box hover-amber flex-1">
+                <a href="/haberler" class="glass-panel hover-amber flex-1 animate-item delay-3">
                     <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">📰 SON DAKİKA</h2>
-                    <p class="text-muted text-xs font-medium">Piyasa Haberleri</p>
+                    <p class="text-muted text-xs font-medium">Küresel Haber Akışı</p>
                 </a>
-                <a href="/sinyaller" class="terminal-box hover-green flex-1">
+                <a href="/sinyaller" class="glass-panel hover-green flex-1 animate-item delay-3">
                     <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">🧠 AI FIRSATLARI</h2>
-                    <p class="text-muted text-xs font-medium">Sinyaller ve Yorumlar</p>
+                    <p class="text-muted text-xs font-medium">Algoritmik Sinyaller</p>
                 </a>
             </div>
         </div>
 
-        <a href="/grafik" class="terminal-box hover-cyan !h-[90px]">
-            <h2 class="text-soft-white text-lg font-black mb-1.5 tracking-wide">📊 GRAFİK EKRANI</h2>
-            <p class="text-muted text-xs font-medium">AI Destekli Analizler ve TradingView Entegrasyonu</p>
+        <!-- 2. Satır: Grafik Ekranı -->
+        <a href="/grafik" class="glass-panel hover-cyan !h-[90px] animate-item delay-4">
+            <h2 class="text-soft-white text-lg font-black mb-1.5 tracking-wide">📊 GELİŞMİŞ GRAFİK EKRANI</h2>
+            <p class="text-muted text-xs font-medium tracking-wide">TradingView Destekli Pro Analiz Paneli</p>
         </a>
 
+        <!-- 3. Satır: Top 5 & Isı Haritası -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 h-auto md:h-[130px]">
-            <a href="/top5" class="terminal-box hover-yellow h-[130px] md:h-auto">
+            <a href="/top5" class="glass-panel hover-yellow h-[130px] md:h-auto animate-item delay-5">
                 <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">🏆 TOP 5 COİN</h2>
-                <p class="text-muted text-xs font-medium">En çok düşen/yükselen momentum taraması</p>
+                <p class="text-muted text-xs font-medium">Momentum ve Hacim Taraması</p>
             </a>
-            <a href="/isiharitasi" class="terminal-box hover-orange h-[130px] md:h-auto">
+            <a href="/isiharitasi" class="glass-panel hover-orange h-[130px] md:h-auto animate-item delay-5">
                 <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">🔥 ISI HARİTASI</h2>
-                <p class="text-muted text-xs font-medium">Genel piyasa likidite sıcaklığı</p>
+                <p class="text-muted text-xs font-medium">Likidite ve Sektörel Sıcaklık</p>
             </a>
         </div>
 
+        <!-- 4. Satır: Merkez Logo ve Yan Araçlar -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[260px]">
-            <a href="/notdefteri" class="terminal-box hover-gray h-[130px] md:h-auto md:col-span-1">
-                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">📝 NOT DEFTERİ</h2>
-                <p class="text-muted text-[11px] font-medium">Kişisel trade planları</p>
+            <a href="/notdefteri" class="glass-panel hover-gray h-[130px] md:h-auto md:col-span-1 animate-item delay-6">
+                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">📝 PLANLAR</h2>
+                <p class="text-muted text-[11px] font-medium">Kişisel Trade Günlüğü</p>
             </a>
             
-            <a href="/" class="terminal-box center-logo-box h-[260px] md:h-auto md:col-span-2 cursor-default">
-                <div class="relative flex justify-center items-center w-24 h-24 mb-4">
-                    <span class="text-6xl font-black text-white z-10" style="text-shadow: 0 0 15px rgba(0,255,204,0.3);">Q</span>
+            <a href="/" class="glass-panel center-logo-box h-[260px] md:h-auto md:col-span-2 cursor-default animate-item delay-6">
+                <div class="relative flex justify-center items-center w-24 h-24 mb-5">
+                    <span class="text-7xl font-black text-white z-10" style="text-shadow: 0 0 25px rgba(0,255,204,0.4);">Q</span>
                 </div>
-                <span class="text-[#00ffcc] text-sm font-black tracking-widest uppercase mb-1">Qypees Terminal</span>
-                <span class="text-muted text-[10px] tracking-widest">PRO TRADING DESK</span>
+                <span class="text-[#00ffcc] text-sm md:text-base font-black tracking-[0.2em] uppercase mb-1.5">Qypees Terminal</span>
+                <span class="text-muted text-[10px] md:text-xs tracking-[0.3em] font-semibold border-t border-white/10 pt-2 mt-1">PRO TRADING DESK</span>
             </a>
             
-            <a href="/muzik" class="terminal-box hover-spotify h-[130px] md:h-auto md:col-span-1">
+            <a href="/muzik" class="glass-panel hover-spotify h-[130px] md:h-auto md:col-span-1 animate-item delay-6">
                 <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">🎵 MÜZİK</h2>
                 <p class="text-muted text-[11px] font-medium">Spotify Odak Akışı</p>
             </a>
         </div>
 
+        <!-- 5. Satır: AI Bot Kontrol & Sohbet -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 h-auto md:h-[100px]">
-            <div class="terminal-box h-[100px] md:h-auto !flex-row !justify-between !px-10 border-[#00ffcc]/30 cursor-default">
+            <div class="glass-panel h-[100px] md:h-auto !flex-row !justify-between !px-8 md:!px-10 border border-[#00ffcc]/30 cursor-default animate-item delay-7" id="bot-box">
                 <h2 class="text-[#00ffcc] text-sm font-black tracking-widest" id="bot-status-text">🤖 AI BOT (AKTİF)</h2>
-                <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                    <input type="checkbox" name="toggle" id="bot-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#006652] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
-                    <label for="bot-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-[#006652] cursor-pointer transition-colors duration-300 ease-in-out"></label>
+                <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                    <input type="checkbox" name="toggle" id="bot-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
+                    <label for="bot-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
                 </div>
             </div>
-            <a href="/sohbet" class="terminal-box hover-blue h-[100px] md:h-auto">
-                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">💬 AI SOHBET</h2>
-                <p class="text-muted text-[11px] font-medium">Asistanla iletişime geç</p>
+            <a href="/sohbet" class="glass-panel hover-blue h-[100px] md:h-auto animate-item delay-7">
+                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">💬 AI ASİSTAN</h2>
+                <p class="text-muted text-[11px] font-medium">Sistemle İletişime Geç</p>
             </a>
         </div>
 
-        <a href="/cuzdan" class="terminal-box hover-yellow !h-[90px]">
-            <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">💼 CÜZDAN ÖZETİ</h2>
-            <p class="text-muted text-xs font-medium">Tüm borsa hesaplarındaki toplam varlıkları yönet</p>
+        <!-- 6. Satır: Cüzdan Özeti -->
+        <a href="/cuzdan" class="glass-panel hover-yellow !h-[90px] animate-item delay-7">
+            <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">💼 PORTFÖY & CÜZDAN YÖNETİMİ</h2>
+            <p class="text-muted text-xs font-medium">Tüm spot varlıklarını ve vadeli AI işlemlerini takip et</p>
         </a>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 h-auto md:h-[210px]">
-            <div class="flex flex-col gap-5 h-full md:col-span-2">
-                <a href="/varlik" class="terminal-box hover-purple flex-1">
-                    <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">💰 VARLIK BÖLGESİ</h2>
-                    <p class="text-muted text-xs font-medium">Detaylı Portföy Dağılımı</p>
-                </a>
-                <a href="/ayarlar" class="terminal-box hover-gray flex-1">
-                    <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">⚙️ AYARLAR</h2>
-                    <p class="text-muted text-xs font-medium">API ve Konfigürasyon Yapılandırması</p>
-                </a>
-            </div>
-            <a href="/profil" class="terminal-box hover-pink h-[210px] md:h-auto md:col-span-1">
-                <div class="text-3xl mb-3 opacity-80">👤</div>
-                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">PROFİL</h2>
-                <p class="text-muted text-[11px] font-medium">Güvenlik ve Hesap</p>
-            </a>
-        </div>
     </div>
 
-    <!-- JavaScript Kontrolleri -->
     <script>
-        // Saat Güncelleme
+        // Saat Güncelleme Modülü
         function updateClock() {
             const now = new Date();
             const dateString = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-            const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('live-clock').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 📍 İstanbul | ${dateString}, ${timeString}`;
+            const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('live-clock').innerHTML = `
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ffcc] opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00ffcc]"></span>
+                </span> 
+                📍 İSTANBUL | ${dateString}, <span class="text-white ml-1 font-bold">${timeString}</span>
+            `;
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // Buton Toggle Durumu
+        // Bot Toggle Modülü
         const botToggle = document.getElementById('bot-toggle');
         const botStatusText = document.getElementById('bot-status-text');
-        const botBox = botToggle.closest('.terminal-box');
+        const botBox = document.getElementById('bot-box');
 
         botToggle.addEventListener('change', function() {
             if(this.checked) {
                 botStatusText.innerText = "🤖 AI BOT (AKTİF)"; 
                 botStatusText.style.color = "#00ffcc"; 
-                botBox.style.borderColor = "rgba(0, 255, 204, 0.3)";
+                botBox.style.borderColor = "rgba(0, 255, 204, 0.4)";
+                botBox.style.boxShadow = "0 10px 30px -10px rgba(0, 255, 204, 0.15)";
             } else {
                 botStatusText.innerText = "🤖 AI BOT (KAPALI)"; 
                 botStatusText.style.color = "#EF4444"; 
-                botBox.style.borderColor = "rgba(239, 68, 68, 0.3)";
+                botBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                botBox.style.boxShadow = "0 10px 30px -10px rgba(239, 68, 68, 0.15)";
             }
         });
 
-        // --- YEPYENİ: GÖZ YORMAYAN YUMUŞAK PARLAMA (SOFT GLOW) EFEKTİ ---
+        // Ambient Mouse Glow (Yumuşak Neon Parlama Efekti)
         const canvas = document.getElementById('glowCanvas');
         const ctx = canvas.getContext('2d');
         
-        let mouseX = -1000;
+        let mouseX = window.innerWidth / 2;
         let mouseY = -1000;
-        let glowX = -1000;
-        let glowY = -1000;
+        let glowX = window.innerWidth / 2;
+        let glowY = window.innerHeight / 2;
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -246,23 +266,20 @@
         });
 
         window.addEventListener('mouseout', () => {
-            mouseX = -1000;
-            mouseY = -1000;
+            mouseY = -1000; // Ekrandan çıkınca sakla
         });
 
         function animateGlow() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Işık mouse'u yumuşakça (gecikmeli) takip etsin
-            glowX += (mouseX - glowX) * 0.1;
-            glowY += (mouseY - glowY) * 0.1;
+            glowX += (mouseX - glowX) * 0.08;
+            glowY += (mouseY - glowY) * 0.08;
 
-            // Eğer mouse ekrandaysa ışığı çiz
-            if (glowX > -500 && glowY > -500) {
-                let gradient = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, 400);
-                gradient.addColorStop(0, 'rgba(0, 255, 204, 0.08)'); // Çok hafif yeşil/cyan merkez
-                gradient.addColorStop(0.5, 'rgba(0, 150, 255, 0.03)'); // Hafif mavi geçiş
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Kayboluş
+            if (glowY > -200) {
+                let gradient = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, 450);
+                gradient.addColorStop(0, 'rgba(0, 255, 204, 0.06)'); 
+                gradient.addColorStop(0.4, 'rgba(0, 150, 255, 0.02)'); 
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);

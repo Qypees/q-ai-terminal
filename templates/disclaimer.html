@@ -3,45 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yasal Uyarı | Q-AI Terminal</title>
+    <title>Yasal Uyarı | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #010103; color: white; margin: 0; overflow: hidden; }
-        .glass-panel { 
-            background: linear-gradient(135deg, rgba(10,10,14,0.9) 0%, rgba(5,5,7,0.95) 100%); 
-            border: 1px solid rgba(239, 68, 68, 0.3); 
-            backdrop-filter: blur(10px);
-            border-radius: 20px; 
-            box-shadow: 0 0 50px rgba(239, 68, 68, 0.15);
-            animation: panelFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #030407; 
+            color: #ffffff; 
+            margin: 0; 
+            overflow: hidden; 
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(30, 10, 15, 0.6) 0%, rgba(3, 4, 7, 0.98) 80%);
+            transition: opacity 0.4s ease;
         }
+        
+        /* Neomorphic Uyarı Paneli */
+        .glass-panel { 
+            background: rgba(15, 10, 15, 0.45);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-top: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 24px; 
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(239, 68, 68, 0.1);
+            animation: panelFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        /* Sözleşme Metin Kutusu */
+        .content-box {
+            background: rgba(3, 4, 7, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Yüksek Tepkimeli Onay Butonu */
+        .accept-btn {
+            background: linear-gradient(135deg, #00ffcc 0%, #00b386 100%);
+            box-shadow: 0 10px 30px -10px rgba(0, 255, 204, 0.4);
+            color: #030407;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .accept-btn::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .accept-btn:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 15px 40px -10px rgba(0, 255, 204, 0.6);
+        }
+
+        .accept-btn:hover::after { left: 200%; }
+
         @keyframes panelFadeIn {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            0% { opacity: 0; transform: scale(0.95) translateY(30px); filter: blur(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+
+        /* Kurumsal Terminal Tarama Çizgisi (Scanline) */
+        .scanline {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.3;
         }
     </style>
 </head>
 <body class="h-screen w-screen flex items-center justify-center p-4">
-
-    <div class="glass-panel w-full max-w-xl p-8 md:p-10 flex flex-col items-center text-center">
+    
+    <div class="scanline"></div>
+    
+    <div class="glass-panel w-full max-w-2xl p-8 md:p-12 flex flex-col items-center text-center relative z-10">
         
-        <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500 flex items-center justify-center text-3xl mb-4 shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse">
-            ⚠️
+        <!-- Uyarı İkonu -->
+        <div class="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/50 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(239,68,68,0.3)] relative">
+            <div class="absolute inset-0 rounded-full border border-red-500 animate-ping opacity-20"></div>
+            <span class="text-4xl">⚠️</span>
         </div>
 
-        <h1 class="text-2xl md:text-3xl font-black text-red-500 tracking-widest mb-6">YASAL UYARI VE SORUMLULUK REDDİ</h1>
+        <!-- Başlık -->
+        <h1 class="text-3xl md:text-4xl font-black text-red-500 tracking-[0.15em] mb-8" style="text-shadow: 0 0 20px rgba(239,68,68,0.4);">
+            YASAL UYARI
+        </h1>
         
-        <div class="text-gray-300 text-sm leading-relaxed text-left flex flex-col gap-4 mb-8 bg-[#030304]/80 p-6 rounded-xl border border-gray-800">
-            <p>Bu terminal (<strong class="text-white">Q-AI</strong>), tamamen kişisel geliştirme, yapay zeka entegrasyonu ve piyasa analizi amacıyla oluşturulmuştur.</p>
-            <p>İçerisinde yer alan yapay zeka verileri, sinyaller ve teknik analiz grafiklerinin hiçbiri <strong class="text-red-400">YATIRIM TAVSİYESİ DEĞİLDİR</strong>.</p>
-            <p>Kripto para piyasalarında işlem yapmak yüksek finansal risk taşır. Sistem algoritmalarının ürettiği sonuçlardan veya piyasa dalgalanmalarından kaynaklanabilecek zararlardan geliştirici sorumlu tutulamaz.</p>
-            <p class="text-[#00ffcc] font-bold text-center">Sisteme giriş yaparak tüm riskleri ve bu metni okuyup kabul etmiş sayılırsınız.</p>
+        <!-- Sözleşme Metin Kutusu -->
+        <div class="content-box text-gray-300 text-sm md:text-base leading-relaxed text-left flex flex-col gap-5 mb-10 p-6 md:p-8 rounded-2xl">
+            <div class="flex items-start gap-3">
+                <span class="text-red-500 font-bold mt-0.5">01_</span>
+                <p>Bu terminal (<strong class="text-white">Q-AI Pro Trading Desk</strong>), tamamen kişisel portföy yönetimi, yapay zeka entegrasyonu ve piyasa istihbaratı amacıyla oluşturulmuştur.</p>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="text-red-500 font-bold mt-0.5">02_</span>
+                <p>İçerisinde yer alan yapay zeka analizleri, destek/direnç hesaplamaları ve istihbarat verilerinin hiçbiri <strong class="text-red-400 font-black">YATIRIM TAVSİYESİ DEĞİLDİR</strong>.</p>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="text-red-500 font-bold mt-0.5">03_</span>
+                <p>Kripto para piyasalarında işlem yapmak yüksek finansal risk taşır. Sistem verilerinden veya piyasa dalgalanmalarından doğacak kayıplardan geliştirici sorumlu tutulamaz.</p>
+            </div>
+            <div class="mt-2 pt-5 border-t border-white/5 text-center">
+                <p class="text-[#00ffcc] font-black tracking-widest text-sm uppercase drop-shadow-[0_0_10px_rgba(0,255,204,0.3)]">
+                    Sisteme giriş yaparak tüm riskleri kabul etmiş sayılırsınız.
+                </p>
+            </div>
         </div>
 
-        <!-- Buton tıklandığında /onayla adresine gider ve ana kontrol paneline (/pano) sızdırır -->
-        <button onclick="window.location.href='/onayla'" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black py-4 rounded-xl text-base tracking-wider transition-all shadow-[0_0_25px_rgba(16,185,129,0.4)] transform hover:scale-[1.02] cursor-pointer uppercase">
-            OKUDUM VE KABUL EDİYORUM ✓
+        <!-- Onay Butonu (Tıklanınca kararma animasyonuyla geçer) -->
+        <button onclick="document.body.style.opacity='0'; setTimeout(()=>window.location.href='/onayla', 400);" class="accept-btn w-full font-black py-4 md:py-5 rounded-xl text-sm md:text-base tracking-[0.1em] uppercase cursor-pointer">
+            TÜM ŞARTLARI OKUDUM, KABUL EDİYORUM ✓
         </button>
 
     </div>

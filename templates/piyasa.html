@@ -3,61 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canlı Piyasa | Q-AI Terminal</title>
+    <title>Canlı Piyasa Akışı | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; }
-        .glass-panel { background: linear-gradient(135deg, #0A0A0E 0%, #050507 100%); border: 1px solid #1A1A24; border-radius: 16px; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050507; }
-        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; overflow-x: hidden; margin: 0; }
+        
+        /* Zemin Katmanları */
+        .crypto-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
+            z-index: 0; pointer-events: none;
+        }
+        .dot-grid {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            z-index: 1; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; }
+
+        /* Neomorphic Glass Panel */
+        .glass-panel {
+            background: rgba(10, 15, 26, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+        }
+
+        /* Liste Özellikleri */
+        .coin-row { transition: background-color 0.2s ease; }
         .coin-row:hover { background-color: rgba(255, 255, 255, 0.03); }
         
-        /* Fiyat Güncelleme Efekti */
-        .flash-green { animation: flashG 1s ease-out; }
-        .flash-red { animation: flashR 1s ease-out; }
-        @keyframes flashG { 0% { background-color: rgba(16, 185, 129, 0.4); } 100% { background-color: transparent; } }
-        @keyframes flashR { 0% { background-color: rgba(239, 68, 68, 0.4); } 100% { background-color: transparent; } }
+        /* Fiyat Güncelleme Efekti (Terminal Tipi) */
+        .flash-green { animation: flashG 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .flash-red { animation: flashR 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes flashG { 
+            0% { background-color: rgba(16, 185, 129, 0.3); box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.2); } 
+            100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; } 
+        }
+        @keyframes flashR { 
+            0% { background-color: rgba(239, 68, 68, 0.3); box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.2); } 
+            100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; } 
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,204,0.5); }
+
+        /* Yükleme Animasyonu */
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="h-screen w-screen p-4 md:p-6 flex flex-col items-center overflow-hidden">
 
-    <div class="w-full max-w-[1200px] h-full flex flex-col">
-        <!-- Geri Dönüş ve Başlık -->
-        <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-800 shrink-0">
+    <div class="crypto-bg"></div>
+    <div class="dot-grid"></div>
+
+    <div class="content-layer w-full max-w-[1200px] h-full flex flex-col">
+        
+        <!-- Üst Menü & Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0 gap-4">
             <div>
-                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-sm font-bold flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    ANA PANOYA DÖN
+                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-xs font-black flex items-center gap-2 mb-2 uppercase tracking-widest">
+                    <span class="text-lg">←</span> ANA PANOYA DÖN
                 </a>
-                <div class="flex items-center gap-3">
-                    <h1 class="text-3xl font-black tracking-widest text-white">🔴 CANLI PİYASA</h1>
-                </div>
+                <h1 class="text-2xl md:text-3xl font-black tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">🔴 CANLI PİYASA <span class="text-gray-500">AKIŞI</span></h1>
             </div>
-            <div class="hidden md:block text-right">
-                <p class="text-[#A0A0A5] text-sm">Gerçek Zamanlı Binance Veri Akışı</p>
-                <div class="flex items-center justify-end gap-2 mt-1">
-                    <div class="w-2 h-2 rounded-full bg-[#00ffcc] animate-pulse"></div>
-                    <p class="text-[#00ffcc] text-xs font-bold" id="status-text">Bağlanıyor...</p>
+            
+            <div class="md:text-right bg-[#05070A]/50 border border-white/5 p-3 rounded-xl backdrop-blur-md">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Gerçek Zamanlı Binance Veri Motoru</p>
+                <div class="flex items-center justify-start md:justify-end gap-2 mt-1">
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ffcc] opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00ffcc]"></span>
+                    </span>
+                    <p class="text-[#00ffcc] text-xs font-black uppercase tracking-wide drop-shadow-md" id="status-text">Motor Başlatılıyor...</p>
                 </div>
             </div>
         </div>
 
         <!-- Piyasa Tahtası -->
-        <div class="glass-panel flex-grow flex flex-col overflow-hidden relative">
+        <div class="glass-panel flex-grow flex flex-col overflow-hidden relative fade-in">
             
-            <div class="flex justify-between items-center px-6 py-4 bg-[#07070A] border-b border-[#1A1A24] shrink-0 text-[#737373] text-xs font-bold tracking-wider">
-                <div class="w-1/4">COIN / USDT</div>
-                <div class="w-1/4 text-right cursor-pointer hover:text-[#00ffcc]" onclick="sortTable('fiyat')">FİYAT ↕️</div>
-                <div class="w-1/4 text-right cursor-pointer hover:text-[#00ffcc]" onclick="sortTable('degisim')">24S DEĞİŞİM ↕️</div>
-                <div class="w-1/4 text-right cursor-pointer hover:text-[#00ffcc]" onclick="sortTable('hacim')">24S HACİM ↕️</div>
+            <!-- Sticky Başlık (Aşağı kaydırıldığında yukarıda kalır) -->
+            <div class="flex justify-between items-center px-4 md:px-8 py-4 bg-[#030407]/90 backdrop-blur-md border-b border-white/10 shrink-0 text-gray-500 text-[10px] md:text-xs font-black tracking-widest uppercase z-20">
+                <div class="w-1/3 md:w-1/4">COIN / USDT</div>
+                <div class="w-1/3 md:w-1/4 text-right cursor-pointer hover:text-[#00ffcc] transition-colors" onclick="sortTable('fiyat')">FİYAT ↕️</div>
+                <div class="hidden md:block w-1/4 text-right cursor-pointer hover:text-[#00ffcc] transition-colors" onclick="sortTable('degisim')">24S DEĞİŞİM ↕️</div>
+                <div class="w-1/3 md:w-1/4 text-right cursor-pointer hover:text-[#00ffcc] transition-colors" onclick="sortTable('hacim')">24S HACİM ↕️</div>
             </div>
 
             <!-- Coin Listesi -->
             <div class="overflow-y-auto flex-grow" id="market-list">
-                <!-- JavaScript verileri buraya otomatik çizecek -->
+                <!-- Javascript Buraya Çizecek -->
+                <div class="flex flex-col items-center justify-center h-full opacity-50">
+                    <div class="w-10 h-10 border-4 border-t-[#00ffcc] border-transparent rounded-full animate-spin mb-4"></div>
+                    <span class="text-gray-400 font-black tracking-widest text-xs uppercase">Veriler Çekiliyor...</span>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -72,11 +127,11 @@
                 const response = await fetch('/api/piyasa');
                 const data = await response.json();
                 
-                document.getElementById('status-text').innerText = "Canlı Akış Aktif";
+                document.getElementById('status-text').innerText = "CANLI AKIŞ AKTİF";
                 renderMarket(data);
             } catch (error) {
-                document.getElementById('status-text').innerText = "Bağlantı Hatası!";
-                document.getElementById('status-text').className = "text-red-500 text-xs font-bold";
+                document.getElementById('status-text').innerText = "BAĞLANTI KOPTU!";
+                document.getElementById('status-text').className = "text-red-500 text-xs font-black uppercase tracking-wide drop-shadow-md";
             }
         }
 
@@ -95,14 +150,15 @@
             let htmlContent = "";
             data.forEach(coin => {
                 
-                // Formatlama (Büyük sayılara virgül, küçük sayılara bol sıfır)
+                // Formatlama
                 let fiyat = parseFloat(coin.fiyat);
-                let formatliFiyat = fiyat < 1 ? fiyat.toFixed(5) : fiyat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                let formatliFiyat = fiyat < 1 ? fiyat.toFixed(5) : fiyat.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4});
                 let hacim = parseFloat(coin.hacim).toLocaleString('en-US', {maximumFractionDigits: 0});
                 let degisim = parseFloat(coin.degisim);
                 
-                let renk = degisim >= 0 ? '#10B981' : '#EF4444';
-                let isaret = degisim >= 0 ? '+' : '';
+                let isPositive = degisim >= 0;
+                let renk = isPositive ? '#00ffcc' : '#EF4444';
+                let isaret = isPositive ? '+' : '';
                 
                 // Fiyat değiştiyse yanıp sönme efekti belirle
                 let flashClass = "";
@@ -113,34 +169,57 @@
                 oncekiFiyatlar[coin.sembol] = fiyat; // Yeni fiyatı kaydet
 
                 htmlContent += `
-                <div class="coin-group border-b border-[#1A1A24]/50">
-                    <div class="coin-row flex justify-between items-center px-6 py-5 cursor-pointer border-l-4 transition-all duration-200 ${flashClass}"
+                <div class="coin-group border-b border-white/5 group">
+                    <!-- Görünen Satır -->
+                    <div class="coin-row flex justify-between items-center px-4 md:px-8 py-4 md:py-5 cursor-pointer border-l-2 transition-all duration-300 ${flashClass}"
                          style="border-color: ${renk};" onclick="toggleAI('${coin.sembol}')">
                         
-                        <div class="w-1/4 flex items-center gap-3">
-                            <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-8 h-8 rounded-full bg-gray-800 p-1">
-                            <span class="font-black text-xl text-white">${coin.sembol}</span>
+                        <!-- Coin Sembol & İkon -->
+                        <div class="w-1/3 md:w-1/4 flex items-center gap-3 md:gap-4">
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                                <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-6 h-6 md:w-7 md:h-7 object-contain">
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-black text-base md:text-xl text-white tracking-wider">${coin.sembol}</span>
+                                <span class="text-gray-500 text-[9px] md:text-[10px] font-bold tracking-widest uppercase hidden md:block">Tether US</span>
+                            </div>
                         </div>
                         
-                        <div class="w-1/4 text-right font-bold text-lg" style="color: ${renk};">$${formatliFiyat}</div>
+                        <!-- Fiyat -->
+                        <div class="w-1/3 md:w-1/4 text-right font-black text-sm md:text-lg tracking-wide drop-shadow-md" style="color: ${isPositive ? 'white' : '#EF4444'};">
+                            $${formatliFiyat}
+                        </div>
                         
-                        <div class="w-1/4 flex justify-end">
-                            <div class="px-3 py-1 rounded-md font-bold text-sm text-white" style="background-color: ${renk};">
+                        <!-- 24S Değişim (Sadece Desktop veya rozet halinde) -->
+                        <div class="hidden md:flex w-1/4 justify-end">
+                            <div class="px-3 py-1.5 rounded-md font-bold text-xs text-white border" style="background-color: ${renk}20; border-color: ${renk}40; color: ${renk};">
                                 ${isaret}${degisim.toFixed(2)}%
                             </div>
                         </div>
                         
-                        <div class="w-1/4 text-right text-[#A0A0A5] font-bold text-md">$${hacim}M</div>
+                        <!-- 24S Hacim -->
+                        <div class="w-1/3 md:w-1/4 flex flex-col items-end text-right">
+                            <span class="text-gray-300 font-black text-sm md:text-base">$${hacim}M</span>
+                            <div class="md:hidden mt-1 px-2 py-0.5 rounded font-bold text-[9px] text-white border" style="background-color: ${renk}20; border-color: ${renk}40; color: ${renk};">
+                                ${isaret}${degisim.toFixed(2)}%
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Gizli AI Yorum Satırı -->
-                    <div id="ai-${coin.sembol}" class="ai-row hidden bg-[#050507] px-6 py-4 border-l-4 border-[#00ffcc] m-2 rounded-lg shadow-inner">
-                        <div class="flex items-start gap-3">
-                            <span class="text-xl">🤖</span>
-                            <div>
-                                <h4 class="text-[#00ffcc] font-black text-sm mb-1">Q-AI Analizi</h4>
-                                <p class="text-[#A0A0A5] text-sm font-medium">
-                                    <span class="text-white font-bold">Yön: ${coin.ai_yon}</span> | ${coin.ai_yorum}
+                    <!-- Gizli AI Yorum Satırı (Açılır Kapanır HUD) -->
+                    <div id="ai-${coin.sembol}" class="ai-row hidden bg-[rgba(0,255,204,0.02)] px-6 md:px-8 py-5 border-l-2 border-[#00ffcc] shadow-[inset_0_10px_20px_rgba(0,0,0,0.2)]">
+                        <div class="flex flex-col md:flex-row md:items-center gap-4">
+                            <div class="flex items-center gap-3 shrink-0">
+                                <span class="text-2xl drop-shadow-[0_0_10px_rgba(0,255,204,0.3)]">🤖</span>
+                                <div class="w-px h-8 bg-white/10 hidden md:block"></div>
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="text-[#00ffcc] font-black text-xs uppercase tracking-widest mb-1.5">Q-AI Analiz Sistemi</h4>
+                                <p class="text-gray-400 text-xs md:text-sm font-medium leading-relaxed">
+                                    <span class="bg-[#05070A] text-white border border-white/10 px-2 py-1 rounded text-[10px] uppercase font-black mr-2 tracking-widest">
+                                        Trend: <span style="color:${isPositive ? '#00ffcc' : '#EF4444'}">${coin.ai_yon}</span>
+                                    </span>
+                                    ${coin.ai_yorum}
                                 </p>
                             </div>
                         </div>
@@ -166,6 +245,7 @@
         window.toggleAI = function(sembol) {
             const aiRow = document.getElementById('ai-' + sembol);
             if (aiRow.classList.contains('hidden')) {
+                // Smooth açılış efekti eklenebilir ama display:none olduğu için hızlı tepki daha iyidir.
                 aiRow.classList.remove('hidden');
             } else {
                 aiRow.classList.add('hidden');
@@ -183,7 +263,7 @@
             fetchLiveMarket(); // Sıralama değişince hemen yeni veri çiz
         }
 
-        // HER 3 SANİYEDE BİR ARKA PLANDA SESSİZCE VERİ ÇEK (SAYFA YENİLEMEDEN!)
+        // HER 3 SANİYEDE BİR ARKA PLANDA SESSİZCE VERİ ÇEK
         setInterval(fetchLiveMarket, 3000);
         
         // Sayfa ilk açıldığında hemen veriyi çek

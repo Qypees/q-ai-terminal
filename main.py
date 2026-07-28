@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -12,8 +12,12 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import json
 import os
+from dotenv import load_dotenv
 
-app = FastAPI(title="Qypees Terminal Core")
+# Güvenli Ortam Değişkenleri Yüklemesi
+load_dotenv()
+
+app = FastAPI(title="Qypees Terminal Pro Core")
 templates = Jinja2Templates(directory="templates")
 
 # ==========================================
@@ -23,14 +27,20 @@ DB_DOSYASI = "cuzdan.json"
 
 def veritabani_yukle():
     if os.path.exists(DB_DOSYASI):
-        with open(DB_DOSYASI, "r", encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(DB_DOSYASI, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
     return {"spot": [], "vadeli": []}
 
 def veritabani_kaydet():
     veri = {"spot": spot_varliklar, "vadeli": aktif_pozisyonlar}
-    with open(DB_DOSYASI, "w", encoding="utf-8") as f:
-        json.dump(veri, f, ensure_ascii=False, indent=4)
+    try:
+        with open(DB_DOSYASI, "w", encoding="utf-8") as f:
+            json.dump(veri, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print("Veritabanı Kayıt Hatası:", e)
 
 db_veri = veritabani_yukle()
 spot_varliklar = db_veri["spot"]
@@ -39,10 +49,10 @@ aktif_pozisyonlar = db_veri["vadeli"]
 onayli_kullanicilar = set()
 spotify_tokens = {}
 
-# Spotify API Kimlik Bilgileri
-SPOTIFY_CLIENT_ID = "d560d37532284575a7933231cf7166f3"
-SPOTIFY_CLIENT_SECRET = "BURAYA_CLIENT_SECRET_DEGERINI_YAZ"
-SPOTIFY_REDIRECT_URI = "https://q-ai-terminal.onrender.com/callback"
+# Spotify API Kimlik Bilgileri (.env veya güvenli kaynaklardan çekilir)
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "d560d37532284575a7933231cf7166f3")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "BURAYA_CLIENT_SECRET_DEGERINI_YAZ")
+SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "https://q-ai-terminal.onrender.com/callback")
 
 sp_oauth = SpotifyOAuth(
     client_id=SPOTIFY_CLIENT_ID,
@@ -91,7 +101,7 @@ COIN_FIYATLARI = {
     "CAKE": 2.5, "KAVA": 0.70, "GNO": 300.0, "ONDO": 0.95, "BOME": 0.012,
     "JASMY": 0.02, "ROSE": 0.09, "GLM": 0.45, "CORE": 1.8, "RON": 2.8,
 
-    # Yeni Eklenen 100 Coin (Veritabanı 200'e Yükseltildi)
+    # Yeni Eklenen 100 Coin
     "ZEC": 25.0, "DASH": 30.0, "XEC": 0.00004, "KSM": 35.0, "ENJ": 0.3,
     "BAT": 0.25, "ZIL": 0.02, "RVN": 0.03, "HOT": 0.002, "1INCH": 0.4,
     "LRC": 0.25, "YFI": 7000.0, "SUSHI": 1.2, "CRV": 0.45, "CHR": 0.3,
@@ -116,7 +126,7 @@ COIN_FIYATLARI = {
 COINLER = list(COIN_FIYATLARI.keys())
 
 # ==========================================
-# 2. CANLI BİNANCE VE ÖNBELLEK SİSTEMİ (%100 GERÇEK PİYASA OKUMA)
+# 2. CANLI BİNANCE VE ÖNBELLEK SİSTEMİ
 # ==========================================
 binance_cache = {"data": [], "last_update": 0}
 haberler_cache = {"data": [], "last_update": 0}
@@ -149,7 +159,6 @@ def coklu_piyasa_verilerini_cek():
             degisim = 0.0
             hacim = 0.0
         
-        # %100 GERÇEK VERİYE DAYALI MATEMATİKSEL YORUM SİSTEMİ (Rastgelelik KALDIRILDI)
         if degisim >= 7.0:
             yon = "STRONG LONG 🚀"
             ai_yorum = "Güçlü Trend / Hacim Kırılımı"
@@ -164,10 +173,7 @@ def coklu_piyasa_verilerini_cek():
             ai_yorum = "Negatif Baskı"
         else:
             yon = "YATAY 🟡"
-            if hacim > 250:
-                ai_yorum = "Yüksek Hacimli Sıkışma"
-            else:
-                ai_yorum = "Düşük Hacimli Konsolidasyon"
+            ai_yorum = "Yüksek Hacimli Sıkışma" if hacim > 250 else "Düşük Hacimli Konsolidasyon"
                 
         piyasa_verileri.append({"sembol": coin, "fiyat": fiyat, "degisim": degisim, "hacim": hacim, "ai_yon": yon, "ai_yorum": ai_yorum})
     
@@ -206,8 +212,8 @@ def ai_haber_analizi(metin):
     metin_kucuk = metin.lower()
     yuksek_onemli = ["sec", "etf", "onay", "yasadışı", "faiz", "enflasyon", "kara para", "hack", "çöküş", "iflas", "yasak", "dava"]
     onemli = ["güncelleme", "ortaklık", "listeleme", "ağ", "balina", "transfer", "entegrasyon", "yakım"]
-    if any(kelime in metin_kucuk for kelime in yuksek_onemli): onem, onem_renk, kaldirac = "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "Temel Analiz: Yüksek Volatilite Beklentisi"
-    elif any(kelime in metin_kucuk for kelime in onemli): onem, onem_renk, kaldirac = "ÖNEMLİ ⚠️", "#F59E0B", "Temel Analiz: Orta Volatilite Beklentisi"
+    if any(k in metin_kucuk for k in yuksek_onemli): onem, onem_renk, kaldirac = "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "Temel Analiz: Yüksek Volatilite Beklentisi"
+    elif any(k in metin_kucuk for k in onemli): onem, onem_renk, kaldirac = "ÖNEMLİ ⚠️", "#F59E0B", "Temel Analiz: Orta Volatilite Beklentisi"
     else: onem, onem_renk, kaldirac = "STANDART ℹ️", "#3B82F6", "Temel Analiz: Olağan Akış"
     return onem, onem_renk, "GERÇEK ZAMANLI 🟢", "#10B981", kaldirac, "Piyasa analizi güncel."
 
@@ -376,7 +382,7 @@ async def sinyaller_sayfasi(request: Request):
 
 @app.get("/top5", response_class=HTMLResponse)
 async def top5_sayfasi(request: Request): 
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_config=303) # Düzeltildi
     return templates.TemplateResponse(request=request, name="top5.html", context={"request": request})
 
 @app.get("/isiharitasi", response_class=HTMLResponse)

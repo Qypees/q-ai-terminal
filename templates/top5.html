@@ -3,78 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 5 Volatilite | Q-AI Terminal</title>
+    <title>Top 5 Momentum Radarı | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; overflow-x: hidden; }
-        .tf-btn { transition: all 0.2s; }
-        .tf-btn.active { background-color: #00ffcc; color: #050507; border-color: #00ffcc; font-weight: 900; }
-        .list-card {
-            background: linear-gradient(135deg, #0A0A0E 0%, #050507 100%);
-            border: 1px solid #1A1A24;
-            border-radius: 16px;
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; overflow-x: hidden; margin: 0; }
+        
+        /* Zemin Katmanları */
+        .crypto-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
+            z-index: 0; pointer-events: none;
         }
-        .coin-item { transition: transform 0.2s ease, background-color 0.2s; }
-        .coin-item:hover { transform: scale(1.02); background-color: rgba(255,255,255,0.02); z-index: 10;}
+        .dot-grid {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            z-index: 1; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; }
+
+        /* Neomorphic Glass Panel */
+        .glass-panel {
+            background: rgba(10, 15, 26, 0.45);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+            position: relative;
+        }
+
+        /* Zaman Dilimi Butonları */
+        .tf-btn { 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .tf-btn:hover { background: rgba(0, 255, 204, 0.1); color: #00ffcc; }
+        .tf-btn.active { 
+            background: linear-gradient(135deg, #00ffcc 0%, #00b386 100%);
+            color: #030407; border-color: #00ffcc; font-weight: 900;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+        }
+
+        /* Liste Öğeleri (Coin Row) */
+        .coin-item { 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+            background: rgba(5, 7, 10, 0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .coin-item:hover { 
+            transform: translateX(8px); 
+            background: rgba(15, 20, 30, 0.8); 
+            border-color: var(--hover-border, rgba(255,255,255,0.2));
+            box-shadow: 0 10px 20px -5px var(--hover-shadow, rgba(0,0,0,0.5));
+            z-index: 10;
+        }
+
+        /* Sıralama ve Animasyonlar */
+        .fade-slide-in { animation: fadeSlideIn 0.4s ease-out forwards; opacity: 0; }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateX(-15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050507; }
-        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,204,0.5); }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
 
-    <div class="w-full max-w-[1200px] flex flex-col h-full">
+    <div class="crypto-bg"></div>
+    <div class="dot-grid"></div>
+
+    <div class="content-layer w-full max-w-[1200px] flex flex-col h-full fade-in">
         
         <!-- Üst Başlık ve Geri Dönüş -->
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b border-gray-800 gap-4 shrink-0">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 pb-5 border-b border-white/10 gap-5 shrink-0">
             <div>
-                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-sm font-bold flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    ANA PANOYA DÖN
+                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-xs font-black flex items-center gap-2 mb-2 uppercase tracking-widest">
+                    <span class="text-lg">←</span> ANA PANOYA DÖN
                 </a>
-                <h1 class="text-3xl font-black tracking-widest text-white">⚡ ZAMAN DİLİMİNE GÖRE TOP 5</h1>
+                <h1 class="text-2xl md:text-3xl font-black tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">⚡ MOMENTUM <span class="text-gray-500">LİDERLERİ</span></h1>
             </div>
             
             <!-- Zaman Dilimi Butonları -->
-            <div class="flex flex-wrap gap-2 bg-[#0A0A0E] p-1.5 rounded-xl border border-[#1A1A24]">
-                <button onclick="changeTimeframe('5m')" id="btn-5m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">5 DK</button>
-                <button onclick="changeTimeframe('15m')" id="btn-15m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">15 DK</button>
-                <button onclick="changeTimeframe('30m')" id="btn-30m" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">30 DK</button>
-                <button onclick="changeTimeframe('1h')" id="btn-1h" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">1 SA</button>
-                <button onclick="changeTimeframe('4h')" id="btn-4h" class="tf-btn px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">4 SA</button>
-                <button onclick="changeTimeframe('1d')" id="btn-1d" class="tf-btn active px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white border border-transparent">1 GÜN</button>
+            <div class="flex flex-wrap gap-2 glass-panel !rounded-xl !p-2 !shadow-none">
+                <button onclick="changeTimeframe('5m')" id="btn-5m" class="tf-btn px-4 py-2 rounded-lg text-[11px] font-black text-gray-400 uppercase tracking-widest">5 DK</button>
+                <button onclick="changeTimeframe('15m')" id="btn-15m" class="tf-btn px-4 py-2 rounded-lg text-[11px] font-black text-gray-400 uppercase tracking-widest">15 DK</button>
+                <button onclick="changeTimeframe('30m')" id="btn-30m" class="tf-btn px-4 py-2 rounded-lg text-[11px] font-black text-gray-400 uppercase tracking-widest">30 DK</button>
+                <button onclick="changeTimeframe('1h')" id="btn-1h" class="tf-btn px-4 py-2 rounded-lg text-[11px] font-black text-gray-400 uppercase tracking-widest">1 SA</button>
+                <button onclick="changeTimeframe('4h')" id="btn-4h" class="tf-btn px-4 py-2 rounded-lg text-[11px] font-black text-gray-400 uppercase tracking-widest">4 SA</button>
+                <button onclick="changeTimeframe('1d')" id="btn-1d" class="tf-btn active px-4 py-2 rounded-lg text-[11px] font-black text-gray-400 uppercase tracking-widest">1 GÜN</button>
             </div>
         </div>
 
         <!-- İki Sütunlu Grid: Artanlar ve Düşenler -->
-        <div class="flex flex-col lg:flex-row gap-6">
+        <div class="flex flex-col lg:flex-row gap-6 md:gap-8">
             
             <!-- EN ÇOK ARTANLAR (SOL) -->
-            <div class="list-card w-full lg:w-1/2 p-6 border-t-4 border-t-[#10B981] shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="text-3xl">🚀</span>
+            <div class="glass-panel w-full lg:w-1/2 p-6 md:p-8 border-t-4 border-t-[#00ffcc] shadow-[0_10px_30px_-10px_rgba(0,255,204,0.15)] relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[#00ffcc]/10 blur-3xl rounded-full pointer-events-none"></div>
+                
+                <div class="flex items-center gap-4 mb-6 md:mb-8 relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/30 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(0,255,204,0.2)]">🚀</div>
                     <div>
-                        <h2 class="text-xl font-black text-white">EN ÇOK ARTANLAR</h2>
-                        <p class="text-[#737373] text-xs font-bold mt-1">Seçili Zaman Diliminde Liderler</p>
+                        <h2 class="text-xl font-black text-white tracking-widest uppercase">EN ÇOK ARTANLAR</h2>
+                        <p class="text-gray-400 text-[10px] font-bold mt-1 uppercase tracking-widest">Seçili Dilimin Liderleri</p>
                     </div>
                 </div>
-                <div id="gainers-list" class="flex flex-col gap-3">
-                    <p class="text-gray-500 text-sm">Veriler çekiliyor...</p>
+                
+                <div id="gainers-list" class="flex flex-col gap-3 relative z-10">
+                    <div class="flex items-center gap-3 text-gray-500 py-10 justify-center">
+                        <div class="w-5 h-5 border-2 border-t-[#00ffcc] border-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs font-black tracking-widest uppercase">Veriler Çekiliyor...</span>
+                    </div>
                 </div>
             </div>
 
             <!-- EN ÇOK DÜŞENLER (SAĞ) -->
-            <div class="list-card w-full lg:w-1/2 p-6 border-t-4 border-t-[#EF4444] shadow-[0_0_30px_-10px_rgba(239,68,68,0.3)]">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="text-3xl">🩸</span>
+            <div class="glass-panel w-full lg:w-1/2 p-6 md:p-8 border-t-4 border-t-[#EF4444] shadow-[0_10px_30px_-10px_rgba(239,68,68,0.15)] relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[#EF4444]/10 blur-3xl rounded-full pointer-events-none"></div>
+                
+                <div class="flex items-center gap-4 mb-6 md:mb-8 relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-[#EF4444]/10 border border-[#EF4444]/30 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(239,68,68,0.2)]">🩸</div>
                     <div>
-                        <h2 class="text-xl font-black text-white">EN ÇOK DÜŞENLER</h2>
-                        <p class="text-[#737373] text-xs font-bold mt-1">Seçili Zaman Diliminde Kaybedenler</p>
+                        <h2 class="text-xl font-black text-white tracking-widest uppercase">EN ÇOK DÜŞENLER</h2>
+                        <p class="text-gray-400 text-[10px] font-bold mt-1 uppercase tracking-widest">Seçili Dilimin Kaybedenleri</p>
                     </div>
                 </div>
-                <div id="losers-list" class="flex flex-col gap-3">
-                    <p class="text-gray-500 text-sm">Veriler çekiliyor...</p>
+                
+                <div id="losers-list" class="flex flex-col gap-3 relative z-10">
+                    <div class="flex items-center gap-3 text-gray-500 py-10 justify-center">
+                        <div class="w-5 h-5 border-2 border-t-[#EF4444] border-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs font-black tracking-widest uppercase">Veriler Çekiliyor...</span>
+                    </div>
                 </div>
             </div>
 
@@ -101,22 +170,25 @@
             const losersContainer = document.getElementById('losers-list');
             
             // Fiyat Formatlayıcı
-            const formatPrice = (price) => price < 1 ? price.toFixed(4) : price.toLocaleString('en-US', {minimumFractionDigits: 2});
+            const formatPrice = (price) => price < 1 ? price.toFixed(5) : price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4});
 
             // Artanları Çiz
             let gainersHTML = "";
             data.yukselenler.forEach((coin, index) => {
+                const delay = index * 0.1; // Kademeli giriş animasyonu
                 gainersHTML += `
-                <div class="coin-item flex items-center justify-between bg-[#050507] border border-[#1A1A24] p-4 rounded-xl shadow-md cursor-default">
+                <div class="coin-item fade-slide-in flex items-center justify-between p-4 md:p-5 rounded-xl cursor-default" style="--hover-border: rgba(0,255,204,0.4); --hover-shadow: rgba(0,255,204,0.2); animation-delay: ${delay}s;">
                     <div class="flex items-center gap-4">
-                        <span class="text-[#10B981] font-black text-xl w-6">#${index + 1}</span>
-                        <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-10 h-10 rounded-full bg-gray-900 p-1">
+                        <span class="text-[#00ffcc] font-black text-xl w-6 drop-shadow-[0_0_5px_rgba(0,255,204,0.5)]">#${index + 1}</span>
+                        <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1.5 shrink-0">
+                            <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-full h-full object-contain">
+                        </div>
                         <div>
-                            <h3 class="text-white font-black text-lg">${coin.sembol}</h3>
-                            <span class="text-gray-400 font-bold text-sm">$${formatPrice(coin.fiyat)}</span>
+                            <h3 class="text-white font-black text-lg tracking-wider">${coin.sembol}</h3>
+                            <span class="text-gray-400 font-bold text-xs md:text-sm">$${formatPrice(coin.fiyat)}</span>
                         </div>
                     </div>
-                    <div class="bg-[#10B981]/20 border border-[#10B981] text-[#10B981] px-4 py-2 rounded-lg font-black text-lg shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                    <div class="bg-[rgba(0,255,204,0.1)] border border-[#00ffcc]/30 text-[#00ffcc] px-3 py-1.5 rounded-lg font-black text-sm md:text-base shadow-[0_0_15px_rgba(0,255,204,0.15)] tracking-wider">
                         +${coin.degisim.toFixed(2)}%
                     </div>
                 </div>`;
@@ -126,17 +198,20 @@
             // Düşenleri Çiz
             let losersHTML = "";
             data.dusenler.forEach((coin, index) => {
+                const delay = index * 0.1;
                 losersHTML += `
-                <div class="coin-item flex items-center justify-between bg-[#050507] border border-[#1A1A24] p-4 rounded-xl shadow-md cursor-default">
+                <div class="coin-item fade-slide-in flex items-center justify-between p-4 md:p-5 rounded-xl cursor-default" style="--hover-border: rgba(239,68,68,0.4); --hover-shadow: rgba(239,68,68,0.2); animation-delay: ${delay}s;">
                     <div class="flex items-center gap-4">
-                        <span class="text-[#EF4444] font-black text-xl w-6">#${index + 1}</span>
-                        <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-10 h-10 rounded-full bg-gray-900 p-1">
+                        <span class="text-[#EF4444] font-black text-xl w-6 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">#${index + 1}</span>
+                        <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1.5 shrink-0">
+                            <img src="https://assets.coincap.io/assets/icons/${coin.sembol.toLowerCase()}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-full h-full object-contain">
+                        </div>
                         <div>
-                            <h3 class="text-white font-black text-lg">${coin.sembol}</h3>
-                            <span class="text-gray-400 font-bold text-sm">$${formatPrice(coin.fiyat)}</span>
+                            <h3 class="text-white font-black text-lg tracking-wider">${coin.sembol}</h3>
+                            <span class="text-gray-400 font-bold text-xs md:text-sm">$${formatPrice(coin.fiyat)}</span>
                         </div>
                     </div>
-                    <div class="bg-[#EF4444]/20 border border-[#EF4444] text-[#EF4444] px-4 py-2 rounded-lg font-black text-lg shadow-[0_0_10px_rgba(239,68,68,0.3)]">
+                    <div class="bg-[rgba(239,68,68,0.1)] border border-[#EF4444]/30 text-[#EF4444] px-3 py-1.5 rounded-lg font-black text-sm md:text-base shadow-[0_0_15px_rgba(239,68,68,0.15)] tracking-wider">
                         ${coin.degisim.toFixed(2)}%
                     </div>
                 </div>`;
@@ -148,13 +223,19 @@
         window.changeTimeframe = function(tf) {
             currentTimeframe = tf;
             
-            // Butonların aktiflik durumunu (görselini) ayarla
+            // Butonların aktiflik durumunu ayarla
             document.querySelectorAll('.tf-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-' + tf).classList.add('active');
 
             // Bekleme efekti yarat (kullanıcıya değiştiğini hissettir)
-            document.getElementById('gainers-list').innerHTML = '<p class="text-gray-500 text-sm">Hesaplanıyor...</p>';
-            document.getElementById('losers-list').innerHTML = '<p class="text-gray-500 text-sm">Hesaplanıyor...</p>';
+            const loadingHTML = (color) => `
+                <div class="flex items-center gap-3 text-gray-500 py-10 justify-center">
+                    <div class="w-5 h-5 border-2 border-t-[${color}] border-transparent rounded-full animate-spin"></div>
+                    <span class="text-xs font-black tracking-widest uppercase">Veriler Çekiliyor...</span>
+                </div>
+            `;
+            document.getElementById('gainers-list').innerHTML = loadingHTML('#00ffcc');
+            document.getElementById('losers-list').innerHTML = loadingHTML('#EF4444');
 
             // Veriyi anında çek ve periyodu sıfırla
             fetchTop5Data();

@@ -3,48 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gelişmiş AI Haber Radarı | Q-AI Terminal</title>
+    <title>Küresel Haber Radarı | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #030304; color: white; }
-        .radar-card { background-color: #0A0A0E; transition: all 0.3s ease; }
-        .radar-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5); }
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; overflow-x: hidden; margin: 0; }
+        
+        /* Zemin Katmanları */
+        .crypto-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
+            z-index: 0; pointer-events: none;
+        }
+        .dot-grid {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            z-index: 1; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; }
+
+        /* Neomorphic Glass Haber Kartı */
+        .radar-card {
+            background: rgba(10, 15, 26, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radar-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            opacity: 0; transition: opacity 0.4s; pointer-events: none;
+        }
+
+        .radar-card:hover::before { opacity: 1; }
+        .radar-card:hover { 
+            transform: translateY(-4px) scale(1.005); 
+            background: rgba(15, 22, 35, 0.7); 
+            box-shadow: 0 20px 40px -10px var(--hover-shadow, rgba(0,0,0,0.6));
+        }
+
+        /* Q-AI Aksiyon Kutusu */
+        .ai-action-box {
+            background: rgba(3, 4, 7, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+            border-radius: 16px;
+        }
+
+        /* Scrollbar Özel */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050507; }
-        ::-webkit-scrollbar-thumb { background: #1A1A24; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.5); }
+
+        /* Yükleme (Radar) Animasyonu */
+        .radar-spinner {
+            width: 80px; height: 80px;
+            border: 3px solid rgba(59, 130, 246, 0.1);
+            border-top-color: #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center overflow-x-hidden">
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
 
-    <div class="w-full max-w-[1100px] flex flex-col h-[95vh]">
+    <div class="crypto-bg"></div>
+    <div class="dot-grid"></div>
+
+    <div class="content-layer w-full max-w-[1100px] flex flex-col h-[90vh]">
         
-        <!-- Üst Menü -->
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-[#1A1A24] shrink-0">
+        <!-- Üst Menü & Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0 gap-4">
             <div>
-                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-sm font-bold flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    ANA PANOYA DÖN
+                <a href="/" class="text-gray-400 hover:text-[#3B82F6] transition-colors text-xs font-black flex items-center gap-2 mb-2 uppercase tracking-widest">
+                    <span class="text-lg">←</span> ANA PANOYA DÖN
                 </a>
-                <h1 class="text-3xl font-black tracking-widest text-white">📰 KÜRESEL HABER AĞI</h1>
+                <h1 class="text-2xl md:text-3xl font-black tracking-[0.15em] text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">📰 KÜRESEL <span class="text-blue-500">HABER AĞI</span></h1>
             </div>
-            <div class="hidden md:block text-right">
-                <p class="text-[#A0A0A5] text-sm">Gerçek Zamanlı Çeviri & Analiz</p>
-                <div class="flex items-center justify-end gap-2 mt-1">
-                    <div class="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse"></div>
-                    <p class="text-[#3B82F6] text-xs font-bold" id="status-text">Bağlanıyor...</p>
+            <div class="md:text-right bg-[#05070A]/50 border border-white/5 p-3 rounded-xl backdrop-blur-md">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Gerçek Zamanlı Çeviri & İstihbarat</p>
+                <div class="flex items-center justify-start md:justify-end gap-2 mt-1">
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                    </span>
+                    <p class="text-blue-400 text-xs font-black uppercase tracking-wide drop-shadow-md" id="status-text">Ağa Bağlanıyor...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Haberlerin Geleceği Alan (JavaScript Dolduracak) -->
+        <!-- Haberlerin Geleceği Konteyner -->
         <div id="news-container" class="flex-grow overflow-y-auto pr-2 flex flex-col gap-6 pb-10">
-            <!-- Sayfa ilk açıldığında gösterilecek animasyon -->
-            <div class="text-center py-20 border border-[#1A1A24] rounded-xl bg-[#0A0A0E]">
-                <div class="w-16 h-16 border-4 border-t-[#3B82F6] border-r-transparent border-b-[#1A1A24] border-l-[#1A1A24] rounded-full animate-spin mx-auto mb-4"></div>
-                <p class="text-[#3B82F6] font-black text-xl mb-2">AĞA BAĞLANILIYOR...</p>
-                <p class="text-[#737373] text-sm">Haberler analiz ediliyor ve çevriliyor. Lütfen bekleyin.</p>
+            <!-- Yükleme Animasyonu -->
+            <div class="flex flex-col items-center justify-center h-64 border border-white/5 rounded-2xl bg-[#0A0A0E]/50 backdrop-blur-sm">
+                <div class="radar-spinner mb-6"></div>
+                <p class="text-blue-400 font-black text-xl mb-2 tracking-widest drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">SİSTEM TARANIYOR...</p>
+                <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Küresel veriler analiz edilip Türkçe'ye çevriliyor.</p>
             </div>
         </div>
 
@@ -57,11 +129,12 @@
                 const response = await fetch('/api/haberler');
                 const data = await response.json();
                 
-                document.getElementById('status-text').innerText = "Veri Akışı Aktif (Oto-Yenileme)";
+                document.getElementById('status-text').innerText = "VERİ AKIŞI AKTİF (OTO-YENİLEME)";
+                document.getElementById('status-text').className = "text-blue-400 text-xs font-black uppercase tracking-wide drop-shadow-md";
                 renderNews(data);
             } catch (error) {
-                document.getElementById('status-text').innerText = "Bağlantı Hatası!";
-                document.getElementById('status-text').className = "text-red-500 text-xs font-bold";
+                document.getElementById('status-text').innerText = "AĞ BAĞLANTISI KOPTU!";
+                document.getElementById('status-text').className = "text-red-500 text-xs font-black uppercase tracking-wide drop-shadow-md";
             }
         }
 
@@ -69,48 +142,52 @@
             const container = document.getElementById('news-container');
             let htmlContent = "";
 
-            haberler.forEach(h => {
+            haberler.forEach((h, index) => {
+                // Animasyon gecikmesi için
+                const delay = index * 0.1;
+                
                 htmlContent += `
-                <div class="radar-card p-6 rounded-xl border-l-4 border-b border-[#1A1A24] shadow-lg flex flex-col" style="border-left-color: ${h.onem_renk};">
+                <div class="radar-card fade-in p-6 md:p-8 flex flex-col" style="--hover-shadow: ${h.onem_renk}30; border-left: 4px solid ${h.onem_renk}; animation-delay: ${delay}s;">
                     
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex flex-wrap justify-between items-center mb-5 gap-3 relative z-10">
                         <div class="flex items-center gap-3">
-                            <span class="bg-[#1A1A24] text-gray-300 text-xs font-bold px-3 py-1 rounded-full">${h.kaynak}</span>
-                            <span class="text-[#737373] text-xs font-bold">${h.zaman}</span>
+                            <span class="bg-[#05070A] border border-white/10 text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-md uppercase tracking-wider">${h.kaynak}</span>
+                            <span class="text-gray-500 text-xs font-bold">${h.zaman}</span>
                         </div>
-                        <span class="text-xs font-black tracking-widest px-3 py-1 rounded" style="color: ${h.onem_renk}; background-color: ${h.onem_renk}15;">
+                        <span class="text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-md border" style="color: ${h.onem_renk}; background-color: ${h.onem_renk}10; border-color: ${h.onem_renk}40; box-shadow: 0 0 15px ${h.onem_renk}20;">
                             ${h.onem}
                         </span>
                     </div>
 
-                    <a href="${h.url}" target="_blank" class="group block mb-6">
-                        <h2 class="text-white text-2xl font-black mb-3 leading-tight group-hover:text-blue-400 transition-colors">${h.baslik}</h2>
-                        <p class="text-[#A0A0A5] text-sm leading-relaxed text-justify">${h.ozet}</p>
+                    <a href="${h.url}" target="_blank" class="group block mb-6 relative z-10">
+                        <h2 class="text-white text-xl md:text-2xl font-black mb-3 leading-tight group-hover:text-blue-400 transition-colors drop-shadow-sm">${h.baslik}</h2>
+                        <p class="text-gray-400 text-sm md:text-base leading-relaxed text-justify font-medium">${h.ozet}</p>
                     </a>
 
-                    <div class="mt-auto bg-[#050507] p-4 rounded-lg border border-[#1A1A24]">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xl">🤖</span>
-                                <span class="text-white font-black text-sm tracking-widest">Q-AI AKSİYON PLANI</span>
+                    <!-- Q-AI Aksiyon Paneli HUD -->
+                    <div class="mt-auto ai-action-box p-5 relative z-10">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-5">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">🤖</span>
+                                <span class="text-white font-black text-xs tracking-widest uppercase border-b border-white/20 pb-1">Q-AI Aksiyon Planı</span>
                             </div>
                             
-                            <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-5">
                                 <div class="text-right">
-                                    <span class="block text-[#737373] text-[10px] font-bold uppercase mb-1">Önerilen Yön</span>
-                                    <span class="font-black text-base" style="color: ${h.yon_renk};">${h.yon}</span>
+                                    <span class="block text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Algoritmik Yön</span>
+                                    <span class="font-black text-lg drop-shadow-md" style="color: ${h.yon_renk};">${h.yon}</span>
                                 </div>
-                                <div class="w-px h-8 bg-[#1A1A24]"></div>
+                                <div class="w-px h-10 bg-white/10"></div>
                                 <div class="text-left">
-                                    <span class="block text-[#737373] text-[10px] font-bold uppercase mb-1">Kaldıraç & Marjin</span>
-                                    <span class="font-bold text-white text-sm">${h.kaldirac}</span>
+                                    <span class="block text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Risk / Kaldıraç</span>
+                                    <span class="font-black text-white text-base">${h.kaldirac}</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="border-t border-[#1A1A24] pt-3">
-                            <span class="text-white text-xs font-bold mb-1 block">Yapay Zeka Yorumu:</span>
-                            <p class="text-[#94A3B8] text-xs leading-relaxed italic">"${h.ai_yorum}"</p>
+                        <div class="border-t border-white/5 pt-4">
+                            <span class="text-white/80 text-[10px] font-black uppercase tracking-widest mb-1.5 block">Yapay Zeka Yorumu:</span>
+                            <p class="text-blue-200/80 text-xs leading-relaxed italic font-medium">"${h.ai_yorum}"</p>
                         </div>
                     </div>
                 </div>
@@ -123,7 +200,7 @@
         // Sayfa açılır açılmaz veriyi çek
         fetchNews();
         
-        // Sayfayı yenilemeden her 30 saniyede bir arka planda haberleri güncelle!
+        // Sayfayı yenilemeden her 30 saniyede bir arka planda haberleri güncelle
         setInterval(fetchNews, 30000);
     </script>
 </body>
