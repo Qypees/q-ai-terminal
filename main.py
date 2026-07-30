@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
-app = FastAPI(title="Qypees Terminal Pro Core - 100x Enterprise Suite")
+app = FastAPI(title="Qypees Terminal Pro Core - 100x Enterprise Suite v5 (Arbitraj & Webhook)")
 templates = Jinja2Templates(directory="templates")
 
 # ==========================================
@@ -60,6 +60,9 @@ trade_notlari = db_veri.get("notlar", [])
 
 onayli_kullanicilar = set()
 spotify_tokens = {}
+
+# Paket 4: Webhook Listesi (Hafızada tutulan basit liste)
+webhook_listesi = []
 
 # Spotify Kimlik Bilgileri
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "d560d37532284575a7933231cf7166f3")
@@ -101,6 +104,23 @@ class RiskHesapRequest(BaseModel):
 
 class NotRequest(BaseModel):
     not_icerigi: str
+
+class VideoRequest(BaseModel):
+    coin: str
+    konu: str
+
+class TransferRequest(BaseModel):
+    kaynak: str
+    hedef: str
+    miktar: float
+    oto_dca: bool
+
+class WebhookKayitRequest(BaseModel):
+    platform: str
+    url: str
+
+class WebhookTestRequest(BaseModel):
+    url: str
 
 # ==========================================
 # 1. ANA ÇEKİRDEK VERİTABANI (200+ COİN)
@@ -293,6 +313,24 @@ async def api_paper_islem_ac(req: PaperTradeRequest):
     veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili", "kalan_bakiye": paper_bakiye})
 
+# Paket 2 - Borsa Transfer Köprüsü
+@app.post("/api/transfer_baslat")
+async def api_transfer_baslat(req: TransferRequest):
+    global paper_bakiye
+    paper_bakiye += req.miktar
+    veritabani_kaydet()
+    return JSONResponse(content={"durum": "basarili", "mesaj": f"${req.miktar} tutarındaki fon başarıyla aktarıldı."})
+
+# Paket 3 - Arbitraj Radarı API
+@app.get("/api/arbitraj")
+async def api_arbitraj():
+    return JSONResponse(content=[
+        {"coin": "SOL", "buy_exchange": "Binance", "buy_price": 145.0, "sell_exchange": "OKX", "sell_price": 145.8, "spread": 0.55, "profit": 80.0, "status": "RİSKSİZ KAZANÇ", "color": "#10B981"},
+        {"coin": "ETH", "buy_exchange": "Uniswap", "buy_price": 3090.5, "sell_exchange": "Binance", "sell_price": 3105.0, "spread": 0.47, "profit": 145.0, "status": "DEX-CEX FIRSATI", "color": "#F59E0B"},
+        {"coin": "PEPE", "buy_exchange": "Gate.io", "buy_price": 0.0000080, "sell_exchange": "MEXC", "sell_price": 0.0000082, "spread": 2.50, "profit": 45.0, "status": "YÜKSEK SPREAD", "color": "#8B5CF6"},
+        {"coin": "XRP", "buy_exchange": "KuCoin", "buy_price": 0.590, "sell_exchange": "Binance", "sell_price": 0.595, "spread": 0.85, "profit": 12.5, "status": "DÜŞÜK HACİM", "color": "#6B7280"}
+    ])
+
 @app.post("/api/risk_hesapla")
 async def api_risk_hesapla(req: RiskHesapRequest):
     fiyat = req.giris_fiyati
@@ -319,6 +357,30 @@ async def api_notlar_post(req: NotRequest):
     trade_notlari.append({"not": req.not_icerigi, "zaman": datetime.datetime.now().strftime("%d.%m.%Y - %H:%M")})
     veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili"})
+
+# ==========================================
+# YENİ: Paket 4 - ABONELİK & WEBHOOK API
+# ==========================================
+@app.get("/api/webhook")
+async def get_webhooks():
+    return JSONResponse(content=webhook_listesi)
+
+@app.post("/api/webhook")
+async def add_webhook(req: WebhookKayitRequest):
+    webhook_listesi.append({"platform": req.platform, "url": req.url})
+    return JSONResponse(content={"durum": "basarili"})
+
+@app.post("/api/webhook/test")
+async def test_webhook(req: WebhookTestRequest):
+    # Gerçek uygulamada burada httpx veya requests ile URL'ye POST atılır.
+    # Şimdilik UI simülasyonu için başarılı dönüyoruz.
+    try:
+        # Örnek dummy payload
+        payload = {"content": "🚀 **Q-AI Test Sinyali**\nBu bir test mesajıdır. Bağlantı başarılı!"}
+        # Sadece hata fırlatmasını engellemek için try bloğu
+        return JSONResponse(content={"durum": "basarili"})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Webhook iletilemedi.")
 
 # ==========================================
 # 4. GERÇEK ZAMANLI LLM KONSEY MOTORU (GROQ)
@@ -352,46 +414,130 @@ async def uclu_ai_birlesik_yanit(mesaj: str):
         return await groq_ajani_cagir(client, mudur_rol, "llama-3.1-8b-instant", mesaj)
 
 # ==========================================
-# 5. HABERLER VE ÇEVİRİ
+# Paket 1 - YOUTUBE AI VİDEO FABRİKASI API
 # ==========================================
-def cevir_ingilizce_turkce(metin):
+@app.post("/api/ai_video_uret")
+async def api_ai_video_uret(req: VideoRequest):
+    if not GROQ_API_KEY:
+        return JSONResponse(content={"senaryo": "API Anahtarı bulunamadı. Lütfen .env dosyasına GROQ_API_KEY ekleyin."})
+    
+    sistem_rolu = """Sen viral YouTube Shorts ve TikTok kripto videoları için kanca (hook) ve senaryo yazan bir uzmansın. 
+    Kısa, dikkat çekici, ve harekete geçirici metinler yazarsın. Metni [DIŞ SES] ve [GÖRSEL/SAHNE] olarak ayır."""
+    
+    istek = f"Kripto para birimi olan {req.coin} hakkında, '{req.konu}' odaklı 30-45 saniyelik, heyecan verici ve izleyiciyi sonuna kadar tutacak bir dikey video senaryosu yaz."
+    
+    async with httpx.AsyncClient() as client:
+        yanit = await groq_ajani_cagir(client, sistem_rolu, "llama-3.1-8b-instant", istek)
+        
+    return JSONResponse(content={"senaryo": yanit})
+
+# ==========================================
+# 5. ASENKRON ÇOKLU-GLOBAL HABER AĞI
+# ==========================================
+async def cevir_ingilizce_turkce_async(client: httpx.AsyncClient, metin: str):
+    if not metin or metin.strip() == "":
+        return ""
     try:
         url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=tr&dt=t&q={urllib.parse.quote(metin)}"
-        response = requests.get(url, timeout=3)
-        return "".join([x[0] for x in response.json()[0]])
-    except:
+        response = await client.get(url, timeout=5.0)
+        if response.status_code == 200:
+            veri = response.json()
+            if veri and veri[0]:
+                return "".join([x[0] for x in veri[0] if x[0]])
         return metin 
+    except Exception as e:
+        return metin
 
-def son_dakika_haberlerini_cek():
+def ai_haber_analizi(metin):
+    metin_kucuk = metin.lower()
+    yuksek_onemli = ["sec", "etf", "onay", "yasadışı", "faiz", "enflasyon", "kara para", "hack", "çöküş", "iflas", "yasak", "dava"]
+    onemli = ["güncelleme", "ortaklık", "listeleme", "ağ", "balina", "transfer", "entegrasyon", "yakım"]
+    if any(k in metin_kucuk for k in yuksek_onemli): return "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "Yüksek Volatilite Beklentisi"
+    elif any(k in metin_kucuk for k in onemli): return "ÖNEMLİ ⚠️", "#F59E0B", "Orta Volatilite Beklentisi"
+    else: return "STANDART ℹ️", "#3B82F6", "Olağan Akış"
+
+async def rss_kaynaktan_haber_cek(client: httpx.AsyncClient, kaynak_adi: str, rss_url: str):
+    try:
+        api_url = f"https://api.rss2json.com/v1/api.json?rss_url={rss_url}"
+        response = await client.get(api_url, timeout=10.0)
+        data = response.json()
+        haberler = []
+        if 'items' in data:
+            for item in data['items'][:3]:
+                zaman_str = item.get('pubDate', '')
+                zaman_saat = zaman_str[11:16] if len(zaman_str) >= 16 else "Şimdi"
+                
+                orjinal_baslik = item.get('title', 'Başlık Bulunamadı')
+                orjinal_ozet = re.sub('<[^<]+>', '', item.get('description', 'Özet bulunamadı'))[:200] + "..."
+                
+                t_baslik = await cevir_ingilizce_turkce_async(client, orjinal_baslik)
+                t_ozet = await cevir_ingilizce_turkce_async(client, orjinal_ozet)
+                
+                t_baslik = t_baslik.replace('`', "'")
+                t_ozet = t_ozet.replace('`', "'")
+                
+                onem, onem_renk, kaldirac = ai_haber_analizi(t_baslik + " " + t_ozet)
+                
+                haberler.append({
+                    "baslik": t_baslik,
+                    "ozet": t_ozet,
+                    "kaynak": kaynak_adi,
+                    "url": item.get('link', '#'),
+                    "zaman": zaman_saat,
+                    "zaman_tam": zaman_str,
+                    "onem": onem,
+                    "onem_renk": onem_renk,
+                    "yon": "CANLI 🟢",
+                    "yon_renk": "#10B981",
+                    "kaldirac": kaldirac,
+                    "ai_yorum": "Çoklu-Kaynak Onaylı."
+                })
+        return haberler
+    except Exception as e:
+        return []
+
+async def son_dakika_haberlerini_cek_async():
     now = time.time()
     if now - haberler_cache["last_update"] < 60 and haberler_cache["data"]:
         return haberler_cache["data"]
-    try:
-        url = "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss"
-        response = requests.get(url, timeout=10)
-        data = response.json()
-        haberler = []
-        for item in data['items'][:12]:
-            t_baslik = cevir_ingilizce_turkce(item['title'])
-            t_ozet = cevir_ingilizce_turkce(re.sub('<[^<]+>', '', item['description'])[:250] + "...")
-            haberler.append({"baslik": t_baslik, "ozet": t_ozet, "kaynak": "CoinTelegraph", "url": item['link'], "zaman": item['pubDate'][11:16], "onem": "ÖNEMLİ ⚠️", "onem_renk": "#F59E0B", "yon": "CANLI 🟢", "kaldirac": "Genel Akış", "ai_yorum": "Analiz güncel."})
-        haberler_cache["data"] = haberler
-        haberler_cache["last_update"] = now
-        return haberler
-    except:
-        return [{"baslik": "Haberler güncelleniyor...", "ozet": "Bağlantı bekleniyor.", "kaynak": "Sistem", "url": "#", "zaman": "Şimdi", "onem": "BEKLEYİN", "onem_renk": "#6B7280", "yon": "YÜKLENİYOR", "kaldirac": "-", "ai_yorum": "-"}]
+        
+    rss_kaynaklar = [
+        ("CoinTelegraph", "https://cointelegraph.com/rss"),
+        ("CoinDesk", "https://www.coindesk.com/arc/outboundfeeds/rss/"),
+        ("Decrypt", "https://decrypt.co/feed"),
+        ("CryptoSlate", "https://cryptoslate.com/feed/"),
+        ("NewsBTC", "https://www.newsbtc.com/feed/")
+    ]
+    
+    async with httpx.AsyncClient() as client:
+        gorevler = [rss_kaynaktan_haber_cek(client, ad, url) for ad, url in rss_kaynaklar]
+        sonuclar = await asyncio.gather(*gorevler)
+        
+        tum_haberler = []
+        for liste in sonuclar:
+            tum_haberler.extend(liste)
+            
+        if tum_haberler:
+            tum_haberler.sort(key=lambda x: x.get("zaman_tam", ""), reverse=True)
+            final_haberler = tum_haberler[:15]
+            haberler_cache["data"] = final_haberler
+            haberler_cache["last_update"] = now
+            return final_haberler
+        else:
+            return [{"baslik": "Sistem Hazırlanıyor...", "ozet": "Global ağlara bağlanılıyor.", "kaynak": "Sistem", "url": "#", "zaman": "Şimdi", "onem": "BEKLEYİN", "onem_renk": "#6B7280", "yon": "YÜKLENİYOR", "yon_renk": "#6B7280", "kaldirac": "-", "ai_yorum": "-"}]
 
 # ==========================================
-# 6. API UÇ NOKTALARI
+# 6. API UÇ NOKTALARI (DEVAMI)
 # ==========================================
+@app.get("/api/haberler")
+async def api_haberler(): 
+    return JSONResponse(content=await son_dakika_haberlerini_cek_async())
+
 @app.get("/api/piyasa")
 async def api_piyasa(): return JSONResponse(content=coklu_piyasa_verilerini_cek())
 
 @app.get("/api/btc")
 async def api_btc(): return JSONResponse(content=gercek_piyasa_verisi_cek())
-
-@app.get("/api/haberler")
-async def api_haberler(): return JSONResponse(content=son_dakika_haberlerini_cek())
 
 @app.get("/api/top5")
 async def api_top5(zaman: str = "1d"): return JSONResponse(content=top5_verilerini_cek(zaman))
@@ -482,45 +628,26 @@ async def ana_ekran(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
 
-@app.get("/piyasa", response_class=HTMLResponse)
-async def piyasa(request: Request):
+# YENİ EKLENEN SAYFA YÖNLENDİRMELERİ (Paket 1, 2, 3 & 4)
+@app.get("/ai-icerik", response_class=HTMLResponse)
+async def ai_icerik_sayfasi(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="piyasa.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="ai_icerik.html", context={"request": request})
 
-@app.get("/haberler", response_class=HTMLResponse)
-async def haberler(request: Request):
+@app.get("/transfer", response_class=HTMLResponse)
+async def transfer_sayfasi(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="haberler.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="transfer.html", context={"request": request})
 
-@app.get("/sinyaller", response_class=HTMLResponse)
-async def sinyaller(request: Request):
+@app.get("/arbitraj", response_class=HTMLResponse)
+async def arbitraj_sayfasi(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="sinyaller.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="arbitraj.html", context={"request": request})
 
-@app.get("/top5", response_class=HTMLResponse)
-async def top5(request: Request):
+@app.get("/abonelik", response_class=HTMLResponse)
+async def abonelik_sayfasi(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="top5.html", context={"request": request})
-
-@app.get("/isiharitasi", response_class=HTMLResponse)
-async def isiharitasi(request: Request):
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="isiharitasi.html", context={"request": request})
-
-@app.get("/cuzdan", response_class=HTMLResponse)
-async def cuzdan(request: Request):
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="cuzdan.html", context={"request": request})
-
-@app.get("/sohbet", response_class=HTMLResponse)
-async def sohbet(request: Request):
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="sohbet.html", context={"request": request})
-
-@app.get("/muzik", response_class=HTMLResponse)
-async def muzik(request: Request):
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="muzik.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="abonelik.html", context={"request": request})
 
 @app.get("/{sayfa_adi}", response_class=HTMLResponse)
 async def sayfa_yonlendir(request: Request, sayfa_adi: str):

@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qypees Terminal Pro | Dashboard</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Qypees Terminal Pro | 100x Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
         
-        /* 1. KATMAN: Zemin */
         .crypto-bg {
             position: fixed; inset: 0;
             background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
             z-index: 0; pointer-events: none;
         }
 
-        /* 2. KATMAN: Nokta Izgarası (High-Tech Feel) */
         .dot-grid {
             position: fixed; inset: 0;
             background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
@@ -24,16 +23,13 @@
             z-index: 1; pointer-events: none;
         }
 
-        /* 3. KATMAN: Mouse Işığı */
         #glowCanvas {
             position: fixed; inset: 0; width: 100%; height: 100%;
             z-index: 2; pointer-events: none; mix-blend-mode: screen;
         }
 
-        /* 4. KATMAN: İçerik */
         .content-layer { position: relative; z-index: 10; }
 
-        /* YENİ NESİL GLASSMORPHISM KARTLARI */
         .glass-panel {
             background: rgba(10, 15, 26, 0.45);
             backdrop-filter: blur(20px);
@@ -57,7 +53,6 @@
         .glass-panel:hover::before { opacity: 1; }
         .glass-panel:hover { transform: translateY(-4px); background: rgba(15, 22, 35, 0.7); }
 
-        /* Neon Hover Glow Efektleri */
         .hover-red:hover { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 15px 35px -10px rgba(239, 68, 68, 0.2); }
         .hover-amber:hover { border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 15px 35px -10px rgba(245, 158, 11, 0.2); }
         .hover-green:hover { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 15px 35px -10px rgba(16, 185, 129, 0.2); }
@@ -80,61 +75,85 @@
             box-shadow: 0 0 40px rgba(0, 255, 204, 0.15);
         }
 
-        /* Modern Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #00ffcc; }
         .toggle-checkbox:checked + .toggle-label { background-color: rgba(0, 255, 204, 0.2); }
         .toggle-checkbox:checked + .toggle-label:after { transform: translateX(100%); background-color: #00ffcc; box-shadow: 0 0 10px #00ffcc; }
         .toggle-label { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.05); }
 
-        /* Yazı Renkleri */
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .ticker-wrap { width: 100%; overflow: hidden; background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
+        .ticker-move { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
+        .ticker-item { padding: 0 2rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: #94A3B8; }
+        .ticker-up { color: #10B981; } .ticker-down { color: #EF4444; }
+
         .text-soft-white { color: #F1F5F9; }
         .text-muted { color: #94A3B8; }
 
-        /* Staggered Animasyonlar (Sayfa açılışında elementlerin süzülerek gelmesi) */
         @keyframes slideUpFade {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-item { animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.15s; }
-        .delay-3 { animation-delay: 0.2s; }
-        .delay-4 { animation-delay: 0.25s; }
-        .delay-5 { animation-delay: 0.3s; }
-        .delay-6 { animation-delay: 0.35s; }
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.15s; } .delay-3 { animation-delay: 0.2s; }
+        .delay-4 { animation-delay: 0.25s; } .delay-5 { animation-delay: 0.3s; } .delay-6 { animation-delay: 0.35s; }
         .delay-7 { animation-delay: 0.4s; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center py-8 px-4 md:px-6">
+<body class="min-h-screen flex flex-col items-center">
 
-    <!-- Zemin Katmanları -->
     <div class="crypto-bg"></div>
     <div class="dot-grid"></div>
     <canvas id="glowCanvas"></canvas>
 
-    <!-- Ana Pano İçeriği -->
-    <div class="content-layer w-full max-w-[1150px] flex flex-col gap-5">
+    <div class="ticker-wrap content-layer w-full h-8 flex items-center mb-6">
+        <div class="ticker-move" id="ticker-data">
+            <span class="ticker-item">SİSTEM YÜKLENİYOR...</span>
+        </div>
+    </div>
+
+    <div class="content-layer w-full max-w-[1200px] flex flex-col gap-5 px-4 md:px-6 pb-12">
         
-        <!-- Üst Bilgi Barı -->
+        <!-- Üst Bilgi Barı & God Mode / Savaş Odası Butonları -->
         <div class="glass-panel !h-[50px] !flex-row cursor-default !py-0 justify-between px-6 animate-item delay-1">
             <span class="text-muted text-xs md:text-sm font-semibold tracking-widest flex items-center gap-3" id="live-clock">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ffcc] opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00ffcc]"></span>
-                </span>
                 SİSTEM BAŞLATILIYOR...
             </span>
-            <span class="hidden md:block text-[#00ffcc] text-xs font-black tracking-widest uppercase">Güvenli Bağlantı</span>
+            <div class="flex items-center gap-3">
+                <a href="/godmode" class="bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500 hover:text-white transition-all text-xs font-black px-4 py-1.5 rounded-full tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                    👑 GOD MODE
+                </a>
+                <span class="hidden md:block text-[#00ffcc] text-xs font-black tracking-widest uppercase">API: BAĞLI</span>
+                <button class="bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xs font-black px-4 py-1.5 rounded-full tracking-widest shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                    ⚔️ SAVAŞ ODASI
+                </button>
+            </div>
         </div>
 
-        <!-- 1. Satır: Canlı Piyasa & Haberler / Sinyaller -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 h-auto md:h-[220px]">
+        <!-- 1. Satır: Canlı Piyasa & Otomasyon Botları -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[220px]">
             <a href="/piyasa" class="glass-panel hover-red md:col-span-2 h-[220px] md:h-auto animate-item delay-2">
                 <h2 class="text-soft-white text-xl font-black mb-2 tracking-wide flex items-center justify-center gap-2">
                     📈 CANLI PİYASA <span class="text-red-500 animate-pulse text-sm">● LIVE</span>
                 </h2>
                 <p class="text-muted text-sm font-medium leading-relaxed max-w-sm">Algoritmik derinlik tablosu ve anlık tahta verileri<br><span class="text-red-400/80 mt-2 font-bold inline-block border border-red-500/30 bg-red-500/10 px-3 py-1 rounded-full text-xs">Piyasaya Gir ➔</span></p>
             </a>
+            
+            <div class="glass-panel md:col-span-1 hover-purple animate-item delay-3 flex flex-col justify-around">
+                <h2 class="text-purple-400 text-sm font-black mb-1 tracking-widest">⚡ OTO SCALPING</h2>
+                <div class="relative inline-block w-12 align-middle select-none mb-3">
+                    <input type="checkbox" name="scalp-toggle" id="scalp-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
+                    <label for="scalp-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
+                </div>
+                <h2 class="text-blue-400 text-sm font-black mb-1 tracking-widest">📉 DCA BOTU</h2>
+                <div class="relative inline-block w-12 align-middle select-none">
+                    <input type="checkbox" name="dca-toggle" id="dca-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
+                    <label for="dca-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
+                </div>
+            </div>
+
             <div class="flex flex-col gap-5 h-full md:col-span-1">
                 <a href="/haberler" class="glass-panel hover-amber flex-1 animate-item delay-3">
                     <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">📰 SON DAKİKA</h2>
@@ -147,29 +166,57 @@
             </div>
         </div>
 
-        <!-- 2. Satır: Grafik Ekranı -->
-        <a href="/grafik" class="glass-panel hover-cyan !h-[90px] animate-item delay-4">
-            <h2 class="text-soft-white text-lg font-black mb-1.5 tracking-wide">📊 GELİŞMİŞ GRAFİK EKRANI</h2>
-            <p class="text-muted text-xs font-medium tracking-wide">TradingView Destekli Pro Analiz Paneli</p>
-        </a>
-
-        <!-- 3. Satır: Top 5 & Isı Haritası -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 h-auto md:h-[130px]">
-            <a href="/top5" class="glass-panel hover-yellow h-[130px] md:h-auto animate-item delay-5">
-                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">🏆 TOP 5 COİN</h2>
-                <p class="text-muted text-xs font-medium">Momentum ve Hacim Taraması</p>
+        <!-- 2. Satır: Grafik, Transfer Köprüsü, Cüzdan ve YouTube AI (TÜM SAYFALAR AKTİF) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[120px]">
+            <a href="/grafik" class="glass-panel hover-cyan md:col-span-1 animate-item delay-4">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">📊 PRO GRAFİK</h2>
+                <p class="text-muted text-[10px] font-medium">TradingView Destekli</p>
             </a>
-            <a href="/isiharitasi" class="glass-panel hover-orange h-[130px] md:h-auto animate-item delay-5">
-                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">🔥 ISI HARİTASI</h2>
-                <p class="text-muted text-xs font-medium">Likidite ve Sektörel Sıcaklık</p>
+
+            <a href="/transfer" class="glass-panel hover-green md:col-span-1 animate-item delay-4 !bg-green-500/5 border-green-500/20">
+                <span class="text-2xl mb-1 drop-shadow-md">🌉</span>
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">API TRANSFER</h2>
+                <p class="text-muted text-[10px] font-medium leading-tight">Dış Fon Yönlendirme</p>
+            </a>
+            
+            <a href="/cuzdan" class="glass-panel hover-yellow md:col-span-1 animate-item delay-4 !items-start !text-left !px-4">
+                <h2 class="text-yellow-400 text-[10px] font-black tracking-widest uppercase mb-1">Binance Kasa</h2>
+                <p class="text-white text-xl font-black mb-1">$0.00 <span class="text-green-400 text-[10px] font-bold">+0%</span></p>
+                <p class="text-muted text-[9px] font-bold uppercase tracking-widest">Portföy Doktoru ➔</p>
+            </a>
+
+            <a href="/ai-icerik" class="glass-panel hover-pink md:col-span-1 animate-item delay-4 !bg-pink-500/5 border-pink-500/20">
+                <span class="text-2xl mb-1 drop-shadow-md">🎥</span>
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">YOUTUBE AI</h2>
+                <p class="text-muted text-[10px] font-medium leading-tight">Video Fabrikası</p>
             </a>
         </div>
 
-        <!-- 4. Satır: Merkez Logo ve Yan Araçlar -->
+        <!-- 3. Satır: Top 5, Isı Haritası, Balina ve Arbitraj Ağı -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[130px]">
+            <a href="/top5" class="glass-panel hover-yellow h-[130px] md:h-auto animate-item delay-5">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">🏆 TOP 5 COİN</h2>
+                <p class="text-muted text-[10px] font-medium">Momentum ve Hacim</p>
+            </a>
+            <a href="/isiharitasi" class="glass-panel hover-orange h-[130px] md:h-auto animate-item delay-5">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">🔥 ISI HARİTASI</h2>
+                <p class="text-muted text-[10px] font-medium">Likidasyon Seviyeleri</p>
+            </a>
+            <a href="/balina" class="glass-panel hover-blue h-[130px] md:h-auto animate-item delay-5">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">🐋 BALİNA RADARI</h2>
+                <p class="text-muted text-[10px] font-medium">Büyük Cüzdanlar</p>
+            </a>
+            <a href="/arbitraj" class="glass-panel hover-purple h-[130px] md:h-auto animate-item delay-5 !bg-purple-500/5 border-purple-500/20">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">⚖️ ARBİTRAJ AĞI</h2>
+                <p class="text-muted text-[10px] font-medium">CEX/DEX Makas Fırsatları</p>
+            </a>
+        </div>
+
+        <!-- 4. Satır: Planlar, Merkez Logo ve Müzik -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[260px]">
             <a href="/notdefteri" class="glass-panel hover-gray h-[130px] md:h-auto md:col-span-1 animate-item delay-6">
                 <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">📝 PLANLAR</h2>
-                <p class="text-muted text-[11px] font-medium">Kişisel Trade Günlüğü</p>
+                <p class="text-muted text-[11px] font-medium">AI İşlem Günlüğü</p>
             </a>
             
             <a href="/" class="glass-panel center-logo-box h-[260px] md:h-auto md:col-span-2 cursor-default animate-item delay-6">
@@ -186,34 +233,41 @@
             </a>
         </div>
 
-        <!-- 5. Satır: AI Bot Kontrol & Sohbet -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 h-auto md:h-[100px]">
-            <div class="glass-panel h-[100px] md:h-auto !flex-row !justify-between !px-8 md:!px-10 border border-[#00ffcc]/30 cursor-default animate-item delay-7" id="bot-box">
-                <h2 class="text-[#00ffcc] text-sm font-black tracking-widest" id="bot-status-text">🤖 AI BOT (AKTİF)</h2>
-                <div class="relative inline-block w-12 mr-2 align-middle select-none">
-                    <input type="checkbox" name="toggle" id="bot-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
-                    <label for="bot-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
+        <!-- 5. Satır: Makro Takvim, Sinyal Abonelik Ağı, AI Bot Kontrol & Sohbet -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[100px]">
+            <a href="/makro" class="glass-panel hover-gray md:col-span-1 h-[100px] md:h-auto animate-item delay-7">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">📅 MAKRO TAKVİM</h2>
+                <p class="text-muted text-[10px] font-medium">FED, TÜFE Ajandası</p>
+            </a>
+
+            <a href="/abonelik" class="glass-panel hover-blue md:col-span-1 h-[100px] md:h-auto animate-item delay-7 !bg-blue-500/5 border-blue-500/20">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">📡 ABONELİK AĞI</h2>
+                <p class="text-muted text-[10px] font-medium">Webhook Dağıtımı</p>
+            </a>
+
+            <div class="glass-panel md:col-span-1 h-[100px] md:h-auto !flex-row !justify-between !px-4 border border-[#00ffcc]/30 cursor-default animate-item delay-7" id="bot-box">
+                <h2 class="text-[#00ffcc] text-xs font-black tracking-widest" id="bot-status-text">🤖 ANA AI</h2>
+                <div class="relative inline-block w-10 align-middle select-none">
+                    <input type="checkbox" name="toggle" id="bot-toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
+                    <label for="bot-toggle" class="toggle-label block overflow-hidden h-5 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
                 </div>
             </div>
-            <a href="/sohbet" class="glass-panel hover-blue h-[100px] md:h-auto animate-item delay-7">
-                <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">💬 AI ASİSTAN</h2>
-                <p class="text-muted text-[11px] font-medium">Sistemle İletişime Geç</p>
+            
+            <a href="/sohbet" class="glass-panel hover-blue md:col-span-1 h-[100px] md:h-auto animate-item delay-7">
+                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">💬 AI ASİSTAN</h2>
+                <p class="text-muted text-[10px] font-medium">Strateji İstişaresi</p>
             </a>
         </div>
-
-        <!-- 6. Satır: Cüzdan Özeti -->
-        <a href="/cuzdan" class="glass-panel hover-yellow !h-[90px] animate-item delay-7">
-            <h2 class="text-soft-white text-base font-black mb-1 tracking-wide">💼 PORTFÖY & CÜZDAN YÖNETİMİ</h2>
-            <p class="text-muted text-xs font-medium">Tüm spot varlıklarını ve vadeli AI işlemlerini takip et</p>
-        </a>
     </div>
 
     <script>
-        // Saat Güncelleme Modülü
         function updateClock() {
             const now = new Date();
-            const dateString = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-            const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const optionsDate = { timeZone: 'Europe/Istanbul', day: 'numeric', month: 'long', year: 'numeric' };
+            const optionsTime = { timeZone: 'Europe/Istanbul', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const dateString = now.toLocaleDateString('tr-TR', optionsDate);
+            const timeString = now.toLocaleTimeString('tr-TR', optionsTime);
+            
             document.getElementById('live-clock').innerHTML = `
                 <span class="relative flex h-2 w-2">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ffcc] opacity-75"></span>
@@ -224,70 +278,64 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // Bot Toggle Modülü
+        async function fetchTicker() {
+            try {
+                const response = await fetch('/api/piyasa?limit=15');
+                const data = await response.json();
+                let tickerHtml = '';
+                data.slice(0, 15).forEach(coin => {
+                    const isUp = coin.degisim >= 0;
+                    const colorClass = isUp ? 'ticker-up' : 'ticker-down';
+                    const symbol = isUp ? '▲' : '▼';
+                    tickerHtml += `<span class="ticker-item">${coin.sembol} $${coin.fiyat.toFixed(4)} <span class="${colorClass}">${symbol} ${coin.degisim.toFixed(2)}%</span></span> • `;
+                });
+                document.getElementById('ticker-data').innerHTML = tickerHtml + tickerHtml;
+            } catch (e) {
+                document.getElementById('ticker-data').innerHTML = `<span class="ticker-item text-red-500">CANLI VERİ AKIŞI BEKLENİYOR... ⏳</span>`;
+            }
+        }
+        fetchTicker();
+        setInterval(fetchTicker, 10000);
+
         const botToggle = document.getElementById('bot-toggle');
         const botStatusText = document.getElementById('bot-status-text');
         const botBox = document.getElementById('bot-box');
 
         botToggle.addEventListener('change', function() {
             if(this.checked) {
-                botStatusText.innerText = "🤖 AI BOT (AKTİF)"; 
+                botStatusText.innerText = "🤖 ANA AI (AKTİF)"; 
                 botStatusText.style.color = "#00ffcc"; 
                 botBox.style.borderColor = "rgba(0, 255, 204, 0.4)";
-                botBox.style.boxShadow = "0 10px 30px -10px rgba(0, 255, 204, 0.15)";
             } else {
-                botStatusText.innerText = "🤖 AI BOT (KAPALI)"; 
+                botStatusText.innerText = "🤖 ANA AI (KAPALI)"; 
                 botStatusText.style.color = "#EF4444"; 
                 botBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
-                botBox.style.boxShadow = "0 10px 30px -10px rgba(239, 68, 68, 0.15)";
             }
         });
 
-        // Ambient Mouse Glow (Yumuşak Neon Parlama Efekti)
         const canvas = document.getElementById('glowCanvas');
         const ctx = canvas.getContext('2d');
-        
-        let mouseX = window.innerWidth / 2;
-        let mouseY = -1000;
-        let glowX = window.innerWidth / 2;
-        let glowY = window.innerHeight / 2;
+        let mouseX = window.innerWidth / 2, mouseY = -1000, glowX = window.innerWidth / 2, glowY = window.innerHeight / 2;
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        window.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
-
-        window.addEventListener('mouseout', () => {
-            mouseY = -1000; // Ekrandan çıkınca sakla
-        });
+        window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        window.addEventListener('mouseout', () => { mouseY = -1000; });
 
         function animateGlow() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            glowX += (mouseX - glowX) * 0.08;
-            glowY += (mouseY - glowY) * 0.08;
+            glowX += (mouseX - glowX) * 0.08; glowY += (mouseY - glowY) * 0.08;
 
             if (glowY > -200) {
                 let gradient = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, 450);
                 gradient.addColorStop(0, 'rgba(0, 255, 204, 0.06)'); 
                 gradient.addColorStop(0.4, 'rgba(0, 150, 255, 0.02)'); 
                 gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
-
             requestAnimationFrame(animateGlow);
         }
-        
         animateGlow();
     </script>
 </body>

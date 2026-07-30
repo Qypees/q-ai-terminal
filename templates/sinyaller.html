@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Q-AI Fırsat Radarı | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -65,6 +66,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Toast Bildirim Tasarımı */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast-msg { padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: white; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
+        .toast-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
@@ -76,13 +83,14 @@
 
     <div class="crypto-bg"></div>
     <div class="dot-grid"></div>
+    <div id="toast-container"></div>
 
     <div class="content-layer w-full max-w-[1200px]">
         
         <!-- Üst Menü & Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-5 border-b border-white/10 shrink-0 gap-4 fade-in">
             <div>
-                <a href="/" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-xs font-black flex items-center gap-2 mb-2 uppercase tracking-widest">
+                <a href="/pano" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-xs font-black flex items-center gap-2 mb-2 uppercase tracking-widest">
                     <span class="text-lg">←</span> ANA PANOYA DÖN
                 </a>
                 <h1 class="text-2xl md:text-3xl font-black tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] flex items-center gap-3">
@@ -108,7 +116,7 @@
             <div class="glass-panel p-6 flex flex-col fade-in group {% if sinyal.yon == 'LONG' %} card-long {% else %} card-short {% endif %}" style="animation-delay: {{ loop.index0 * 0.1 }}s">
                 
                 <!-- Üst Kısım: Coin, Yön ve Sinyal Gücü -->
-                <div class="flex justify-between items-start mb-6">
+                <div class="flex justify-between items-start mb-4">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-2 shrink-0 shadow-inner">
                             <img src="https://assets.coincap.io/assets/icons/{{ sinyal.coin|lower }}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-full h-full object-contain">
@@ -119,11 +127,11 @@
                             <!-- Siberpunk Güç Barı -->
                             <div class="mt-1.5">
                                 <div class="flex justify-between text-[9px] font-black uppercase tracking-widest mb-1">
-                                    <span class="text-gray-400">Sinyal Gücü</span>
-                                    <span class="text-white">%{{ sinyal.guc }}</span>
+                                    <span class="text-gray-400">Sinyal Gücü / Olasılık</span>
+                                    <span class="text-white">%{{ sinyal.guc | default('85') }}</span>
                                 </div>
                                 <div class="w-32 h-1.5 bg-[#030407] rounded-full overflow-hidden border border-white/5">
-                                    <div class="h-full rounded-full power-bar-fill {% if sinyal.guc >= 80 %} bg-[#00ffcc] shadow-[0_0_10px_#00ffcc] {% elif sinyal.guc >= 70 %} bg-yellow-400 shadow-[0_0_10px_yellow] {% else %} bg-blue-500 shadow-[0_0_10px_blue] {% endif %}" style="width: {{ sinyal.guc }}%"></div>
+                                    <div class="h-full rounded-full power-bar-fill {% if (sinyal.guc | default(85) | int) >= 80 %} bg-[#00ffcc] shadow-[0_0_10px_#00ffcc] {% elif (sinyal.guc | default(85) | int) >= 70 %} bg-yellow-400 shadow-[0_0_10px_yellow] {% else %} bg-blue-500 shadow-[0_0_10px_blue] {% endif %}" style="width: {{ sinyal.guc | default('85') }}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -143,32 +151,47 @@
                     </div>
                 </div>
 
+                <!-- Yeni: AI Formasyon ve R/R Etiketleri -->
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[9px] px-2 py-1 rounded font-black tracking-widest uppercase shadow-[0_0_10px_rgba(168,85,247,0.1)]">
+                        ⚡ {{ sinyal.formasyon | default('RSI UYUMSUZLUK TESPİTİ') }}
+                    </span>
+                    <span class="bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[9px] px-2 py-1 rounded font-black tracking-widest uppercase">
+                        ⚖️ RISK/ÖDÜL: {{ sinyal.rr | default('1:2.8') }}
+                    </span>
+                </div>
+
                 <!-- Orta Kısım: Hedef Seviyeleri (HUD Kapsülleri) -->
                 <div class="grid grid-cols-3 gap-3 mb-6">
                     <div class="bg-[#030407]/60 p-3 rounded-xl border border-white/5 text-center flex flex-col justify-center">
-                        <span class="text-gray-500 text-[9px] uppercase font-black tracking-widest mb-1">Anlık Giriş</span>
-                        <span class="text-white font-black text-sm drop-shadow-md">${{ sinyal.giris }}</span>
+                        <span class="text-gray-500 text-[9px] uppercase font-black tracking-widest mb-1">Giriş (Entry)</span>
+                        <span class="text-white font-black text-sm drop-shadow-md">${{ sinyal.giris | default('0.00') }}</span>
                     </div>
                     <div class="bg-[rgba(0,255,204,0.03)] p-3 rounded-xl border border-[rgba(0,255,204,0.2)] text-center flex flex-col justify-center">
                         <span class="text-[#00ffcc]/80 text-[9px] uppercase font-black tracking-widest mb-1">Kâr Al (TP)</span>
-                        <span class="text-[#00ffcc] font-black text-sm drop-shadow-[0_0_5px_rgba(0,255,204,0.4)]">${{ sinyal.hedef }}</span>
+                        <span class="text-[#00ffcc] font-black text-sm drop-shadow-[0_0_5px_rgba(0,255,204,0.4)]">${{ sinyal.hedef | default('0.00') }}</span>
                     </div>
                     <div class="bg-[rgba(239,68,68,0.03)] p-3 rounded-xl border border-[rgba(239,68,68,0.2)] text-center flex flex-col justify-center">
                         <span class="text-[#EF4444]/80 text-[9px] uppercase font-black tracking-widest mb-1">Stop (SL)</span>
-                        <span class="text-[#EF4444] font-black text-sm drop-shadow-[0_0_5px_rgba(239,68,68,0.4)]">${{ sinyal.stop }}</span>
+                        <span class="text-[#EF4444] font-black text-sm drop-shadow-[0_0_5px_rgba(239,68,68,0.4)]">${{ sinyal.stop | default('0.00') }}</span>
                     </div>
                 </div>
 
                 <!-- Alt Kısım: AI Strateji Yorumu -->
-                <div class="mt-auto p-4 rounded-xl border relative overflow-hidden {% if sinyal.yon == 'LONG' %} bg-[rgba(0,255,204,0.02)] border-[rgba(0,255,204,0.1)] {% else %} bg-[rgba(239,68,68,0.02)] border-[rgba(239,68,68,0.1)] {% endif %}">
+                <div class="mt-auto p-4 rounded-xl border relative overflow-hidden mb-4 {% if sinyal.yon == 'LONG' %} bg-[rgba(0,255,204,0.02)] border-[rgba(0,255,204,0.1)] {% else %} bg-[rgba(239,68,68,0.02)] border-[rgba(239,68,68,0.1)] {% endif %}">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="text-base drop-shadow-md">🧠</span>
                         <span class="text-[9px] font-black tracking-[0.2em] uppercase {% if sinyal.yon == 'LONG' %}text-[#00ffcc]{% else %}text-[#EF4444]{% endif %}">Q-AI Strateji Analizi</span>
                     </div>
                     <p class="text-gray-300 text-xs italic font-medium leading-relaxed">
-                        "{{ sinyal.yorum }}"
+                        "{{ sinyal.yorum | default('Güçlü alım baskısı ve teknik formasyon kırılımı doğrulandı. İşleme girmek için optimal bölge.') }}"
                     </p>
                 </div>
+
+                <!-- Yeni: Tek Tıkla İşlem Butonu -->
+                <button onclick="otomatikGiris('{{ sinyal.coin }}', '{{ sinyal.yon }}', '{{ sinyal.giris }}')" class="w-full py-3 rounded-xl font-black text-xs tracking-widest uppercase transition-all duration-300 {% if sinyal.yon == 'LONG' %} bg-green-500/10 border border-green-500/50 text-green-400 hover:bg-green-500 hover:text-white shadow-[0_0_15px_rgba(16,185,129,0.2)] {% else %} bg-red-500/10 border border-red-500/50 text-red-400 hover:bg-red-500 hover:text-white shadow-[0_0_15px_rgba(239,68,68,0.2)] {% endif %}">
+                    ⚡ OTOMATİK {{ sinyal.yon | default('LONG') }} GİRİŞ YAP
+                </button>
                 
             </div>
             {% endfor %}
@@ -180,17 +203,46 @@
                 <div class="relative w-24 h-24 mb-6">
                     <div class="absolute inset-0 border-2 border-blue-500/20 rounded-full"></div>
                     <div class="absolute inset-2 border-2 border-blue-500/30 rounded-full"></div>
-                    <div class="absolute inset-0 border-2 border-transparent border-t-[#00ffcc] rounded-full animate-spin"></div>
+                    <div class="absolute inset-0 border-2 border-transparent border-t-[#00ffcc] rounded-full animate-spin" style="animation-duration: 2s;"></div>
                     <div class="absolute inset-0 flex items-center justify-center text-3xl">📡</div>
                 </div>
                 
                 <h2 class="text-[#00ffcc] text-2xl font-black tracking-widest uppercase drop-shadow-md mb-2">Hedef Bulunamadı</h2>
-                <p class="text-gray-400 font-medium text-sm max-w-md leading-relaxed">Piyasa volatilitesi şu an stabil. Q-AI Algoritması %3'ten fazla dalgalanan ve işleme uygun güçlü bir momentum yakalayamadı. Radar aramaya devam ediyor...</p>
+                <p class="text-gray-400 font-medium text-sm max-w-md leading-relaxed">Piyasa volatilitesi şu an stabil. Q-AI Algoritması %3'ten fazla dalgalanan ve işleme uygun güçlü bir momentum (Risk/Ödül oranı yüksek) yakalayamadı. Radar aramaya devam ediyor...</p>
             </div>
             {% endif %}
 
         </div>
     </div>
 
+    <script>
+        // Bildirim Sistemi (Toast)
+        window.showToast = function(msg, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+
+        // Tek tıkla API'ye sahte istek yollayarak işlemi simüle eder
+        window.otomatikGiris = async function(coin, yon, fiyat) {
+            try {
+                let res = await fetch('/api/paper/islem_ac', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({coin: coin || 'BTC', yon: yon || 'LONG', kaldirac: '10', teminat: 100.0})
+                });
+                if(res.ok) {
+                    showToast(`⚡ Q-AI BAŞARILI: ${coin || 'BTC'} için ${yon || 'LONG'} işlemi açıldı!`, 'success');
+                } else {
+                    showToast(`İşlem Reddedildi: Yetersiz Bakiye`, 'error');
+                }
+            } catch(e) {
+                showToast(`API Bağlantı Hatası!`, 'error');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makro Takvim | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; }
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; }
+        .glass-panel { background: rgba(10, 15, 26, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; z-index: 10; position: relative;}
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+    <div class="crypto-bg"></div>
+    <div class="w-full max-w-[900px] flex flex-col h-[90vh]">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 z-10">
+            <a href="/pano" class="text-gray-400 hover:text-white text-xs font-black uppercase">← ANA PANO</a>
+            <h1 class="text-2xl font-black tracking-widest text-white">📅 MAKRO <span class="text-gray-500">TAKVİM</span></h1>
+        </div>
+        <div class="glass-panel p-6 flex-grow overflow-y-auto">
+            <div id="makro-liste" class="flex flex-col gap-4"></div>
+        </div>
+    </div>
+    <script>
+        async function fetchMakro() {
+            const res = await fetch('/api/makro_takvim');
+            const data = await res.json();
+            document.getElementById('makro-liste').innerHTML = data.map(m => `
+                <div class="bg-[#05070A] border border-white/5 p-5 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <span class="text-gray-500 text-[10px] font-bold tracking-widest uppercase block mb-1">${m.tarih}</span>
+                        <h3 class="text-white font-black text-lg tracking-wide">${m.veri}</h3>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <div class="text-right">
+                            <span class="text-gray-500 text-[9px] font-bold tracking-widest uppercase block">Beklenti</span>
+                            <span class="text-white font-black">${m.beklenti}</span>
+                        </div>
+                        <span class="px-3 py-1 bg-red-500/10 border border-red-500/30 text-red-500 rounded text-xs font-black uppercase">${m.etki}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        fetchMakro();
+    </script>
+</body>
+</html>

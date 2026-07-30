@@ -1,6 +1,16 @@
 {
     "spot": [],
     "vadeli": [],
-    "paper_bakiye": 10000.0,
-    "paper_islemler": []
+    "paper_bakiye": 9900.0,
+    "paper_islemler": [
+        {
+            "coin": "BTC",
+            "yon": "LONG",
+            "kaldirac": "10",
+            "teminat": 100.0,
+            "giris_fiyati": 64690.0,
+            "zaman": "18:35"
+        }
+    ],
+    "notlar": []
 }

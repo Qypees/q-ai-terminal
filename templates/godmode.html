@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOD MODE | 100x Kurumsal Süit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; pointer-events: none; }
+        .dot-grid { position: fixed; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
+        .glass-panel { background: rgba(10, 15, 26, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.5); position: relative; z-index: 10; transition: transform 0.3s ease; }
+        .glass-panel:hover { transform: translateY(-5px); border-color: rgba(0,255,204,0.3); box-shadow: 0 20px 40px -10px rgba(0,255,204,0.2); }
+        .cyber-text { background: linear-gradient(to right, #00ffcc, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00ffcc; border-color: #00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.5); }
+        input:checked + .slider:before { transform: translateX(18px); background-color: #020203; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+    <div class="crypto-bg"></div>
+    <div class="dot-grid"></div>
+
+    <div class="w-full max-w-[1200px] flex flex-col z-10 pb-10">
+        
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0">
+            <a href="/pano" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-xs font-black flex items-center gap-2 uppercase tracking-widest">
+                <span class="text-lg">←</span> ANA PANO
+            </a>
+            <h1 class="text-3xl font-black tracking-widest text-white drop-shadow-md">👑 GOD MODE <span class="cyber-text">100X SÜİT</span></h1>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            
+            <!-- 1. DEX Sniper -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">🎯</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">DEX Sniper</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Merkeziyetsiz borsalarda yeni eklenen likidite havuzlarını tarar ve ilk saniyede alım emri iletir.</p>
+            </div>
+
+            <!-- 2. Auto-Compounder -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-[#00ffcc]/20">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">🔄</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <h3 class="text-[#00ffcc] font-black text-sm uppercase tracking-widest mb-1">Auto-Compound</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Gerçekleşen işlemlerden elde edilen USDT kârını anında ana kasaya ekleyip bir sonraki işleme dahil eder.</p>
+            </div>
+
+            <!-- 3. Dead Man's Switch (Uyku Modu) -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-red-500/20 bg-red-500/5">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">☠️</span>
+                    <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                </div>
+                <h3 class="text-red-400 font-black text-sm uppercase tracking-widest mb-1">Uyku Modu Kalkanı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Sen uyurken portföy %10'dan fazla erirse acil durum nükleer satışını tetikler ve her şeyi nakite (USDT) çevirir.</p>
+            </div>
+
+            <!-- 4. Social Sentiment -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">🐦</span>
+                    <span class="text-[#1da1f2] font-black text-lg">YÜKSEK</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Duygu Radarı (AI)</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Şu an Twitter ve Reddit üzerinde en çok konuşulan coin: <span class="text-white font-bold">SOLANA (SOL)</span></p>
+            </div>
+
+            <!-- 5. Vergi & Komisyon Kalkanı -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">🛡️</span>
+                    <span class="text-yellow-400 font-black text-lg">-$4.50</span>
+                </div>
+                <h3 class="text-yellow-400 font-black text-sm uppercase tracking-widest mb-1">Fee & Vergi Kalkanı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Bugün borsalara ödediğin gizli komisyon bedeli. Kalkan aktif, limit aşıldığında uyarı verecek.</p>
+            </div>
+
+            <!-- 6. Korku ve Açgözlülük -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">📊</span>
+                    <div class="w-10 h-10 rounded-full border-4 border-green-500 flex items-center justify-center text-xs font-black text-white">78</div>
+                </div>
+                <h3 class="text-green-400 font-black text-sm uppercase tracking-widest mb-1">Açgözlülük İndeksi</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Piyasa şu an Aşırı Açgözlü modda. Q-AI satış baskısına karşı tetikte bekliyor.</p>
+            </div>
+
+            <!-- 7. Soğuk Cüzdan -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">🔐</span>
+                    <span class="text-gray-500 text-[9px] border border-gray-500 px-2 py-1 rounded">Senkronize</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Ledger / Trezor Link</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Uzun vade donanım cüzdanı bakiyesi: <span class="text-white font-bold">0.45 BTC</span> (Dokunulmaz Kasa)</p>
+            </div>
+
+            <!-- 8. Spesifik Balina Tracker -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-blue-500/20">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">🐋</span>
+                    <span class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+                </div>
+                <h3 class="text-blue-400 font-black text-sm uppercase tracking-widest mb-1">VIP Cüzdan Stalker</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Takip edilen 5 büyük fon cüzdanından 2'si son 1 saatte yüklü Ethereum (ETH) alımı yaptı.</p>
+            </div>
+
+            <!-- 9. Flash Loan Arbitraj -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl drop-shadow-md">⚡</span>
+                    <span class="text-purple-400 text-xs font-black">Hazır</span>
+                </div>
+                <h3 class="text-purple-400 font-black text-sm uppercase tracking-widest mb-1">Flaş Kredi Motoru</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Aave üzerinden teminatsız borç alarak anlık DEX arbitrajı simülatörü beklemede.</p>
+            </div>
+
+            <!-- 10. Options Flow -->
+            <div class="glass-panel p-6 flex flex-col justify-between lg:col-span-3 xl:col-span-3">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl drop-shadow-md">📈</span>
+                    <h3 class="text-white font-black text-sm uppercase tracking-widest">Opsiyon Zinciri (Kurumsal Akış)</h3>
+                </div>
+                <div class="flex justify-between items-center bg-[#05070A] p-4 rounded-xl border border-white/5">
+                    <div class="flex flex-col">
+                        <span class="text-green-400 text-[10px] font-black tracking-widest uppercase">CALL (Alım) Yığılması</span>
+                        <span class="text-white font-black text-xl">$70,000 Seviyesi</span>
+                    </div>
+                    <div class="h-8 w-px bg-white/10"></div>
+                    <div class="flex flex-col text-right">
+                        <span class="text-red-400 text-[10px] font-black tracking-widest uppercase">PUT (Satım) Duvarı</span>
+                        <span class="text-white font-black text-xl">$60,000 Seviyesi</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

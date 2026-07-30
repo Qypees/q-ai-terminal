@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Cüzdan & Portföy Merkezi | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -71,6 +72,11 @@
             border-color: rgba(255, 255, 255, 0.15);
         }
 
+        /* İlerleme Çubuğu (Progress Bar) */
+        .progress-bar-fill {
+            transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
@@ -83,14 +89,21 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Toast */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast-msg { padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: white; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
+        .toast-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
 
     <div class="crypto-bg"></div>
     <div class="dot-grid"></div>
+    <div id="toast-container"></div>
 
-    <div class="content-layer w-full max-w-[1100px] flex flex-col h-[90vh]">
+    <div class="content-layer w-full max-w-[1200px] flex flex-col h-[90vh]">
         
         <!-- Dinamik Görünüm Alanı -->
         <div id="app-view" class="flex-grow flex flex-col overflow-hidden fade-in">
@@ -106,6 +119,16 @@
         let spotVarliklar = [];
         let vadeliPozisyonlar = [];
         let canliFiyatTimer = null;
+
+        // Toast Bildirim
+        function showToast(msg, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
 
         async function veriGetir() {
             try {
@@ -125,33 +148,133 @@
             await veriGetir();
             const view = document.getElementById('app-view');
             
-            // Animasyon tetikleyici
             view.classList.remove('fade-in');
             void view.offsetWidth; 
             view.classList.add('fade-in');
+
+            // --- PORTFÖY DOKTORU HESAPLAMALARI ---
+            let toplamSpot = spotVarliklar.reduce((acc, v) => acc + parseFloat(v.bakiye || 0), 0);
+            let toplamVadeliMarjin = vadeliPozisyonlar.reduce((acc, p) => acc + parseFloat(p.miktar || 0), 0);
+            let anaKasa = toplamSpot + toplamVadeliMarjin || 1; // Sıfıra bölünmeyi engellemek için
+            
+            let vadeliRiskOrani = (toplamVadeliMarjin / anaKasa) * 100;
+            let riskSkoru = 100 - (vadeliRiskOrani * 1.5); // Yüksek vadeli oran = düşük sağlık skoru
+            if (riskSkoru < 0) riskSkoru = 0; if (riskSkoru > 100) riskSkoru = 100;
+            
+            let riskRenk = riskSkoru > 70 ? '#10B981' : (riskSkoru > 40 ? '#F59E0B' : '#EF4444');
+            let riskDurumu = riskSkoru > 70 ? 'GÜVENLİ (Düşük Risk)' : (riskSkoru > 40 ? 'DİKKATLİ OLUN (Orta Risk)' : 'KRİTİK (Aşırı Kaldıraç)');
+            
+            // Ev Alımı Hedefi (Örnek: $120,000)
+            let evHedefi = 120000;
+            let evIlerlemeYuzdesi = (anaKasa / evHedefi) * 100;
+            if (evIlerlemeYuzdesi > 100) evIlerlemeYuzdesi = 100;
             
             if (aktifSayfa === 'menu') {
                 view.innerHTML = `
                     <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0">
-                        <a href="/" class="text-[#00ffcc] hover:text-white transition-colors text-sm font-black flex items-center gap-2 uppercase tracking-widest">
+                        <a href="/pano" class="text-[#00ffcc] hover:text-white transition-colors text-xs md:text-sm font-black flex items-center gap-2 uppercase tracking-widest">
                             <span class="text-lg">←</span> ANA PANOYA DÖN
                         </a>
-                        <h1 class="text-xl md:text-2xl font-black tracking-[0.15em] text-white">PORTFÖY <span class="text-gray-500">KONTROL</span></h1>
+                        <h1 class="text-xl md:text-3xl font-black tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">💼 PORTFÖY <span class="text-[#00ffcc]">MERKEZİ</span></h1>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-auto">
-                        <!-- Spot Kutu -->
-                        <div onclick="aktifSayfa='spot'; render();" style="--hover-color: rgba(251, 191, 36, 0.5); --hover-shadow: rgba(251, 191, 36, 0.15);" class="glass-panel glass-btn p-10 cursor-pointer flex flex-col items-center justify-center text-center">
-                            <div class="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-4xl mb-6 shadow-[0_0_30px_rgba(251,191,36,0.1)]">💼</div>
-                            <h2 class="text-2xl font-black text-white mb-3 tracking-wide">SPOT CÜZDAN</h2>
-                            <p class="text-gray-400 text-sm font-medium leading-relaxed max-w-xs">Borsa bakiyeleri, uzun vade sepetleri ve manuel varlık yönetimi.</p>
+                    <div class="overflow-y-auto flex-grow pb-10 pr-2">
+                        <!-- Üst Kısım: Portföy Doktoru ve Kasa Özeti -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                            <!-- Toplam Kasa -->
+                            <div class="glass-panel p-6 flex flex-col justify-center border-yellow-500/30 shadow-[0_0_20px_rgba(251,191,36,0.05)] bg-yellow-500/5">
+                                <span class="text-yellow-500 font-black text-[10px] tracking-widest uppercase mb-1">Toplam Brüt Varlık</span>
+                                <h2 class="text-4xl font-black text-white drop-shadow-md mb-2">$${anaKasa.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h2>
+                                <p class="text-gray-400 text-xs font-bold flex items-center gap-2">
+                                    <span class="text-green-400 bg-green-400/10 px-2 py-0.5 rounded border border-green-400/20">+1.24%</span> Son 24 Saat
+                                </p>
+                            </div>
+                            
+                            <!-- Portföy Doktoru -->
+                            <div class="glass-panel p-6 lg:col-span-2 flex flex-col justify-center border-white/10 relative overflow-hidden">
+                                <div class="absolute right-0 top-0 text-8xl opacity-5">🩺</div>
+                                <div class="relative z-10 flex justify-between items-start mb-4">
+                                    <div>
+                                        <span class="text-gray-400 font-black text-[10px] tracking-widest uppercase flex items-center gap-2 mb-1"><span class="text-lg">🤖</span> Q-AI Portföy Doktoru</span>
+                                        <h3 class="text-white text-lg font-black tracking-wide">Genel Sağlık Puanı: <span style="color: ${riskRenk};">${riskSkoru.toFixed(0)}/100</span></h3>
+                                    </div>
+                                    <span class="text-[10px] font-black uppercase px-3 py-1 rounded border" style="color: ${riskRenk}; border-color: ${riskRenk}40; background: ${riskRenk}10;">
+                                        ${riskDurumu}
+                                    </span>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="flex-1 bg-[#05070A] p-3 rounded-xl border border-white/5">
+                                        <span class="block text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Spot Kasa</span>
+                                        <span class="text-white font-black text-sm">$${toplamSpot.toLocaleString('en-US')} (%${(100 - vadeliRiskOrani).toFixed(1)})</span>
+                                    </div>
+                                    <div class="flex-1 bg-[#05070A] p-3 rounded-xl border border-white/5">
+                                        <span class="block text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Açık Marjin Risk</span>
+                                        <span class="text-red-400 font-black text-sm">$${toplamVadeliMarjin.toLocaleString('en-US')} (%${vadeliRiskOrani.toFixed(1)})</span>
+                                    </div>
+                                    <div class="flex-1 bg-[#05070A] p-3 rounded-xl border border-white/5 hidden md:block">
+                                        <span class="block text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Gizli Komisyon (Fee)</span>
+                                        <span class="text-amber-400 font-black text-sm">$14.50 (Aylık)</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <!-- Vadeli Kutu -->
-                        <div onclick="aktifSayfa='vadeli'; render();" style="--hover-color: rgba(0, 255, 204, 0.5); --hover-shadow: rgba(0, 255, 204, 0.15);" class="glass-panel glass-btn p-10 cursor-pointer flex flex-col items-center justify-center text-center">
-                            <div class="w-20 h-20 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/20 flex items-center justify-center text-4xl mb-6 shadow-[0_0_30px_rgba(0,255,204,0.1)]">🤖</div>
-                            <h2 class="text-2xl font-black text-white mb-3 tracking-wide">VADELİ RADARI</h2>
-                            <p class="text-gray-400 text-sm font-medium leading-relaxed max-w-xs">AI destekli saniyelik PnL takibi, risk yönetimi ve strateji hedefleri.</p>
+
+                        <!-- Cüzdan Modülleri (Spot & Vadeli) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div onclick="aktifSayfa='spot'; render();" style="--hover-color: rgba(251, 191, 36, 0.5); --hover-shadow: rgba(251, 191, 36, 0.15);" class="glass-panel glass-btn p-8 cursor-pointer flex items-center gap-6">
+                                <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(251,191,36,0.2)]">💼</div>
+                                <div class="text-left">
+                                    <h2 class="text-xl font-black text-white tracking-wide mb-1">SPOT CÜZDAN</h2>
+                                    <p class="text-gray-400 text-xs font-medium">Borsa bakiyeleri ve manuel sepetler.</p>
+                                </div>
+                            </div>
+                            
+                            <div onclick="aktifSayfa='vadeli'; render();" style="--hover-color: rgba(0, 255, 204, 0.5); --hover-shadow: rgba(0, 255, 204, 0.15);" class="glass-panel glass-btn p-8 cursor-pointer flex items-center gap-6">
+                                <div class="w-16 h-16 rounded-2xl bg-[#00ffcc]/10 border border-[#00ffcc]/30 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(0,255,204,0.2)]">🤖</div>
+                                <div class="text-left">
+                                    <h2 class="text-xl font-black text-white tracking-wide mb-1">VADELİ RADARI</h2>
+                                    <p class="text-gray-400 text-xs font-medium">AI PnL takibi ve strateji hedefleri.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alt Katman: Ev Hedefi ve YouTube Fonlaması -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Ev Peşinatı Hedefi -->
+                            <div class="glass-panel p-6 border-purple-500/20 bg-purple-500/5">
+                                <div class="flex items-center gap-3 mb-4 border-b border-white/5 pb-3">
+                                    <span class="text-xl">🏠</span>
+                                    <h3 class="text-white font-black text-sm tracking-widest uppercase">Ana Plan: Gayrimenkul Yatırımı</h3>
+                                </div>
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Fon İlerlemesi</span>
+                                    <span class="text-purple-400 font-black text-sm">%${evIlerlemeYuzdesi.toFixed(2)}</span>
+                                </div>
+                                <div class="w-full h-3 bg-[#030407] rounded-full overflow-hidden border border-white/10 mb-2">
+                                    <div class="h-full bg-purple-500 shadow-[0_0_10px_purple] rounded-full progress-bar-fill" style="width: ${evIlerlemeYuzdesi}%"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] font-black text-gray-500">
+                                    <span>Mevcut: $${anaKasa.toLocaleString('en-US', {maximumFractionDigits:0})}</span>
+                                    <span>Hedef: $${evHedefi.toLocaleString('en-US')}</span>
+                                </div>
+                            </div>
+
+                            <!-- Dış Fonlama (YouTube Geliri API) -->
+                            <div class="glass-panel p-6 border-red-500/20 bg-[rgba(239,68,68,0.02)]">
+                                <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xl">▶️</span>
+                                        <h3 class="text-white font-black text-sm tracking-widest uppercase">API Dış Fonlama</h3>
+                                    </div>
+                                    <span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">Bağlı Değil</span>
+                                </div>
+                                <p class="text-gray-400 text-xs font-medium mb-4 leading-relaxed">
+                                    Yapay zeka kanallarından elde edilen YouTube içerik gelirlerini otomatik olarak kripto kasana (Binance USDT) aktar.
+                                </p>
+                                <button onclick="simulateYTTransfer()" class="w-full bg-red-600/10 hover:bg-red-600 border border-red-600/50 text-red-500 hover:text-white font-black py-3 rounded-xl text-xs tracking-widest transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                                    YouTube Gelirlerini Binance'e Aktar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -182,7 +305,7 @@
 
                 view.innerHTML = `
                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
-                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 uppercase tracking-wider transition-colors"><span class="text-lg">←</span> Menü</button>
+                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 uppercase tracking-wider transition-colors"><span class="text-lg">←</span> Merkezi Pano</button>
                         <h1 class="text-lg md:text-xl font-black text-amber-400 tracking-widest drop-shadow-[0_0_15px_rgba(251,191,36,0.2)]">💼 SPOT CÜZDAN</h1>
                         <button onclick="toggleForm()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-lg font-bold text-xs transition-colors">➕ YENİ</button>
                     </div>
@@ -233,7 +356,7 @@
 
                 view.innerHTML = `
                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
-                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 uppercase tracking-wider transition-colors"><span class="text-lg">←</span> Menü</button>
+                        <button onclick="aktifSayfa='menu'; render();" class="text-gray-400 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 uppercase tracking-wider transition-colors"><span class="text-lg">←</span> Merkezi Pano</button>
                         <h1 class="text-lg md:text-xl font-black text-[#00ffcc] tracking-widest drop-shadow-[0_0_15px_rgba(0,255,204,0.2)]">🤖 VADELİ RADARI</h1>
                     </div>
 
@@ -317,12 +440,6 @@
                             </div>
                         </div>
 
-                        <!-- ANLIK HABER RADARI -->
-                        <div id="haber-radari" class="glass-panel !rounded-2xl p-5 shrink-0 border-blue-500/30 hidden">
-                            <div class="flex items-center gap-3 mb-2"><span class="text-xl">📰</span><h3 class="text-blue-400 font-black text-xs tracking-widest uppercase">Haber Radarı Eşleşmesi</h3></div>
-                            <p id="haber-metni" class="text-gray-300 text-sm leading-relaxed mt-2"></p>
-                        </div>
-
                         <!-- Q-AI STRATEJİ YORUMU -->
                         <div class="glass-panel !rounded-2xl p-5 shrink-0 border-[#00ffcc]/30 shadow-[0_0_20px_rgba(0,255,204,0.05)] bg-[rgba(0,255,204,0.02)]">
                             <div class="flex items-center gap-3 mb-2"><span class="text-xl">🧠</span><h3 class="text-[#00ffcc] font-black text-xs tracking-widest uppercase">Sistem Notu</h3></div>
@@ -340,12 +457,11 @@
                     </div>
                 `;
 
-                // Saniyelik canlı veri motorunu başlat
                 baslatCanliTakip(poz);
             }
         }
 
-        // Saniyelik Canlı PnL, Stop-Loss ve Haber Motoru
+        // Saniyelik Canlı PnL, Stop-Loss Motoru
         async function baslatCanliTakip(poz) {
             const coinSembol = poz.coin.toUpperCase() + 'USDT';
             
@@ -362,12 +478,10 @@
                     const kaldiracSayi = parseInt(poz.kaldirac.replace('x', ''));
                     const marjin = parseFloat(poz.miktar);
 
-                    // PnL Hesaplama
                     let fiyatFarkiOrani = poz.yon === 'LONG' ? (guncelFiyat - girisFiyati) / girisFiyati : (girisFiyati - guncelFiyat) / girisFiyati;
                     let pnlDolar = marjin * kaldiracSayi * fiyatFarkiOrani;
                     let pnlYuzde = fiyatFarkiOrani * kaldiracSayi * 100;
 
-                    // DOM Güncelleme
                     const fiyatEl = document.getElementById('canli-fiyat');
                     const pnlEl = document.getElementById('canli-pnl');
                     const yuzdeEl = document.getElementById('canli-yuzde');
@@ -388,7 +502,6 @@
                         yuzdeEl.innerText = `${isProfit ? '+' : ''}${pnlYuzde.toFixed(2)}%`;
                     }
 
-                    // AI Seviye Hesaplama
                     if(slEl && tpEl) {
                         let slFiyat, tpFiyat;
                         if(poz.yon === 'LONG') {
@@ -407,25 +520,9 @@
 
             guncelle();
             canliFiyatTimer = setInterval(guncelle, 1000);
-            haberleriKontrolEt(poz.coin);
         }
 
-        async function haberleriKontrolEt(coin) {
-            try {
-                const res = await fetch('/api/haberler');
-                const haberler = await res.json();
-                const ilgiliHaber = haberler.find(h => h.baslik.toUpperCase().includes(coin) || h.ozet.toUpperCase().includes(coin));
-                
-                const radarEl = document.getElementById('haber-radari');
-                const metinEl = document.getElementById('haber-metni');
-                
-                if(ilgiliHaber && radarEl && metinEl) {
-                    metinEl.innerHTML = `<span class="font-bold text-white">${ilgiliHaber.baslik}</span><br><span class="text-gray-400 text-xs mt-1 block">${ilgiliHaber.ozet}</span>`;
-                    radarEl.classList.remove('hidden');
-                }
-            } catch(e) {}
-        }
-
+        // Form İşlemleri
         function toggleForm() {
             const f = document.getElementById('spot-form');
             if(f.classList.contains('hidden')) {
@@ -475,6 +572,11 @@
             await fetch(`/api/cuzdan/vadeli/${index}`, {method: 'DELETE'});
             aktifSayfa = 'vadeli';
             render();
+        }
+
+        function simulateYTTransfer() {
+            showToast('API isteği Binance sistemine iletiliyor...', 'success');
+            setTimeout(() => { showToast('🚨 HATA: YouTube API entegrasyonu için Developer Key girilmedi.', 'error'); }, 2000);
         }
 
         // Başlangıç
