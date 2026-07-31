@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaldıraç Pro Süit | Über Futures Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; pointer-events: none; }
+        .dot-grid { position: fixed; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
+        .glass-panel { background: rgba(10, 15, 26, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.5); position: relative; z-index: 10; transition: transform 0.3s ease; }
+        .glass-panel:hover { transform: translateY(-3px); border-color: rgba(239,68,68,0.4); box-shadow: 0 20px 40px -10px rgba(239,68,68,0.2); }
+        .cyber-text { background: linear-gradient(to right, #ef4444, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #ef4444; border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+        input:checked + .slider:before { transform: translateX(18px); background-color: #020203; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+    <div class="crypto-bg"></div>
+    <div class="dot-grid"></div>
+
+    <div class="w-full max-w-[1200px] flex flex-col z-10 pb-10">
+        
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0">
+            <a href="/pano" class="text-gray-400 hover:text-red-400 transition-colors text-xs font-black flex items-center gap-2 uppercase tracking-widest">
+                <span class="text-lg">←</span> ANA PANO
+            </a>
+            <h1 class="text-3xl font-black tracking-widest text-white drop-shadow-md">⚔️ KALDIRAÇ PRO <span class="cyber-text">ÜBER SÜİT (50 MODÜL)</span></h1>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            
+            <!-- Modül 1 -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-red-500/20 bg-red-500/5">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">☄️</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <h3 class="text-red-400 font-black text-sm uppercase tracking-widest mb-1">Flash Crash Kalkanı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Emir defteri boşluklarını tespit edip çöküşlerde pozisyonu milisaniyelerde kapatır.</p>
+            </div>
+
+            <!-- Modül 2 -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">⏱️</span>
+                    <span class="text-[#00ffcc] font-black text-xs uppercase tracking-widest">1m SCALPING</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Kuantum Scalp Botu</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">1 dakikalık grafiklerdeki formasyon ihlallerinden yüksek kaldıraçla seri kâr toplar.</p>
+            </div>
+
+            <!-- Modül 3 -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-[#00ffcc]/20">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🧱</span>
+                    <span class="text-[#00ffcc] font-black text-xs uppercase tracking-widest">ICEBERG ONAYLI</span>
+                </div>
+                <h3 class="text-[#00ffcc] font-black text-sm uppercase tracking-widest mb-1">Gizli Balina Duvarları</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Tahtaya saklanmış devasa kurumsal emri tespit edip fiyatın döneceği yeri gösterir.</p>
+            </div>
+
+            <!-- Modül 4 -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">📊</span>
+                    <span class="text-green-400 font-black text-xs uppercase tracking-widest">DELTA: +1.2M</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Aggregated Delta Meter</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Piyasadaki net alıcı ve satıcı hacim deltalarını anlık hesaplar.</p>
+            </div>
+
+            <!-- Modül 5 -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-blue-500/20">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🐋</span>
+                    <span class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+                </div>
+                <h3 class="text-blue-400 font-black text-sm uppercase tracking-widest mb-1">Balina Copy-Trade</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">%95+ kazanma oranlı 3 gizli cüzdanın vadeli emirlerini birebir kopyalar.</p>
+            </div>
+
+            <!-- Modül 6 -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">💵</span>
+                    <span class="text-green-400 font-black text-xs uppercase tracking-widest">+%0.03 / 8S</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Funding Rate Çiftliği</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Sıfır yön riskiyle borsaların ödediği 8 saatlik fonlama primlerini toplar.</p>
+            </div>
+
+            <!-- Modül 7 -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🎯</span>
+                    <span class="text-red-400 font-black text-xs uppercase tracking-widest">LIQ RADAR</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Likidasyon Avcısı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Kalabalıkların Long/Short patlatılacağı dip noktaları tespit edip ters pozisyon açar.</p>
+            </div>
+
+            <!-- Modül 8 -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-orange-500/20">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🎭</span>
+                    <span class="text-orange-400 font-black text-xs uppercase tracking-widest">FOMO GUARD</span>
+                </div>
+                <h3 class="text-orange-400 font-black text-sm uppercase tracking-widest mb-1">FOMO Counter-Trade</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Küçük yatırımcı panikle tepe fiyattan Long girdiğinde terste acımasız Short açar.</p>
+            </div>
+
+            <!-- Modül 9 -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🧨</span>
+                    <span class="text-purple-400 font-black text-xs uppercase tracking-widest">SQUEEZE</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Volatilite Daralması</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Tarihinin en dar seviyesine inip patlamaya hazırlanan coinleri önceden yakalar.</p>
+            </div>
+
+            <!-- Modül 10 -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-yellow-500/20 bg-yellow-500/5 lg:col-span-3 xl:col-span-3">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">🏦</span>
+                    <h3 class="text-yellow-400 font-black text-sm uppercase tracking-widest">Auto-Sweep (Kârı Spot Kasaya Kilitleme)</h3>
+                </div>
+                <div class="flex justify-between items-center bg-[#05070A] p-4 rounded-xl border border-white/5">
+                    <span class="text-gray-400 text-xs font-medium">Vadeli kazancın <span class="text-white font-bold">%50'si</span> otomatik spot kasaya çekilir. Piyasa kârı geri alamaz.</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

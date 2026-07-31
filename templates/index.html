@@ -63,7 +63,6 @@
         .hover-spotify:hover { border-color: rgba(29, 185, 84, 0.4); box-shadow: 0 15px 35px -10px rgba(29, 185, 84, 0.2); }
         .hover-blue:hover { border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 15px 35px -10px rgba(59, 130, 246, 0.2); }
         .hover-purple:hover { border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 15px 35px -10px rgba(139, 92, 246, 0.2); }
-        .hover-pink:hover { border-color: rgba(236, 72, 153, 0.4); box-shadow: 0 15px 35px -10px rgba(236, 72, 153, 0.2); }
 
         .center-logo-box { 
             background: radial-gradient(circle at center, rgba(0, 255, 204, 0.08) 0%, rgba(10, 15, 26, 0.5) 100%); 
@@ -80,10 +79,7 @@
         .toggle-checkbox:checked + .toggle-label:after { transform: translateX(100%); background-color: #00ffcc; box-shadow: 0 0 10px #00ffcc; }
         .toggle-label { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.05); }
 
-        @keyframes ticker {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         .ticker-wrap { width: 100%; overflow: hidden; background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
         .ticker-move { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
         .ticker-item { padding: 0 2rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: #94A3B8; }
@@ -92,10 +88,7 @@
         .text-soft-white { color: #F1F5F9; }
         .text-muted { color: #94A3B8; }
 
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .animate-item { animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
         .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.15s; } .delay-3 { animation-delay: 0.2s; }
         .delay-4 { animation-delay: 0.25s; } .delay-5 { animation-delay: 0.3s; } .delay-6 { animation-delay: 0.35s; }
@@ -116,16 +109,14 @@
 
     <div class="content-layer w-full max-w-[1200px] flex flex-col gap-5 px-4 md:px-6 pb-12">
         
-        <!-- Üst Bilgi Barı & God Mode / Savaş Odası Butonları -->
+        <!-- Üst Bilgi Barı & Sistem Durumu -->
         <div class="glass-panel !h-[50px] !flex-row cursor-default !py-0 justify-between px-6 animate-item delay-1">
             <span class="text-muted text-xs md:text-sm font-semibold tracking-widest flex items-center gap-3" id="live-clock">
                 SİSTEM BAŞLATILIYOR...
             </span>
-            <div class="flex items-center gap-3">
-                <a href="/godmode" class="bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500 hover:text-white transition-all text-xs font-black px-4 py-1.5 rounded-full tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.2)]">
-                    👑 GOD MODE
-                </a>
-                <span class="hidden md:block text-[#00ffcc] text-xs font-black tracking-widest uppercase">API: BAĞLI</span>
+            <div class="flex items-center gap-4">
+                <button onclick="openSearch()" class="text-gray-400 hover:text-white text-xs font-bold bg-white/5 border border-white/10 px-3 py-1 rounded-lg">🔍 Hızlı Arama (Ctrl+K)</button>
+                <span class="hidden md:block text-[#00ffcc] text-xs font-black tracking-widest uppercase" id="ping-display">API: 14ms</span>
                 <button class="bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xs font-black px-4 py-1.5 rounded-full tracking-widest shadow-[0_0_10px_rgba(239,68,68,0.2)]">
                     ⚔️ SAVAŞ ODASI
                 </button>
@@ -144,13 +135,13 @@
             <div class="glass-panel md:col-span-1 hover-purple animate-item delay-3 flex flex-col justify-around">
                 <h2 class="text-purple-400 text-sm font-black mb-1 tracking-widest">⚡ OTO SCALPING</h2>
                 <div class="relative inline-block w-12 align-middle select-none mb-3">
-                    <input type="checkbox" name="scalp-toggle" id="scalp-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
-                    <label for="scalp-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
+                    <input type="checkbox" name="scalp-toggle" id="scalp-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10" checked/>
+                    <label for="scalp-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300"></label>
                 </div>
                 <h2 class="text-blue-400 text-sm font-black mb-1 tracking-widest">📉 DCA BOTU</h2>
                 <div class="relative inline-block w-12 align-middle select-none">
-                    <input type="checkbox" name="dca-toggle" id="dca-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
-                    <label for="dca-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
+                    <input type="checkbox" name="dca-toggle" id="dca-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10" checked/>
+                    <label for="dca-toggle" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300"></label>
                 </div>
             </div>
 
@@ -166,29 +157,24 @@
             </div>
         </div>
 
-        <!-- 2. Satır: Grafik, Transfer Köprüsü, Cüzdan ve YouTube AI (TÜM SAYFALAR AKTİF) -->
+        <!-- 2. Satır: Grafik, KALDIRAÇ PRO SÜİT ve Cüzdan -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[120px]">
             <a href="/grafik" class="glass-panel hover-cyan md:col-span-1 animate-item delay-4">
                 <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">📊 PRO GRAFİK</h2>
-                <p class="text-muted text-[10px] font-medium">TradingView Destekli</p>
+                <p class="text-muted text-[10px] font-medium tracking-wide">TradingView Destekli</p>
             </a>
 
-            <a href="/transfer" class="glass-panel hover-green md:col-span-1 animate-item delay-4 !bg-green-500/5 border-green-500/20">
-                <span class="text-2xl mb-1 drop-shadow-md">🌉</span>
-                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">API TRANSFER</h2>
-                <p class="text-muted text-[10px] font-medium leading-tight">Dış Fon Yönlendirme</p>
+            <!-- VADELİ İŞLEMLER KALDIRAÇ PRO SÜİT -->
+            <a href="/kaldirac-pro" class="glass-panel hover-red md:col-span-2 animate-item delay-4 !bg-red-500/5 border-red-500/30">
+                <span class="text-2xl mb-1 drop-shadow-md">⚔️</span>
+                <h2 class="text-red-400 text-lg font-black mb-1 tracking-wide uppercase">Kaldıraç Pro Süit (50 Modül)</h2>
+                <p class="text-muted text-[10px] font-medium leading-tight">Hardcore Kaldıraçlı İşlem Modülleri & Tasfiyeden Kaçış</p>
             </a>
             
             <a href="/cuzdan" class="glass-panel hover-yellow md:col-span-1 animate-item delay-4 !items-start !text-left !px-4">
                 <h2 class="text-yellow-400 text-[10px] font-black tracking-widest uppercase mb-1">Binance Kasa</h2>
                 <p class="text-white text-xl font-black mb-1">$0.00 <span class="text-green-400 text-[10px] font-bold">+0%</span></p>
                 <p class="text-muted text-[9px] font-bold uppercase tracking-widest">Portföy Doktoru ➔</p>
-            </a>
-
-            <a href="/ai-icerik" class="glass-panel hover-pink md:col-span-1 animate-item delay-4 !bg-pink-500/5 border-pink-500/20">
-                <span class="text-2xl mb-1 drop-shadow-md">🎥</span>
-                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">YOUTUBE AI</h2>
-                <p class="text-muted text-[10px] font-medium leading-tight">Video Fabrikası</p>
             </a>
         </div>
 
@@ -233,23 +219,19 @@
             </a>
         </div>
 
-        <!-- 5. Satır: Makro Takvim, Sinyal Abonelik Ağı, AI Bot Kontrol & Sohbet -->
+        <!-- 5. Satır: Makro Takvim & Ana AI Kontrol -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-5 h-auto md:h-[100px]">
             <a href="/makro" class="glass-panel hover-gray md:col-span-1 h-[100px] md:h-auto animate-item delay-7">
                 <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">📅 MAKRO TAKVİM</h2>
                 <p class="text-muted text-[10px] font-medium">FED, TÜFE Ajandası</p>
             </a>
 
-            <a href="/abonelik" class="glass-panel hover-blue md:col-span-1 h-[100px] md:h-auto animate-item delay-7 !bg-blue-500/5 border-blue-500/20">
-                <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">📡 ABONELİK AĞI</h2>
-                <p class="text-muted text-[10px] font-medium">Webhook Dağıtımı</p>
-            </a>
-
-            <div class="glass-panel md:col-span-1 h-[100px] md:h-auto !flex-row !justify-between !px-4 border border-[#00ffcc]/30 cursor-default animate-item delay-7" id="bot-box">
-                <h2 class="text-[#00ffcc] text-xs font-black tracking-widest" id="bot-status-text">🤖 ANA AI</h2>
-                <div class="relative inline-block w-10 align-middle select-none">
-                    <input type="checkbox" name="toggle" id="bot-toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
-                    <label for="bot-toggle" class="toggle-label block overflow-hidden h-5 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
+            <!-- Genişletilmiş Ana AI Kontrolü -->
+            <div class="glass-panel md:col-span-2 h-[100px] md:h-auto !flex-row !justify-between !px-8 border border-[#00ffcc]/30 cursor-default animate-item delay-7" id="bot-box">
+                <h2 class="text-[#00ffcc] text-lg font-black tracking-widest uppercase" id="bot-status-text">🤖 ANA AI KONTROLÜ (AKTİF)</h2>
+                <div class="relative inline-block w-14 align-middle select-none">
+                    <input type="checkbox" name="toggle" id="bot-toggle" class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 border-[#111827] appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out" checked/>
+                    <label for="bot-toggle" class="toggle-label block overflow-hidden h-7 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"></label>
                 </div>
             </div>
             
@@ -257,6 +239,23 @@
                 <h2 class="text-soft-white text-sm font-black mb-1 tracking-wide">💬 AI ASİSTAN</h2>
                 <p class="text-muted text-[10px] font-medium">Strateji İstişaresi</p>
             </a>
+        </div>
+    </div>
+
+    <!-- HIZLI ARAMA MODALI (CTRL+K) -->
+    <div id="search-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0A0F1A] border border-white/10 rounded-2xl w-full max-w-lg p-6 flex flex-col gap-4">
+            <div class="flex justify-between items-center pb-2 border-b border-white/10">
+                <span class="text-xs font-black uppercase text-[#00ffcc] tracking-widest">🔍 Hızlı Arama & Işınlanma</span>
+                <button onclick="closeSearch()" class="text-gray-400 hover:text-white text-sm font-bold">✕ ESC</button>
+            </div>
+            <input type="text" id="search-input" placeholder="Sayfa veya coin adı yazın (Örn: Piyasa, Kaldıraç, BTC)..." class="bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white outline-none focus:border-[#00ffcc]">
+            <div class="flex flex-col gap-2">
+                <a href="/kaldirac-pro" class="p-3 bg-white/5 hover:bg-red-500/20 rounded-xl text-xs font-bold text-white transition-colors">⚔️ Kaldıraç Pro Süit</a>
+                <a href="/piyasa" class="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-colors">📈 Canlı Piyasa Tablosu</a>
+                <a href="/sinyaller" class="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-colors">🧠 AI Sinyal Fırsatları</a>
+                <a href="/haberler" class="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-colors">📰 Son Dakika Haberler</a>
+            </div>
         </div>
     </div>
 
@@ -297,17 +296,46 @@
         fetchTicker();
         setInterval(fetchTicker, 10000);
 
+        // Ping Kontrolü
+        async function checkPing() {
+            try {
+                const start = Date.now();
+                await fetch('/api/sistem/ping');
+                const ms = Date.now() - start;
+                document.getElementById('ping-display').innerText = `API: ${ms}ms`;
+            } catch(e) {}
+        }
+        setInterval(checkPing, 5000);
+
+        // Global Arama Kısayolu (Ctrl+K)
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                openSearch();
+            }
+            if (e.key === 'Escape') closeSearch();
+        });
+
+        function openSearch() {
+            document.getElementById('search-modal').classList.remove('hidden');
+            document.getElementById('search-input').focus();
+        }
+
+        function closeSearch() {
+            document.getElementById('search-modal').classList.add('hidden');
+        }
+
         const botToggle = document.getElementById('bot-toggle');
         const botStatusText = document.getElementById('bot-status-text');
         const botBox = document.getElementById('bot-box');
 
         botToggle.addEventListener('change', function() {
             if(this.checked) {
-                botStatusText.innerText = "🤖 ANA AI (AKTİF)"; 
+                botStatusText.innerText = "🤖 ANA AI KONTROLÜ (AKTİF)"; 
                 botStatusText.style.color = "#00ffcc"; 
                 botBox.style.borderColor = "rgba(0, 255, 204, 0.4)";
             } else {
-                botStatusText.innerText = "🤖 ANA AI (KAPALI)"; 
+                botStatusText.innerText = "🤖 ANA AI KONTROLÜ (KAPALI)"; 
                 botStatusText.style.color = "#EF4444"; 
                 botBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
             }

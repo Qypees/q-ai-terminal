@@ -3,203 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ÖNBELLEK KIRICI (CACHE BUSTER) META ETLİKETLERİ -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Küresel Haber Radarı | Q-AI Terminal Pro</title>
+    <title>Son Dakika Haberler | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; overflow-x: hidden; margin: 0; }
-        
-        .crypto-bg {
-            position: fixed; inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
-            z-index: 0; pointer-events: none;
-        }
-        .dot-grid {
-            position: fixed; inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-            background-size: 24px 24px;
-            z-index: 1; pointer-events: none;
-        }
-
-        .content-layer { position: relative; z-index: 10; }
-
-        .radar-card {
-            background: rgba(10, 15, 26, 0.45);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.02);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .radar-card::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-            opacity: 0; transition: opacity 0.4s; pointer-events: none;
-        }
-
-        .radar-card:hover::before { opacity: 1; }
-        .radar-card:hover { 
-            transform: translateY(-4px) scale(1.005); 
-            background: rgba(15, 22, 35, 0.7); 
-            box-shadow: 0 20px 40px -10px var(--hover-shadow, rgba(0,0,0,0.6));
-        }
-
-        .ai-action-box {
-            background: rgba(3, 4, 7, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
-            border-radius: 16px;
-        }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.5); }
-
-        .radar-spinner {
-            width: 80px; height: 80px;
-            border: 3px solid rgba(59, 130, 246, 0.1);
-            border-top-color: #3B82F6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; }
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; }
+        .glass-panel { background: rgba(10, 15, 26, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; z-index: 10; position: relative; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
-
     <div class="crypto-bg"></div>
-    <div class="dot-grid"></div>
-
-    <div class="content-layer w-full max-w-[1100px] flex flex-col h-[90vh]">
-        
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0 gap-4">
-            <div>
-                <a href="/pano" class="text-gray-400 hover:text-[#3B82F6] transition-colors text-xs font-black flex items-center gap-2 mb-2 uppercase tracking-widest">
-                    <span class="text-lg">←</span> ANA PANOYA DÖN
-                </a>
-                <h1 class="text-2xl md:text-3xl font-black tracking-[0.15em] text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">📰 KÜRESEL <span class="text-blue-500">HABER AĞI</span></h1>
-            </div>
-            <div class="md:text-right bg-[#05070A]/50 border border-white/5 p-3 rounded-xl backdrop-blur-md">
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Gerçek Zamanlı Çeviri & İstihbarat</p>
-                <div class="flex items-center justify-start md:justify-end gap-2 mt-1">
-                    <span class="relative flex h-2.5 w-2.5">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
-                    </span>
-                    <p class="text-blue-400 text-xs font-black uppercase tracking-wide drop-shadow-md" id="status-text">Ağa Bağlanıyor...</p>
-                </div>
+    <div class="w-full max-w-[1100px] flex flex-col h-[90vh] z-10">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
+            <a href="/pano" class="text-gray-400 hover:text-amber-400 text-xs font-black uppercase tracking-widest">← ANA PANOYA DÖN</a>
+            <h1 class="text-2xl font-black tracking-widest text-white">📰 SON DAKİKA <span class="text-amber-400">PİYASA HABERLERİ</span></h1>
+        </div>
+        <div class="glass-panel p-6 flex-grow overflow-y-auto">
+            <div id="haberler-container" class="flex flex-col gap-4">
+                <div class="text-center text-gray-400 py-10 font-bold uppercase tracking-widest">Global RSS Ağlarına Bağlanılıyor...</div>
             </div>
         </div>
-
-        <div id="news-container" class="flex-grow overflow-y-auto pr-2 flex flex-col gap-6 pb-10">
-            <div class="flex flex-col items-center justify-center h-64 border border-white/5 rounded-2xl bg-[#0A0A0E]/50 backdrop-blur-sm">
-                <div class="radar-spinner mb-6"></div>
-                <p class="text-blue-400 font-black text-xl mb-2 tracking-widest drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">SİSTEM TARANIYOR...</p>
-                <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Küresel veriler analiz edilip Türkçe'ye çevriliyor.</p>
-            </div>
-        </div>
-
     </div>
-
-    <!-- GÜVENLİ VE ÖNBELLEK KIRICI (CACHE BUSTER) JAVASCRIPT -->
     <script>
-        async function fetchNews() {
+        async function haberleriYukle() {
             try {
-                // Sonuna rastgele zaman damgası ekleyerek tarayıcıyı zorla yeni veri çekmeye itiyoruz
-                const cacheBuster = new Date().getTime();
-                const response = await fetch('/api/haberler?v=' + cacheBuster);
-                const data = await response.json();
-                
-                document.getElementById('status-text').innerText = "VERİ AKIŞI AKTİF (OTO-YENİLEME)";
-                document.getElementById('status-text').className = "text-blue-400 text-xs font-black uppercase tracking-wide drop-shadow-md";
-                renderNews(data);
-            } catch (error) {
-                document.getElementById('status-text').innerText = "AĞ BAĞLANTISI KOPTU!";
-                document.getElementById('status-text').className = "text-red-500 text-xs font-black uppercase tracking-wide drop-shadow-md";
+                const res = await fetch('/api/haberler');
+                const haberler = await res.json();
+                const container = document.getElementById('haberler-container');
+                container.innerHTML = haberler.map(h => {
+                    
+                    // Haber başlığı veya içeriğine göre Long/Short Duygu Tespiti
+                    const metin = (h.baslik + ' ' + h.ozet).toLowerCase();
+                    let etkiEtiketi = "NÖTR 🟡";
+                    let etkiRenk = "color: #F59E0B; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1);";
+
+                    const pozitifKelimeler = ["etf", "onay", "boğa", "yükseliş", "kazanç", "rekor", "ortaklık", "alım", "devam", "büyüme", "destek", "binance", "artış"];
+                    const negatifKelimeler = ["dava", "hack", "çöküş", "düşüş", "iflas", "yasak", "saldırı", "sec", "ceza", "satış", "stres", "kriz", "baskı"];
+
+                    let posScore = pozitifKelimeler.filter(k => metin.includes(k)).length;
+                    let negScore = negatifKelimeler.filter(k => metin.includes(k)).length;
+
+                    if (posScore > negScore) {
+                        etkiEtiketi = "LONG BENT 🚀 (YÜKSELİŞ BEKLENTİSİ)";
+                        etkiRenk = "color: #10B981; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1);";
+                    } else if (negScore > posScore) {
+                        etkiEtiketi = "SHORT BENT 🩸 (DÜŞÜŞ BEKLENTİSİ)";
+                        etkiRenk = "color: #EF4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1);";
+                    }
+
+                    return `
+                        <div class="bg-[#05070A] border border-white/5 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-amber-400/30 transition-all">
+                            <div class="flex-grow">
+                                <div class="flex flex-wrap items-center gap-3 mb-2">
+                                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded border" style="color: ${h.onem_renk}; border-color: ${h.onem_renk}40; background: ${h.onem_renk}10;">${h.onem}</span>
+                                    
+                                    <!-- YENİ: HABER ETKİSİ LONG / SHORT ETİKETİ -->
+                                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded border" style="${etkiRenk}">${etkiEtiketi}</span>
+
+                                    <span class="text-gray-500 text-xs font-bold">${h.kaynak} • ${h.zaman}</span>
+                                </div>
+                                <h3 class="text-white font-black text-base md:text-lg mb-1">${h.baslik}</h3>
+                                <p class="text-gray-400 text-xs leading-relaxed">${h.ozet}</p>
+                            </div>
+                            <a href="${h.url}" target="_blank" class="shrink-0 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-black font-black px-4 py-2 rounded-lg text-xs uppercase tracking-widest transition-all border border-amber-500/30">Kaynağa Git ➔</a>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {
+                document.getElementById('haberler-container').innerHTML = '<div class="text-red-500 text-center font-bold">Haberler yüklenirken hata oluştu.</div>';
             }
         }
-
-        function renderNews(haberler) {
-            const container = document.getElementById('news-container');
-            let htmlContent = "";
-
-            haberler.forEach((h, index) => {
-                const delay = index * 0.1;
-                // Değişkenler boş gelse bile sistemi çökertmeyecek güvenlik atamaları
-                const baslik = h.baslik || 'Başlık verisi anlık olarak çekilemedi...';
-                const ozet = h.ozet || 'Özet analizi şu an kullanılamıyor...';
-                const yonRenk = h.yon_renk || '#10B981';
-                
-                htmlContent += `
-                <div class="radar-card fade-in p-6 md:p-8 flex flex-col" style="--hover-shadow: ${h.onem_renk}30; border-left: 4px solid ${h.onem_renk}; animation-delay: ${delay}s;">
-                    
-                    <div class="flex flex-wrap justify-between items-center mb-5 gap-3 relative z-10">
-                        <div class="flex items-center gap-3">
-                            <span class="bg-[#05070A] border border-white/10 text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-md uppercase tracking-wider">${h.kaynak}</span>
-                            <span class="text-gray-500 text-xs font-bold">${h.zaman}</span>
-                        </div>
-                        <span class="text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-md border" style="color: ${h.onem_renk}; background-color: ${h.onem_renk}10; border-color: ${h.onem_renk}40; box-shadow: 0 0 15px ${h.onem_renk}20;">
-                            ${h.onem}
-                        </span>
-                    </div>
-
-                    <a href="${h.url}" target="_blank" class="group block mb-6 relative z-10">
-                        <h2 class="text-white text-xl md:text-2xl font-black mb-3 leading-tight group-hover:text-blue-400 transition-colors drop-shadow-sm">${baslik}</h2>
-                        <p class="text-gray-400 text-sm md:text-base leading-relaxed text-justify font-medium">${ozet}</p>
-                    </a>
-
-                    <!-- Q-AI Aksiyon Paneli HUD -->
-                    <div class="mt-auto ai-action-box p-5 relative z-10">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-5">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">🤖</span>
-                                <span class="text-white font-black text-xs tracking-widest uppercase border-b border-white/20 pb-1">Q-AI Aksiyon Planı</span>
-                            </div>
-                            
-                            <div class="flex items-center gap-5">
-                                <div class="text-right">
-                                    <span class="block text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Algoritmik Yön</span>
-                                    <span class="font-black text-lg drop-shadow-md" style="color: ${yonRenk};">${h.yon || 'NÖTR'}</span>
-                                </div>
-                                <div class="w-px h-10 bg-white/10"></div>
-                                <div class="text-left">
-                                    <span class="block text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Risk / Kaldıraç</span>
-                                    <span class="font-black text-white text-base">${h.kaldirac || '-'}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="border-t border-white/5 pt-4">
-                            <span class="text-white/80 text-[10px] font-black uppercase tracking-widest mb-1.5 block">Yapay Zeka Yorumu:</span>
-                            <p class="text-blue-200/80 text-xs leading-relaxed italic font-medium">"${h.ai_yorum || 'Analiz sürüyor...'}"</p>
-                        </div>
-                    </div>
-                </div>
-                `;
-            });
-
-            container.innerHTML = htmlContent;
-        }
-
-        fetchNews();
-        setInterval(fetchNews, 30000);
+        haberleriYukle();
+        setInterval(haberleriYukle, 30000);
     </script>
 </body>
 </html>

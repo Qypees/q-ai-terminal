@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vadeli İşlem "God Mode" | Q-AI Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; pointer-events: none; }
+        .dot-grid { position: fixed; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
+        .glass-panel { background: rgba(10, 15, 26, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.5); position: relative; z-index: 10; transition: transform 0.3s ease; }
+        .glass-panel:hover { transform: translateY(-3px); border-color: rgba(0,255,204,0.3); box-shadow: 0 20px 40px -10px rgba(0,255,204,0.2); }
+        .cyber-text { background: linear-gradient(to right, #00ffcc, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00ffcc; border-color: #00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.5); }
+        input:checked + .slider:before { transform: translateX(18px); background-color: #020203; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+    <div class="crypto-bg"></div>
+    <div class="dot-grid"></div>
+
+    <div class="w-full max-w-[1200px] flex flex-col z-10 pb-10">
+        
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0">
+            <a href="/pano" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-xs font-black flex items-center gap-2 uppercase tracking-widest">
+                <span class="text-lg">←</span> ANA PANO
+            </a>
+            <h1 class="text-3xl font-black tracking-widest text-white drop-shadow-md">⚡ VADELİ <span class="cyber-text">10X SÜİT</span></h1>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            
+            <!-- 1. Dinamik Kaldıraç Kilidi (Dynamic Leverage Lock) -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🔒</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Dinamik Kaldıraç Kalkanı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Piyasa volatilitesi %5'i aşarsa açık vadeli pozisyonların kaldıraç oranını otomatik olarak düşürür.</p>
+            </div>
+
+            <!-- 2. Likidasyon Avcısı (Liquidation Hunter) -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-red-500/20 bg-red-500/5">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🎯</span>
+                    <span class="text-red-400 font-black text-xs">AKTİF TARA</span>
+                </div>
+                <h3 class="text-red-400 font-black text-sm uppercase tracking-widest mb-1">Likidasyon Avcısı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Toplu patlatmaların (Long/Short sikişmesi) yaşanacağı kritik seviyeleri tarar ve ters yönde pozisyon açar.</p>
+            </div>
+
+            <!-- 3. Akıllı Kar Al (Smart Trailing Take-Profit) -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-[#00ffcc]/20">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">📈</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <h3 class="text-[#00ffcc] font-black text-sm uppercase tracking-widest mb-1">Akıllı Trailing TP</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Fiyat yükseldikçe kar al seviyesini yukarı taşıyan, trend bitene kadar seni pozisyondan atmayan akıllı algoritma.</p>
+            </div>
+
+            <!-- 4. Fonlama Ücreti (Funding Rate) Arbitrajı -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">💰</span>
+                    <span class="text-green-400 font-black text-xs">+%0.03 / 8S</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Fonlama Ücreti Avı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Negatif veya pozitif fonlama oranlarından (Funding Fee) işlem açmadan sadece prim geliri toplama botu.</p>
+            </div>
+
+            <!-- 5. Pozisyon Boyutu Optimizasyonu (Kelly Criterion) -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🧮</span>
+                    <span class="text-blue-400 font-black text-xs">OTOMATİK</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Kelly Pozisyon Boyutu</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Kasanın büyüklüğüne ve risk skoruna göre bir sonraki işlem için kusursuz marjin miktarını hesaplar.</p>
+            </div>
+
+            <!-- 6. Negatif Bakiye Koruma Kalkanı -->
+            <div class="glass-panel p-6 flex flex-col justify-between border-yellow-500/20">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🛡️</span>
+                    <span class="text-yellow-400 font-black text-xs">KORUMADA</span>
+                </div>
+                <h3 class="text-yellow-400 font-black text-sm uppercase tracking-widest mb-1">Marjin İzolatörü</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Vadeli işlemlerde cüzdandaki tüm paranın riske atılmasını önler, sadece atılan marjinin batmasına izin verir.</p>
+            </div>
+
+            <!-- 7. Hacim Patlaması Dedektörü (Volume Spike) -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🚀</span>
+                    <span class="text-purple-400 font-black text-xs">ANLIK</span>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Hacim Patlaması Radarı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Son 5 dakikada normal hacminin 5 katı para giren vadeli tahtaları yakalar, kırılımı kaçırmaz.</p>
+            </div>
+
+            <!-- 8. Otomatik DCA Çöküş Kurtarıcısı -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">📉</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Düşüş Ortalama Botu</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Açtığın pozisyon ters yöne giderse kademeli olarak maliyeti düşürerek ilk tepkide kârla kapattırır.</p>
+            </div>
+
+            <!-- 9. Emir Defteri (Order Book) Duvar Analizi -->
+            <div class="glass-panel p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-3xl">🧱</span>
+                    <span class="text-cyan-400 font-black text-xs">DESTEK/DİRENÇ</span>
+                </div>
+                <h3 class="text-cyan-400 font-black text-sm uppercase tracking-widest mb-1">Balina Duvarı Tarayıcısı</h3>
+                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Tahtadaki milyon dolarlık alış/satış emir duvarlarını okuyarak fiyatın döneceği noktayı önceden söyler.</p>
+            </div>
+
+            <!-- 10. Risk/Ödül Otomatik Tetikleyicisi -->
+            <div class="glass-panel p-6 flex flex-col justify-between lg:col-span-3 xl:col-span-3">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">⚡</span>
+                    <h3 class="text-white font-black text-sm uppercase tracking-widest">1:3 Risk / Ödül Oranı Kilidi</h3>
+                </div>
+                <div class="flex justify-between items-center bg-[#05070A] p-4 rounded-xl border border-white/5">
+                    <span class="text-gray-400 text-xs font-medium">Sistem, potansiyel kazancı riskin en az 3 katı olmayan hiçbir vadeli işleme onay vermez.</span>
+                    <span class="px-3 py-1 bg-[#00ffcc]/10 border border-[#00ffcc]/30 text-[#00ffcc] rounded text-[10px] font-black uppercase tracking-widest">SİSTEM KİLİDİ AKTİF</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

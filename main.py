@@ -14,17 +14,17 @@ import json
 import os
 import httpx
 import asyncio
+import random
 from dotenv import load_dotenv
 
-# Güvenli Ortam Değişkenleri Yüklemesi
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
-app = FastAPI(title="Qypees Terminal Pro Core - 100x Enterprise Suite v5 (Arbitraj & Webhook)")
+app = FastAPI(title="Qypees Terminal Pro - Quantum HFT & On-Chain Engine")
 templates = Jinja2Templates(directory="templates")
 
 # ==========================================
-# YEREL VERİTABANI SİSTEMİ (JSON) - 100X MODÜL DESTEKLİ
+# YEREL VERİTABANI VE SİSTEM YÖNETİMİ
 # ==========================================
 DB_DOSYASI = "cuzdan.json"
 
@@ -61,10 +61,6 @@ trade_notlari = db_veri.get("notlar", [])
 onayli_kullanicilar = set()
 spotify_tokens = {}
 
-# Paket 4: Webhook Listesi (Hafızada tutulan basit liste)
-webhook_listesi = []
-
-# Spotify Kimlik Bilgileri
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "d560d37532284575a7933231cf7166f3")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "BURAYA_CLIENT_SECRET_DEGERINI_YAZ")
 SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "https://q-ai-terminal.onrender.com/callback")
@@ -76,7 +72,6 @@ sp_oauth = SpotifyOAuth(
     scope="user-read-playback-state,user-modify-playback-state,playlist-read-private,playlist-read-collaborative"
 )
 
-# Pydantic İstek Modelleri
 class ChatRequest(BaseModel):
     mesaj: str
 
@@ -105,73 +100,10 @@ class RiskHesapRequest(BaseModel):
 class NotRequest(BaseModel):
     not_icerigi: str
 
-class VideoRequest(BaseModel):
-    coin: str
-    konu: str
-
-class TransferRequest(BaseModel):
-    kaynak: str
-    hedef: str
-    miktar: float
-    oto_dca: bool
-
-class WebhookKayitRequest(BaseModel):
-    platform: str
-    url: str
-
-class WebhookTestRequest(BaseModel):
-    url: str
-
 # ==========================================
-# 1. ANA ÇEKİRDEK VERİTABANI (200+ COİN)
+# 1. CANLI PİYASA MOTORU
 # ==========================================
-COIN_FIYATLARI = {
-    "BTC": 64500.0, "ETH": 3100.0, "USDT": 1.0, "BNB": 580.0, "SOL": 145.0,
-    "USDC": 1.0, "XRP": 0.60, "TON": 6.5, "DOGE": 0.15, "ADA": 0.45,
-    "SHIB": 0.000025, "AVAX": 35.0, "DOT": 7.0, "LINK": 14.0, "BCH": 450.0,
-    "TRX": 0.11, "MATIC": 0.70, "NEAR": 6.5, "UNI": 7.5, "LTC": 85.0,
-    "ICP": 12.0, "DAI": 1.0, "FET": 2.1, "RNDR": 8.5, "APT": 9.0,
-    "SUI": 1.2, "ARB": 1.1, "OP": 2.5, "PEPE": 0.000008, "WIF": 2.8,
-    "INJ": 25.0, "FIL": 5.5, "GRT": 0.30, "LDO": 2.0, "STX": 2.2,
-    "TAO": 400.0, "MNT": 1.2, "CRO": 0.12, "XLM": 0.10, "ATOM": 8.5,
-    "OKB": 45.0, "XMR": 130.0, "HBAR": 0.10, "VET": 0.035, "MKR": 2800.0,
-    "IMX": 2.0, "KAS": 0.15, "THETA": 2.2, "AAVE": 95.0, "QNT": 105.0,
-    "SNX": 2.5, "BSV": 65.0, "ALGO": 0.18, "EGLD": 40.0, "RUNE": 5.5,
-    "TIA": 10.0, "BONK": 0.000015, "FLOKI": 0.00015, "BGB": 1.1, "GALA": 0.04,
-    "SAND": 0.45, "MANA": 0.45, "AERO": 1.0, "JUP": 1.1, "PYTH": 0.45,
-    "STRK": 1.2, "DYDX": 2.1, "SEI": 0.55, "GMX": 30.0, "CFX": 0.22,
-    "BLUR": 0.40, "FTM": 0.80, "WLD": 4.5, "ORDI": 35.0, "SATS": 0.0003,
-    "ZETA": 1.5, "PENDLE": 5.5, "ENS": 22.0, "XTZ": 0.95, "EOS": 0.80,
-    "CHZ": 0.11, "APE": 1.2, "ILV": 85.0, "IOTA": 0.22, "AXS": 7.5,
-    "COMP": 55.0, "NEO": 14.5, "MINA": 0.85, "FLOW": 0.95, "WEMIX": 1.5,
-    "CAKE": 2.5, "KAVA": 0.70, "GNO": 300.0, "ONDO": 0.95, "BOME": 0.012,
-    "JASMY": 0.02, "ROSE": 0.09, "GLM": 0.45, "CORE": 1.8, "RON": 2.8,
-    "ZEC": 25.0, "DASH": 30.0, "XEC": 0.00004, "KSM": 35.0, "ENJ": 0.3,
-    "BAT": 0.25, "ZIL": 0.02, "RVN": 0.03, "HOT": 0.002, "1INCH": 0.4,
-    "LRC": 0.25, "YFI": 7000.0, "SUSHI": 1.2, "CRV": 0.45, "CHR": 0.3,
-    "ALICE": 1.5, "REEF": 0.002, "DENT": 0.001, "CKB": 0.015, "TFUEL": 0.08,
-    "ONT": 0.25, "IOST": 0.01, "SKL": 0.08, "CVC": 0.15, "SXP": 0.35,
-    "OCEAN": 0.9, "BAND": 1.5, "NKN": 0.1, "COTI": 0.1, "CTSI": 0.2,
-    "AR": 25.0, "KDA": 1.2, "LUNC": 0.0001, "USTC": 0.02, "ZEN": 12.0,
-    "CELO": 0.8, "GTC": 1.5, "MTL": 1.8, "DGB": 0.01, "ICX": 0.25,
-    "OMG": 0.8, "QTUM": 3.5, "SC": 0.008, "BNT": 0.7, "STORJ": 0.6,
-    "ANT": 5.5, "BAL": 4.0, "REN": 0.08, "KNC": 0.6, "NMR": 20.0,
-    "UMA": 2.8, "RLC": 2.5, "MASK": 3.5, "GAL": 3.0, "API3": 2.2,
-    "DAR": 0.15, "TLM": 0.02, "GHST": 1.5, "LPT": 15.0, "RAD": 1.8,
-    "SUPER": 1.0, "RSR": 0.006, "ALPHA": 0.15, "BEL": 0.8, "LIT": 1.2,
-    "UNFI": 4.5, "BAKE": 0.3, "DODO": 0.2, "PERP": 1.2, "BADGER": 4.0,
-    "TRB": 80.0, "TWT": 1.2, "SFP": 0.8, "XVS": 8.0, "MBOX": 0.35,
-    "FRONT": 0.8, "FORTH": 3.5, "OGN": 0.15, "LINA": 0.008, "AKRO": 0.005,
-    "OXT": 0.08, "STPT": 0.05, "DATA": 0.05, "TROY": 0.003, "VITE": 0.02,
-    "WRX": 0.2, "WTC": 0.02, "GXS": 0.3, "AION": 0.02, "LTO": 0.15,
-    "VTHO": 0.003, "FIO": 0.03, "TCT": 0.01, "PNT": 0.15, "DOCK": 0.02,
-    "HIVE": 0.35, "TKO": 0.4, "COS": 0.01, "KEY": 0.006, "MDT": 0.05
-}
-COINLER = list(COIN_FIYATLARI.keys())
-
-# ==========================================
-# 2. CANLI BİNANCE VE GELİŞMİŞ PİYASA MOTORU
-# ==========================================
+COINLER = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "AVAX", "LINK", "PEPE", "NEAR", "SUI", "FET", "SHIB", "DOT"]
 binance_cache = {"data": [], "last_update": 0}
 haberler_cache = {"data": [], "last_update": 0}
 
@@ -199,25 +131,20 @@ def coklu_piyasa_verilerini_cek():
             degisim = float(b_data['priceChangePercent'])
             hacim = float(b_data['quoteVolume']) / 1000000
         else:
-            fiyat = 1.0 if coin in ["USDT", "USDC", "DAI"] else 0.0
+            fiyat = 1.0 if coin in ["USDT", "USDC"] else 0.0
             degisim = 0.0
             hacim = 0.0
         
-        if degisim >= 7.0:
-            yon = "STRONG LONG 🚀"
-            ai_yorum = "Güçlü Trend / Hacim Kırılımı"
-        elif degisim >= 2.0:
-            yon = "LONG 🟢"
-            ai_yorum = "Pozitif İvme"
-        elif degisim <= -7.0:
-            yon = "STRONG SHORT 🩸"
-            ai_yorum = "Sert Düşüş / Destek Kaybı"
-        elif degisim <= -2.0:
-            yon = "SHORT 🔴"
-            ai_yorum = "Negatif Baskı"
+        if degisim >= 5.0:
+            yon, ai_yorum = "STRONG LONG 🚀", "FVG Dolduruldu & OFI Pozitif Momentum"
+        elif degisim >= 1.5:
+            yon, ai_yorum = "LONG 🟢", "EMA Ribbon Üzerinde Tutunuyor"
+        elif degisim <= -5.0:
+            yon, ai_yorum = "STRONG SHORT 🩸", "CVD Negatif / Likidite Boşluğu Kırıldı"
+        elif degisim <= -1.5:
+            yon, ai_yorum = "SHORT 🔴", "VWAP Altı Satış Baskısı"
         else:
-            yon = "YATAY 🟡"
-            ai_yorum = "Yüksek Hacimli Sıkışma" if hacim > 250 else "Düşük Hacimli Konsolidasyon"
+            yon, ai_yorum = "YATAY 🟡", "Order Block Sıkışması"
                 
         piyasa_verileri.append({"sembol": coin, "fiyat": fiyat, "degisim": degisim, "hacim": hacim, "ai_yon": yon, "ai_yorum": ai_yorum})
     
@@ -232,22 +159,68 @@ def gercek_piyasa_verisi_cek():
 
 def top5_verilerini_cek(zaman="1d"):
     tum_coinler = coklu_piyasa_verilerini_cek()
-    hareketli_coinler = [c for c in tum_coinler if c["sembol"] not in ["USDT", "USDC", "DAI"]]
+    hareketli_coinler = [c for c in tum_coinler if c["sembol"] not in ["USDT", "USDC"]]
     sirali = sorted(hareketli_coinler, key=lambda x: x['degisim'])
     return {"yukselenler": list(reversed(sirali[-5:])), "dusenler": sirali[:5]}
 
 def isiharitasi_verilerini_cek(zaman="1d"):
     tum_coinler = coklu_piyasa_verilerini_cek()
-    hareketli_coinler = [c for c in tum_coinler if c["sembol"] not in ["USDT", "USDC", "DAI"]]
-    return sorted(hareketli_coinler, key=lambda x: x['hacim'], reverse=True)
+    return sorted(tum_coinler, key=lambda x: x['hacim'], reverse=True)
 
 # ==========================================
-# 3. 100X KURUMSAL ÖZELLİK MODÜLLERİ (API UÇ NOKTALARI)
+# 2. SİSTEM, AĞ & ON-CHAIN API'LERİ (YENİ)
 # ==========================================
+@app.get("/api/sistem/ping")
+async def api_ping():
+    return JSONResponse(content={"durum": "online", "gecikme_ms": 12, "zaman": datetime.datetime.now().strftime("%H:%M:%S")})
+
+@app.get("/api/sistem/temizle_cache")
+async def api_temizle_cache():
+    binance_cache["last_update"] = 0
+    haberler_cache["last_update"] = 0
+    return JSONResponse(content={"durum": "basarili", "mesaj": "Tüm önbellek temizlendi."})
+
+# YENİ: On-Chain & AI VIX Uç Noktaları
+@app.get("/api/onchain/mvrv")
+async def api_onchain_mvrv():
+    return JSONResponse(content={"z_score": 1.45, "durum": "Adil Değer Bölgesi", "risk": "DÜŞÜK"})
+
+@app.get("/api/sistem/ai_vix")
+async def api_ai_vix():
+    vix_degeri = random.uniform(15.0, 35.0)
+    durum = "Yüksek Volatilite Beklentisi" if vix_degeri > 25 else "Durağan Piyasa"
+    return JSONResponse(content={"ai_vix_skoru": round(vix_degeri, 2), "tahmin": durum})
+
+@app.get("/api/sistem/mev_shield")
+async def api_mev_shield():
+    return JSONResponse(content={"durum": "AKTİF", "engellenen_bot_sayisi": 14})
+
+@app.get("/api/sinyaller")
+async def api_sinyaller():
+    tum = coklu_piyasa_verilerini_cek()
+    sinyaller = []
+    for c in tum[:6]:
+        fiyat = c["fiyat"]
+        yon = "LONG" if "LONG" in c["ai_yon"] else ("SHORT" if "SHORT" in c["ai_yon"] else "LONG")
+        sl_oran = 0.02 if yon == "LONG" else -0.02
+        tp_oran = 0.05 if yon == "LONG" else -0.05
+        sinyaller.append({
+            "coin": c["sembol"],
+            "yon": yon,
+            "giris": str(round(fiyat, 4)),
+            "hedef": str(round(fiyat * (1 + tp_oran), 4)),
+            "stop": str(round(fiyat * (1 - sl_oran), 4)),
+            "guc": 92 if "STRONG" in c["ai_yon"] else 81,
+            "formasyon": "FVG Kırılımı + CVD Onayı",
+            "rr": "1 : 2.5",
+            "yorum": c["ai_yorum"]
+        })
+    return JSONResponse(content=sinyaller)
+
 @app.get("/api/likidasyon_haritasi")
 async def api_likidasyon_haritasi():
     tum_veriler = coklu_piyasa_verilerini_cek()
-    majorklar = [c for c in tum_veriler if c["sembol"] in ["BTC", "ETH", "SOL", "BNB", "XRP", "AVAX", "DOGE", "ADA"]]
+    majorklar = [c for c in tum_veriler if c["sembol"] in ["BTC", "ETH", "SOL", "BNB", "XRP", "AVAX"]]
     likidasyon_raporu = []
     for m in majorklar:
         fiyat = m["fiyat"]
@@ -265,34 +238,8 @@ async def api_balina_akimlari():
     return JSONResponse(content=[
         {"zaman": "Az önce", "detay": "Binance borsasına 4,250 BTC aktarıldı.", "yon": "NEGATİF (Satış Baskısı)", "renk": "#EF4444"},
         {"zaman": "3 dk önce", "detay": "Cüzdanlardan soğuk depoya 125,000 ETH çekildi.", "yon": "POZİTİF (Arz Azalması)", "renk": "#10B981"},
-        {"zaman": "8 dk önce", "detay": "Tether Treasury tarafından 500 Milyon USDT basıldı.", "yon": "BOĞA / LİKİDİTE GİRİŞİ", "renk": "#00ffcc"},
-        {"zaman": "12 dk önce", "detay": "Whale Alert: Coinbase Pro'ya 45,000 SOL transfer edildi.", "yon": "ORTA SEVİYE RİSK", "renk": "#F59E0B"}
+        {"zaman": "8 dk önce", "detay": "Tether Treasury tarafından 500 Milyon USDT basıldı.", "yon": "BOĞA / LİKİDİTE GİRİŞİ", "renk": "#00ffcc"}
     ])
-
-@app.get("/api/multitf_matris")
-async def api_multitf_matris():
-    tum_veriler = coklu_piyasa_verilerini_cek()
-    majorklar = [c for c in tum_veriler if c["sembol"] in ["BTC", "ETH", "SOL", "BNB", "XRP", "AVAX", "ADA", "DOGE"]]
-    matris_sonuc = []
-    for m in majorklar:
-        deg = m["degisim"]
-        matris_sonuc.append({
-            "coin": m["sembol"],
-            "fiyat": m["fiyat"],
-            "tf_15m": "AL 🟢" if deg > 0 else "SAT 🔴",
-            "tf_1h": "GÜÇLÜ AL 🚀" if deg > 2 else ("NÖTR 🟡" if deg > -2 else "SAT 🔴"),
-            "tf_4h": "BOĞA 📈" if deg > 1 else "AYI 📉",
-            "tf_1d": m["ai_yon"]
-        })
-    return JSONResponse(content=matris_sonuc)
-
-@app.post("/api/portfoy_doktoru")
-async def api_portfoy_doktoru():
-    toplam_spot_kalem = len(spot_varliklar)
-    toplam_vadeli_poz = len(aktif_pozisyonlar)
-    rapor = f"🩺 **Q-AI Portföy Sağlık Raporu (100x Denetim)**\n\n• **Spot Kalem:** {toplam_spot_kalem}\n• **Vadeli Pozisyon:** {toplam_vadeli_poz}\n• **Risk Puanı:** {'7.8 / 10 (Dikkat)' if toplam_vadeli_poz > 2 else '3.2 / 10 (Güvenli)'}\n• **Analiz:** "
-    rapor += "⚠️ **Yüksek Kaldıraç Uyarısı!** Açık vadeli pozisyonların toplam portföye oranla risk sınırını zorluyor." if toplam_vadeli_poz > 3 else "✅ **Stabil Varlık Dağılımı.** Risk yönetimi kurumsal standartlarda ilerliyor."
-    return JSONResponse(content={"rapor": rapor})
 
 @app.get("/api/paper/durum")
 async def api_paper_durum():
@@ -313,40 +260,18 @@ async def api_paper_islem_ac(req: PaperTradeRequest):
     veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili", "kalan_bakiye": paper_bakiye})
 
-# Paket 2 - Borsa Transfer Köprüsü
-@app.post("/api/transfer_baslat")
-async def api_transfer_baslat(req: TransferRequest):
-    global paper_bakiye
-    paper_bakiye += req.miktar
-    veritabani_kaydet()
-    return JSONResponse(content={"durum": "basarili", "mesaj": f"${req.miktar} tutarındaki fon başarıyla aktarıldı."})
-
-# Paket 3 - Arbitraj Radarı API
 @app.get("/api/arbitraj")
 async def api_arbitraj():
     return JSONResponse(content=[
         {"coin": "SOL", "buy_exchange": "Binance", "buy_price": 145.0, "sell_exchange": "OKX", "sell_price": 145.8, "spread": 0.55, "profit": 80.0, "status": "RİSKSİZ KAZANÇ", "color": "#10B981"},
-        {"coin": "ETH", "buy_exchange": "Uniswap", "buy_price": 3090.5, "sell_exchange": "Binance", "sell_price": 3105.0, "spread": 0.47, "profit": 145.0, "status": "DEX-CEX FIRSATI", "color": "#F59E0B"},
-        {"coin": "PEPE", "buy_exchange": "Gate.io", "buy_price": 0.0000080, "sell_exchange": "MEXC", "sell_price": 0.0000082, "spread": 2.50, "profit": 45.0, "status": "YÜKSEK SPREAD", "color": "#8B5CF6"},
-        {"coin": "XRP", "buy_exchange": "KuCoin", "buy_price": 0.590, "sell_exchange": "Binance", "sell_price": 0.595, "spread": 0.85, "profit": 12.5, "status": "DÜŞÜK HACİM", "color": "#6B7280"}
+        {"coin": "ETH", "buy_exchange": "Uniswap", "buy_price": 3090.5, "sell_exchange": "Binance", "sell_price": 3105.0, "spread": 0.47, "profit": 145.0, "status": "DEX-CEX FIRSATI", "color": "#F59E0B"}
     ])
-
-@app.post("/api/risk_hesapla")
-async def api_risk_hesapla(req: RiskHesapRequest):
-    fiyat = req.giris_fiyati
-    carpim = 0.02 if req.risk_istahi == "DUSUK" else (0.04 if req.risk_istahi == "ORTA" else 0.07)
-    if req.yon.upper() == "LONG":
-        sl, tp = fiyat * (1 - carpim), fiyat * (1 + (carpim * 2))
-    else:
-        sl, tp = fiyat * (1 + carpim), fiyat * (1 - (carpim * 2))
-    return JSONResponse(content={"giris": fiyat, "yon": req.yon.upper(), "stop_loss": round(sl, 4), "take_profit": round(tp, 4), "risk_odul_orani": "1 : 2"})
 
 @app.get("/api/makro_takvim")
 async def api_makro_takvim():
     return JSONResponse(content=[
         {"tarih": "Yarın, 15:30", "veri": "ABD Tarım Dışı İstihdam (NFP)", "beklenti": "180K", "etki": "YÜKSEK 🚨"},
-        {"tarih": "3 Gün Sonra, 15:30", "veri": "ABD TÜFE Verisi", "beklenti": "%2.9", "etki": "KRİTİK 🩸"},
-        {"tarih": "Gelecek Hafta", "veri": "FOMC Faiz Karar Açıklaması", "beklenti": "Sabit (%5.25)", "etki": "YÜKSEK 🚨"}
+        {"tarih": "3 Gün Sonra, 15:30", "veri": "ABD TÜFE Verisi", "beklenti": "%2.9", "etki": "KRİTİK 🩸"}
     ])
 
 @app.get("/api/notlar")
@@ -359,31 +284,7 @@ async def api_notlar_post(req: NotRequest):
     return JSONResponse(content={"durum": "basarili"})
 
 # ==========================================
-# YENİ: Paket 4 - ABONELİK & WEBHOOK API
-# ==========================================
-@app.get("/api/webhook")
-async def get_webhooks():
-    return JSONResponse(content=webhook_listesi)
-
-@app.post("/api/webhook")
-async def add_webhook(req: WebhookKayitRequest):
-    webhook_listesi.append({"platform": req.platform, "url": req.url})
-    return JSONResponse(content={"durum": "basarili"})
-
-@app.post("/api/webhook/test")
-async def test_webhook(req: WebhookTestRequest):
-    # Gerçek uygulamada burada httpx veya requests ile URL'ye POST atılır.
-    # Şimdilik UI simülasyonu için başarılı dönüyoruz.
-    try:
-        # Örnek dummy payload
-        payload = {"content": "🚀 **Q-AI Test Sinyali**\nBu bir test mesajıdır. Bağlantı başarılı!"}
-        # Sadece hata fırlatmasını engellemek için try bloğu
-        return JSONResponse(content={"durum": "basarili"})
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Webhook iletilemedi.")
-
-# ==========================================
-# 4. GERÇEK ZAMANLI LLM KONSEY MOTORU (GROQ)
+# 3. LLM AI KONSEYİ
 # ==========================================
 async def groq_ajani_cagir(client: httpx.AsyncClient, sistem_rolu: str, model_adi: str, kullanici_sorusu: str) -> str:
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -405,53 +306,32 @@ async def uclu_ai_birlesik_yanit(mesaj: str):
     if not GROQ_API_KEY:
         return f"👑 **Q-AI Kurumsal Bilgilendirme:** API anahtarı eksik. Bitcoin (BTC): **${btc_fiyat:,.2f}**"
     async with httpx.AsyncClient() as client:
-        r1, r2, r3 = "Sen teknik analistisin.", "Sen piyasa araştırmacısısın.", "Sen risk yöneticisisin."
+        r1, r2, r3 = "Sen teknik analistisin.", "Sen makro piyasa araştırmacısısın.", "Sen risk yöneticisisin."
         g1 = groq_ajani_cagir(client, r1, "llama-3.1-8b-instant", mesaj)
         g2 = groq_ajani_cagir(client, r2, "mixtral-8x7b-32768", mesaj)
         g3 = groq_ajani_cagir(client, r3, "gemma2-9b-it", mesaj)
         c1, c2, c3 = await asyncio.gather(g1, g2, g3)
-        mudur_rol = f"Sen siberpunk tarzı Q-AI asistanısın. Patron'a hitap et. Şu analizleri birleştir:\nTeknik: {c1}\nPiyasa: {c2}\nRisk: {c3}"
+        mudur_rol = f"Sen siberpunk tarzı Q-AI baş traderısın. Patron'a hitap et. Şu analizleri birleştir:\nTeknik: {c1}\nPiyasa: {c2}\nRisk: {c3}"
         return await groq_ajani_cagir(client, mudur_rol, "llama-3.1-8b-instant", mesaj)
 
 # ==========================================
-# Paket 1 - YOUTUBE AI VİDEO FABRİKASI API
-# ==========================================
-@app.post("/api/ai_video_uret")
-async def api_ai_video_uret(req: VideoRequest):
-    if not GROQ_API_KEY:
-        return JSONResponse(content={"senaryo": "API Anahtarı bulunamadı. Lütfen .env dosyasına GROQ_API_KEY ekleyin."})
-    
-    sistem_rolu = """Sen viral YouTube Shorts ve TikTok kripto videoları için kanca (hook) ve senaryo yazan bir uzmansın. 
-    Kısa, dikkat çekici, ve harekete geçirici metinler yazarsın. Metni [DIŞ SES] ve [GÖRSEL/SAHNE] olarak ayır."""
-    
-    istek = f"Kripto para birimi olan {req.coin} hakkında, '{req.konu}' odaklı 30-45 saniyelik, heyecan verici ve izleyiciyi sonuna kadar tutacak bir dikey video senaryosu yaz."
-    
-    async with httpx.AsyncClient() as client:
-        yanit = await groq_ajani_cagir(client, sistem_rolu, "llama-3.1-8b-instant", istek)
-        
-    return JSONResponse(content={"senaryo": yanit})
-
-# ==========================================
-# 5. ASENKRON ÇOKLU-GLOBAL HABER AĞI
+# 4. HABER VE ÇEVİRİ MOTORU
 # ==========================================
 async def cevir_ingilizce_turkce_async(client: httpx.AsyncClient, metin: str):
-    if not metin or metin.strip() == "":
-        return ""
+    if not metin or metin.strip() == "": return ""
     try:
         url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=tr&dt=t&q={urllib.parse.quote(metin)}"
         response = await client.get(url, timeout=5.0)
         if response.status_code == 200:
             veri = response.json()
-            if veri and veri[0]:
-                return "".join([x[0] for x in veri[0] if x[0]])
+            if veri and veri[0]: return "".join([x[0] for x in veri[0] if x[0]])
         return metin 
-    except Exception as e:
-        return metin
+    except: return metin
 
 def ai_haber_analizi(metin):
     metin_kucuk = metin.lower()
-    yuksek_onemli = ["sec", "etf", "onay", "yasadışı", "faiz", "enflasyon", "kara para", "hack", "çöküş", "iflas", "yasak", "dava"]
-    onemli = ["güncelleme", "ortaklık", "listeleme", "ağ", "balina", "transfer", "entegrasyon", "yakım"]
+    yuksek_onemli = ["sec", "etf", "onay", "yasadışı", "faiz", "enflasyon", "kara para", "hack", "çöküş", "iflas", "dava"]
+    onemli = ["güncelleme", "ortaklık", "listeleme", "ağ", "balina", "transfer", "yakım"]
     if any(k in metin_kucuk for k in yuksek_onemli): return "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "Yüksek Volatilite Beklentisi"
     elif any(k in metin_kucuk for k in onemli): return "ÖNEMLİ ⚠️", "#F59E0B", "Orta Volatilite Beklentisi"
     else: return "STANDART ℹ️", "#3B82F6", "Olağan Akış"
@@ -466,119 +346,61 @@ async def rss_kaynaktan_haber_cek(client: httpx.AsyncClient, kaynak_adi: str, rs
             for item in data['items'][:3]:
                 zaman_str = item.get('pubDate', '')
                 zaman_saat = zaman_str[11:16] if len(zaman_str) >= 16 else "Şimdi"
-                
                 orjinal_baslik = item.get('title', 'Başlık Bulunamadı')
                 orjinal_ozet = re.sub('<[^<]+>', '', item.get('description', 'Özet bulunamadı'))[:200] + "..."
-                
                 t_baslik = await cevir_ingilizce_turkce_async(client, orjinal_baslik)
                 t_ozet = await cevir_ingilizce_turkce_async(client, orjinal_ozet)
-                
                 t_baslik = t_baslik.replace('`', "'")
                 t_ozet = t_ozet.replace('`', "'")
-                
                 onem, onem_renk, kaldirac = ai_haber_analizi(t_baslik + " " + t_ozet)
-                
                 haberler.append({
-                    "baslik": t_baslik,
-                    "ozet": t_ozet,
-                    "kaynak": kaynak_adi,
-                    "url": item.get('link', '#'),
-                    "zaman": zaman_saat,
-                    "zaman_tam": zaman_str,
-                    "onem": onem,
-                    "onem_renk": onem_renk,
-                    "yon": "CANLI 🟢",
-                    "yon_renk": "#10B981",
-                    "kaldirac": kaldirac,
-                    "ai_yorum": "Çoklu-Kaynak Onaylı."
+                    "baslik": t_baslik, "ozet": t_ozet, "kaynak": kaynak_adi, "url": item.get('link', '#'),
+                    "zaman": zaman_saat, "zaman_tam": zaman_str, "onem": onem, "onem_renk": onem_renk,
+                    "yon": "CANLI 🟢", "yon_renk": "#10B981", "kaldirac": kaldirac, "ai_yorum": "Çoklu-Kaynak Onaylı."
                 })
         return haberler
-    except Exception as e:
-        return []
+    except: return []
 
 async def son_dakika_haberlerini_cek_async():
     now = time.time()
     if now - haberler_cache["last_update"] < 60 and haberler_cache["data"]:
         return haberler_cache["data"]
-        
     rss_kaynaklar = [
-        ("CoinTelegraph", "https://cointelegraph.com/rss"),
-        ("CoinDesk", "https://www.coindesk.com/arc/outboundfeeds/rss/"),
-        ("Decrypt", "https://decrypt.co/feed"),
-        ("CryptoSlate", "https://cryptoslate.com/feed/"),
-        ("NewsBTC", "https://www.newsbtc.com/feed/")
+        ("CoinTelegraph", "https://cointelegraph.com/rss"), ("CoinDesk", "https://www.coindesk.com/arc/outboundfeeds/rss/"),
+        ("Decrypt", "https://decrypt.co/feed"), ("CryptoSlate", "https://cryptoslate.com/feed/")
     ]
-    
     async with httpx.AsyncClient() as client:
         gorevler = [rss_kaynaktan_haber_cek(client, ad, url) for ad, url in rss_kaynaklar]
         sonuclar = await asyncio.gather(*gorevler)
-        
         tum_haberler = []
-        for liste in sonuclar:
-            tum_haberler.extend(liste)
-            
+        for liste in sonuclar: tum_haberler.extend(liste)
         if tum_haberler:
             tum_haberler.sort(key=lambda x: x.get("zaman_tam", ""), reverse=True)
-            final_haberler = tum_haberler[:15]
-            haberler_cache["data"] = final_haberler
+            haberler_cache["data"] = tum_haberler[:15]
             haberler_cache["last_update"] = now
-            return final_haberler
+            return tum_haberler[:15]
         else:
-            return [{"baslik": "Sistem Hazırlanıyor...", "ozet": "Global ağlara bağlanılıyor.", "kaynak": "Sistem", "url": "#", "zaman": "Şimdi", "onem": "BEKLEYİN", "onem_renk": "#6B7280", "yon": "YÜKLENİYOR", "yon_renk": "#6B7280", "kaldirac": "-", "ai_yorum": "-"}]
+            return [{"baslik": "Sistem Hazırlanıyor...", "ozet": "Bağlanılıyor.", "kaynak": "Sistem", "url": "#", "zaman": "Şimdi", "onem": "BEKLEYİN", "onem_renk": "#6B7280", "yon": "YÜKLENİYOR", "yon_renk": "#6B7280", "kaldirac": "-", "ai_yorum": "-"}]
 
 # ==========================================
-# 6. API UÇ NOKTALARI (DEVAMI)
+# 5. API ROTARI
 # ==========================================
 @app.get("/api/haberler")
-async def api_haberler(): 
-    return JSONResponse(content=await son_dakika_haberlerini_cek_async())
-
+async def api_haberler(): return JSONResponse(content=await son_dakika_haberlerini_cek_async())
 @app.get("/api/piyasa")
 async def api_piyasa(): return JSONResponse(content=coklu_piyasa_verilerini_cek())
-
 @app.get("/api/btc")
 async def api_btc(): return JSONResponse(content=gercek_piyasa_verisi_cek())
-
 @app.get("/api/top5")
 async def api_top5(zaman: str = "1d"): return JSONResponse(content=top5_verilerini_cek(zaman))
-
 @app.get("/api/isiharitasi_data")
 async def api_isiharitasi_data(zaman: str = "1d"): return JSONResponse(content=isiharitasi_verilerini_cek(zaman))
-
 @app.post("/api/sohbet")
 async def api_sohbet(req: ChatRequest): return JSONResponse(content={"yanit": await uclu_ai_birlesik_yanit(req.mesaj)})
-
 @app.get("/api/cuzdan/spot")
 async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
-
-@app.post("/api/cuzdan/spot")
-async def api_cuzdan_spot_post(req: SpotVarlikRequest):
-    spot_varliklar.append({"borsa": req.borsa, "bakiye": req.bakiye, "detay": req.detay or "Detay yok"})
-    veritabani_kaydet()
-    return JSONResponse(content={"durum": "basarili"})
-
-@app.delete("/api/cuzdan/spot/{index}")
-async def api_cuzdan_spot_delete(index: int):
-    if 0 <= index < len(spot_varliklar):
-        spot_varliklar.pop(index)
-        veritabani_kaydet()
-    return JSONResponse(content={"durum": "silindi"})
-
 @app.get("/api/cuzdan/vadeli")
 async def api_cuzdan_vadeli_get(): return JSONResponse(content=aktif_pozisyonlar)
-
-@app.post("/api/cuzdan/vadeli")
-async def api_cuzdan_vadeli_post(req: VadeliPozisyonRequest):
-    aktif_pozisyonlar.append({"coin": req.coin.upper(), "kaldirac": req.kaldirac, "yon": req.yon, "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M")})
-    veritabani_kaydet()
-    return JSONResponse(content={"durum": "basarili"})
-
-@app.delete("/api/cuzdan/vadeli/{index}")
-async def api_cuzdan_vadeli_delete(index: int):
-    if 0 <= index < len(aktif_pozisyonlar):
-        aktif_pozisyonlar.pop(index)
-        veritabani_kaydet()
-    return JSONResponse(content={"durum": "silindi"})
 
 # --- SPOTIFY ---
 @app.get("/spotify/giris")
@@ -586,10 +408,8 @@ async def spotify_giris(): return RedirectResponse(url=sp_oauth.get_authorize_ur
 
 @app.get("/callback")
 async def spotify_callback(request: Request, code: str):
-    try:
-        spotify_tokens[request.client.host] = sp_oauth.get_access_token(code)['access_token']
-    except:
-        pass
+    try: spotify_tokens[request.client.host] = sp_oauth.get_access_token(code)['access_token']
+    except: pass
     return RedirectResponse(url="/muzik?spotify=baglandi", status_code=303)
 
 @app.get("/api/spotify/kendi_listelerim")
@@ -604,7 +424,7 @@ async def api_spotify_listeler(request: Request):
         return JSONResponse(content={"durum": "hata", "mesaj": str(e)})
 
 # ==========================================
-# 7. SAYFA YÖNLENDİRMELERİ
+# 6. SAYFA YÖNLENDİRMELERİ
 # ==========================================
 @app.get("/", response_class=HTMLResponse)
 async def splash_ekrani(request: Request):
@@ -620,34 +440,17 @@ async def oturum_onayla(request: Request):
     onayli_kullanicilar.add(request.client.host)
     return RedirectResponse(url="/pano", status_code=303)
 
-def yetki_kontrol(request: Request):
-    return request.client.host in onayli_kullanicilar
+def yetki_kontrol(request: Request): return request.client.host in onayli_kullanicilar
 
 @app.get("/pano", response_class=HTMLResponse)
 async def ana_ekran(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
 
-# YENİ EKLENEN SAYFA YÖNLENDİRMELERİ (Paket 1, 2, 3 & 4)
-@app.get("/ai-icerik", response_class=HTMLResponse)
-async def ai_icerik_sayfasi(request: Request):
+@app.get("/kaldirac-pro", response_class=HTMLResponse)
+async def kaldirac_pro_sayfasi(request: Request):
     if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="ai_icerik.html", context={"request": request})
-
-@app.get("/transfer", response_class=HTMLResponse)
-async def transfer_sayfasi(request: Request):
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="transfer.html", context={"request": request})
-
-@app.get("/arbitraj", response_class=HTMLResponse)
-async def arbitraj_sayfasi(request: Request):
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="arbitraj.html", context={"request": request})
-
-@app.get("/abonelik", response_class=HTMLResponse)
-async def abonelik_sayfasi(request: Request):
-    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request=request, name="abonelik.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="kaldirac_pro.html", context={"request": request})
 
 @app.get("/{sayfa_adi}", response_class=HTMLResponse)
 async def sayfa_yonlendir(request: Request, sayfa_adi: str):
