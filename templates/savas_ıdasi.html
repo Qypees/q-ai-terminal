@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Savaş Odası (War Room) | Qypees Terminal Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #080c14; color: #e2e8f0; overflow-x: hidden; margin: 0; min-height: 100vh; }
+        
+        .app-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, #1f1015 0%, #080c14 70%);
+            z-index: 0; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; min-height: 100vh; }
+
+        .ui-panel {
+            background: rgba(14, 22, 35, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-top: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .war-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+        .war-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.7);
+        }
+
+        .pulse-red { animation: pulseRed 2s infinite; }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(239, 68, 68, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(239, 68, 68, 0.6); }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+
+    <div class="app-bg"></div>
+
+    <div class="content-layer max-w-[1600px] mx-auto flex flex-col gap-4">
+        
+        <!-- ÜST KOMUTA BARI -->
+        <div class="ui-panel p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <a href="/pano" class="text-slate-400 hover:text-red-400 transition-colors text-xs font-bold flex items-center gap-2 uppercase tracking-wider">
+                    <span>←</span> MERKEZE DÖN
+                </a>
+                <div class="h-5 w-px bg-white/10"></div>
+                <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    ⚔️ SAVAŞ ODASI (WAR ROOM) <span class="text-red-500 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/20">TAARRUZ & İSTİHBARAT</span>
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-4 bg-[#080c14]/60 px-4 py-2 rounded-xl border border-red-500/20">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                    <span class="text-xs font-extrabold text-red-400 uppercase tracking-widest">DEFCON 2: YÜKSEK TEHDİT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANA SAVAŞ MATRİSİ -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-grow">
+            
+            <!-- SOL BLOK: BALİNA ÇATIŞMA VE LİKİDASYON RAPORU -->
+            <div class="ui-panel p-5 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-red-400">🐋 Balina Çatışma & Likidasyon</h3>
+                    <span class="text-[10px] text-slate-400">Canlı Radar</span>
+                </div>
+
+                <div class="flex flex-col gap-3" id="war-liquidation-list">
+                    <div class="bg-[#080c14] p-3.5 rounded-xl border border-white/5 flex flex-col gap-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-extrabold text-white text-xs">BTC / USDT</span>
+                            <span class="text-rose-400 text-xs font-bold">Short Patlatma: $67,400</span>
+                        </div>
+                        <p class="text-slate-400 text-[11px]">Devasa emir duvarı test ediliyor. Satıcılar baskı altında.</p>
+                    </div>
+                    <div class="bg-[#080c14] p-3.5 rounded-xl border border-white/5 flex flex-col gap-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-extrabold text-white text-xs">ETH / USDT</span>
+                            <span class="text-emerald-400 text-xs font-bold">Long Patlatma: $3,210</span>
+                        </div>
+                        <p class="text-slate-400 text-[11px]">Destek noktalarında yoğun likidite birikimi gözlendi.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORTA BLOK: KÜRESEL ŞOK VE SİYAH KUĞU RAPORU -->
+            <div class="ui-panel p-5 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-red-400">⚡ Siyah Kuğu & Makro Tehditler</h3>
+                    <span class="text-[10px] text-slate-400">AI İstihbarat</span>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl flex flex-col gap-2">
+                        <span class="text-[10px] text-rose-400 font-extrabold uppercase">🚨 KRİTİK MAKRO RAPOR</span>
+                        <h4 class="text-white font-extrabold text-xs">FED Tutanakları Sonrası Likidite Daralması</h4>
+                        <p class="text-slate-300 text-xs leading-relaxed">Piyasa yapıcılar volatiliteyi artırmak için stop avı (stop hunt) operasyonları yürütüyor. Kaldıraçlı işlemlerde aşırı dikkat önerilir.</p>
+                    </div>
+                    <div class="bg-[#080c14] p-4 rounded-xl border border-white/5 flex flex-col gap-2">
+                        <span class="text-[10px] text-amber-400 font-extrabold uppercase">⚠️ BİRINCIL BORSA AKIŞI</span>
+                        <h4 class="text-white font-extrabold text-xs">CEX Net Rezerv Değişimi</h4>
+                        <p class="text-slate-300 text-xs leading-relaxed">Soğuk cüzdanlardan borsalara anlık varlık transferleri tespit edildi. Olası satış baskısına karşı dikkatli olunmalıdır.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ BLOK: SAVAŞ TAKTİKLERİ VE KORUMA ÖNLEMLERİ -->
+            <div class="ui-panel p-5 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-red-400">🛡️ Taktiksel Savunma Protokolü</h3>
+                    <span class="text-[10px] text-slate-400">Güvenlik</span>
+                </div>
+
+                <div class="flex flex-col gap-3 text-xs text-slate-300 leading-relaxed">
+                    <div class="bg-[#080c14] p-3.5 rounded-xl border border-white/5 flex flex-col gap-1">
+                        <strong class="text-white">Alım-Satım Yok (Saf Gözlem)</strong>
+                        <p class="text-[11px] text-slate-400">Bu oda tamamen piyasa manipülasyonlarını ve savaş senaryolarını izlemek için tasarlanmıştır. Dış borsalara emir iletilmez.</p>
+                    </div>
+                    <div class="bg-[#080c14] p-3.5 rounded-xl border border-white/5 flex flex-col gap-1">
+                        <strong class="text-white">Volatilite Kalkanı</strong>
+                        <p class="text-[11px] text-slate-400">Ani flash crash durumlarında sistem otomatik olarak uyarı mekanizmalarını devreye sokar.</p>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-2">
+                    <a href="/piyasa" class="war-btn w-full py-3 rounded-xl text-xs uppercase tracking-wider font-extrabold flex items-center justify-center text-center">
+                        PİYASA RADARINA DÖN ➔
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

@@ -3,244 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuantum Arbitraj & MEV Radarı | Q-AI Terminal Pro</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Kuantum Arbitraj & MEV Radarı | Qypees Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.9) 0%, rgba(2, 2, 3, 0.99) 80%); z-index: 0; pointer-events: none; }
-        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none; }
-        .glass-panel { background: rgba(5, 8, 14, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(139, 92, 246, 0.15); border-top: 1px solid rgba(139, 92, 246, 0.3); border-radius: 16px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8); position: relative; z-index: 10; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #080c14; color: #e2e8f0; overflow-x: hidden; margin: 0; min-height: 100vh; }
         
+        .app-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, #132238 0%, #080c14 70%);
+            z-index: 0; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; min-height: 100vh; }
+
+        .ui-panel {
+            background: rgba(14, 22, 35, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .accent-btn {
+            background: linear-gradient(135deg, #00d2ff 0%, #0099ff 100%);
+            color: #080c14;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .accent-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 210, 255, 0.5);
+        }
+
         .radar-scan { position: relative; overflow: hidden; }
         .radar-scan::after {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: conic-gradient(from 0deg, transparent 70%, rgba(139, 92, 246, 0.4) 100%);
+            background: conic-gradient(from 0deg, transparent 70%, rgba(0, 210, 255, 0.4) 100%);
             animation: radarSpin 2s linear infinite; z-index: 0; pointer-events: none;
         }
         @keyframes radarSpin { 100% { transform: rotate(360deg); } }
 
-        .list-item { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; transition: all 0.3s ease; position: relative; z-index: 1; }
-        .list-item:hover { background: rgba(15, 22, 35, 0.9); border-color: rgba(139, 92, 246, 0.6); transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3); }
-        
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.4); border-radius: 10px; }
-        .cyber-text { font-family: 'JetBrains Mono', monospace; }
-        
-        .check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
-        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.60rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;}
-        .feature-checkbox input { accent-color: #8b5cf6; width: 10px; height: 10px; cursor: pointer; }
-        .feature-checkbox:hover { color: #c4b5fd; }
+        .list-item {
+            background: rgba(14, 22, 35, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .list-item:hover {
+            background: rgba(0, 210, 255, 0.04);
+            border-color: rgba(0, 210, 255, 0.3);
+            transform: translateX(3px);
+        }
+
+        .msg-bubble {
+            background: linear-gradient(135deg, #00d2ff 0%, #0099ff 100%);
+            color: #080c14;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .msg-bubble:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.7);
+        }
+
         .path-arrow { animation: pulseArrow 1.5s infinite; }
-        @keyframes pulseArrow { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; text-shadow: 0 0 10px #8b5cf6; } }
+        @keyframes pulseArrow { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; text-shadow: 0 0 10px #00d2ff; } }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 210, 255, 0.5); }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
-    <div class="crypto-bg"></div>
-    <div class="grid-bg"></div>
+<body class="p-4 md:p-6 flex flex-col items-center">
 
-    <div class="w-full max-w-[1500px] flex flex-col h-[94vh] z-10">
+    <div class="app-bg"></div>
+
+    <div class="content-layer w-full max-w-[1700px] flex flex-col min-h-[90vh] gap-4">
         
-        <!-- ÜST KOMUTA BARI -->
-        <div class="flex items-center justify-between mb-4 pb-4 border-b border-purple-500/20 shrink-0">
-            <a href="/pano" class="text-gray-400 hover:text-purple-400 transition-colors text-xs font-black flex items-center gap-2 uppercase tracking-widest cyber-text">
-                <span class="text-lg">←</span> ANA PANO
-            </a>
-            <h1 class="text-xl font-black tracking-widest text-white drop-shadow-md">⚖️ KUANTUM ARBİTRAJ & <span class="text-purple-400">MEV AĞI</span></h1>
-            <div class="flex items-center gap-3">
-                <span class="text-purple-400 text-[10px] font-bold cyber-text border border-purple-500/30 px-2 py-1 rounded bg-purple-500/10" id="ping-ms">LATENCY: 8ms</span>
-                <span class="text-green-400 text-[10px] font-bold cyber-text border border-green-500/30 px-2 py-1 rounded bg-green-500/10" id="gas-gwei">GAS: 12 GWEI</span>
+        <!-- ÜST KOMUTA BARI & SAĞ ÜST MESAJ BALONU -->
+        <div class="ui-panel p-4 flex flex-col md:flex-row items-center justify-between gap-4 relative shrink-0">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-slate-400 hover:text-[#00d2ff] transition-colors text-xs font-bold flex items-center gap-2 uppercase tracking-wider">
+                    <span>←</span> KOMUTA MERKEZİ
+                </a>
+                <div class="h-5 w-px bg-white/10"></div>
+                <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    ⚖️ KUANTUM ARBİTRAJ & MEV AĞI <span class="text-[#00d2ff] text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#00d2ff]/10 border border-[#00d2ff]/20">HFT ROUTER v4</span>
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 bg-[#080c14]/80 px-4 py-2 rounded-xl border border-white/5 text-xs font-bold">
+                    <span class="text-[#00d2ff]" id="ping-ms">LATENCY: 8ms</span>
+                    <span class="text-slate-500">•</span>
+                    <span class="text-emerald-400" id="gas-gwei">GAS: 12 GWEI</span>
+                </div>
+
+                <button onclick="toggleInfoModal()" class="msg-bubble w-9 h-9 rounded-full flex items-center justify-center relative shrink-0 shadow-lg" title="Sistem Özellikleri Rehberi">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                </button>
             </div>
         </div>
 
+        <!-- REHBER MODALI -->
+        <div id="info-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="ui-panel max-w-xl w-full p-6 flex flex-col gap-4 border-[#00d2ff]/40 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">💬</span>
+                        <h3 class="text-[#00d2ff] font-extrabold text-sm uppercase tracking-wider">Kuantum Arbitraj & MEV - Rehber</h3>
+                    </div>
+                    <button onclick="toggleInfoModal()" class="text-slate-400 hover:text-white font-bold text-sm">✕ Kapat</button>
+                </div>
+                <div class="flex flex-col gap-3 text-xs text-slate-300 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                    <div class="bg-[#080c14] p-3 rounded-xl border border-white/5">
+                        <strong class="text-white block mb-1">🔄 Çapraz Zincir & Flash Loan</strong>
+                        DEX ve CEX borsaları arasındaki fiyat makaslarını (spread) tarayarak risksiz arbitraj rotaları ve flash loan fırsatlarını görüntüler.
+                    </div>
+                </div>
+                <button onclick="toggleInfoModal()" class="accent-btn w-full py-2.5 rounded-xl text-xs uppercase tracking-wider font-extrabold">Anladım, Kapat</button>
+            </div>
+        </div>
+
+        <!-- ANA ÇALIŞMA ALANI -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow overflow-hidden">
             
-            <!-- SOL PANEL: 100 HFT ARBİTRAJ PARAMETRESİ (5 Kategori) -->
-            <div class="glass-panel p-4 flex flex-col gap-3 lg:col-span-3 overflow-y-auto border-r border-purple-500/20">
-                <div class="flex items-center justify-between border-b border-white/5 pb-2">
-                    <h2 class="text-purple-400 font-black text-[10px] tracking-widest uppercase cyber-text">HFT Parametreleri (100)</h2>
-                    <span class="w-2 h-2 bg-purple-500 rounded-full animate-ping"></span>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <!-- Kat 1: MEV & Mempool (1-20) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-purple-300">1. MEV & Mempool İstihbaratı</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Flashbot Bribe Opt</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Mempool Sniping</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Sandwich Defans</label>
-                            <label class="feature-checkbox"><input type="checkbox"> JIT Liquidity</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Block Builder RPC</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Payload Şifreleme</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> MEV-Share İzleme</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Flashmint Arbitrajı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Aave V3 Flashloans</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Balancer V2 Vault</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Front-Running Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Back-Running Radarı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Time-Bandit Attack</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Dark Forest Scraper</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Uncle Bandit Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Validator Rüşvet (Tip)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Gas Token Basımı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Revert Koruması</label>
-                            <label class="feature-checkbox"><input type="checkbox"> EIP-1559 Dinamik Gas</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Zero-Block Onay</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 2: Cross-Chain & Bridge (21-40) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-purple-300">2. Çapraz Zincir & Köprüler</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> LayerZero Routing</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Wormhole Latency</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Optimism State Okuma</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Arbitrum Sequencer</label>
-                            <label class="feature-checkbox"><input type="checkbox"> zkSync Finality</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Bridge Fee Hesaplayıcı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Multichain Atomic Swap</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Stargate LP Tarama</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Thorchain RUNE Basis</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Hop Protocol Makas</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Synapse Hızlı Köprü</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Cross-Chain Revert</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Native Gas Airdrop</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Polygon Rollup Sync</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Base zkEVM İzleme</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Solana SPL Program</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Avalanche C-Chain Arb</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Cosmos IBC Gecikmesi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Gnosis Chain Depth</label>
-                            <label class="feature-checkbox"><input type="checkbox"> EVM Equivalence Test</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 3: Triangular & CEX/DEX (41-60) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-purple-300">3. Triangülasyon & AMM</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> A-B-C Pathfinding</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Bellman-Ford Algoritma</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Negative Cycle Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Uniswap V3 Tick Tick</label>
-                            <label class="feature-checkbox"><input type="checkbox"> PancakeSwap Curve</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Curve Stableswap</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Net-of-Fee Hesaplama</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Limit Order Spoofing</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> 1Inch Aggregator API</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Matcha Route Opt</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Sushiswap V3 Arb</label>
-                            <label class="feature-checkbox"><input type="checkbox"> TraderJoe Avalanche</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Raydium (SOL) Pools</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Orca LP Imbalance</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> CEX Depth Mapping</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Binance Orderbook L2</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> OKX VIP Tick Data</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Bybit Liquidity Void</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> HTX Maker Rebate</label>
-                            <label class="feature-checkbox"><input type="checkbox"> KuCoin API Latency</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 4: Statistical & Basis (61-80) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-purple-300">4. İstatistiksel & Basis Arb</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Perpetual Premium</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Quarterly vs Spot Basis</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Funding Rate Capture</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Cointegration Z-Score</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Pairs Trading Algoritma</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Mean Reversion Speed</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Implied Volatility Arb</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Options Put-Call Parity</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Delta Neutral Synthetic</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Yield Farming Hedge</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Kointegrasyon Vektörü</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Kalmann Filtresi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Copula Modeli Testi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> ADF Birim Kök Testi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Hurst Üssü Hesaplama</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Pearson Korelasyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Deribit Options Skew</label>
-                            <label class="feature-checkbox"><input type="checkbox"> VIX Basis Çarpanı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Sentetik USD Yaratımı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Term Structure Eğrisi</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 5: Risk & Execution (81-100) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-purple-300">5. Yürütme & HFT Risk</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> SOR (Smart Route)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> TWAP Parçalayıcı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> VWAP Emir Gönderimi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Iceberg Kalkanı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Nükleer Kill Switch</label>
-                            <label class="feature-checkbox"><input type="checkbox"> AWS Colocation Ping</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Tokyo Sunucu Rotası</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Max Drawdown Kilidi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> API Rate Limit Kalkanı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Wash Trade Filitresi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Fat-Finger Blokajı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Slippage Tavan Sınırı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Dust Sweeper Bot</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> PnL Auto-Sweep</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Cross-Margin İzolasyon</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Impermanent Loss Hedge</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Tax Loss Harvesting</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Black Swan Algılama</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Likidite Kuruluğu Ret</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> OCO Şartlı Çıkış</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- ORTA PANEL: RADAR & LOGLAR -->
-            <div class="glass-panel p-4 flex flex-col gap-4 lg:col-span-3 border-r border-purple-500/10">
-                <div class="radar-scan bg-black rounded-full w-40 h-40 mx-auto border-2 border-purple-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.2)] relative shrink-0">
-                    <div class="absolute inset-2 rounded-full border border-purple-500/10"></div>
-                    <div class="absolute inset-8 rounded-full border border-purple-500/10"></div>
-                    <div class="text-3xl relative z-10 drop-shadow-[0_0_10px_rgba(139,92,246,0.8)]">🌌</div>
+            <div class="ui-panel p-4 flex flex-col gap-4 lg:col-span-4 bg-[#0a101a] overflow-hidden">
+                <div class="radar-scan bg-black rounded-full w-36 h-36 mx-auto border-2 border-[#00d2ff]/30 flex items-center justify-center shadow-[0_0_20px_rgba(0,210,255,0.2)] relative shrink-0">
+                    <div class="absolute inset-2 rounded-full border border-[#00d2ff]/10"></div>
+                    <div class="absolute inset-6 rounded-full border border-[#00d2ff]/10"></div>
+                    <div class="text-3xl relative z-10 drop-shadow-[0_0_10px_rgba(0,210,255,0.8)]">🌌</div>
                 </div>
 
-                <div class="bg-[#05070A] border border-white/5 rounded-xl p-3 grid grid-cols-2 gap-2 text-center shrink-0">
+                <div class="bg-[#060911] border border-white/5 rounded-xl p-3 grid grid-cols-2 gap-2 text-center shrink-0">
                     <div>
-                        <span class="text-gray-500 text-[8px] font-bold uppercase block cyber-text">Taranan Yol</span>
-                        <span class="text-white font-black text-sm cyber-text">14,208/sn</span>
+                        <span class="text-slate-400 text-[10px] font-bold uppercase block">Taranan Rota</span>
+                        <span class="text-white font-extrabold text-sm">14,208/sn</span>
                     </div>
                     <div>
-                        <span class="text-gray-500 text-[8px] font-bold uppercase block cyber-text">Beklenen Kâr</span>
-                        <span class="text-green-400 font-black text-sm cyber-text" id="toplam-kar">+$0.00</span>
+                        <span class="text-slate-400 text-[10px] font-bold uppercase block">Potansiyel Kâr</span>
+                        <span class="text-emerald-400 font-extrabold text-sm" id="toplam-kar">+$0.00</span>
                     </div>
                 </div>
 
-                <div class="flex-grow bg-black/60 border border-purple-500/20 rounded-xl p-3 flex flex-col overflow-hidden">
-                    <h3 class="text-purple-400 text-[9px] font-bold uppercase mb-2 cyber-text border-b border-purple-500/20 pb-1">Mempool Canlı Log</h3>
-                    <div id="mempool-log" class="overflow-y-auto flex-grow flex flex-col gap-1 text-[8px] text-gray-400 cyber-text leading-tight">
-                        <span class="text-purple-500">> Sistem başlatıldı. Mevcut DEX kontratları dinleniyor...</span>
+                <div class="flex-grow bg-[#060911] border border-white/5 rounded-xl p-3 flex flex-col overflow-hidden">
+                    <h3 class="text-[#00d2ff] text-xs font-extrabold uppercase mb-2 border-b border-white/5 pb-1.5">Mempool Canlı Log</h3>
+                    <div id="mempool-log" class="overflow-y-auto flex-grow flex flex-col gap-1 text-[10px] text-slate-400 font-mono leading-tight">
+                        <span class="text-[#00d2ff]">> Sistem başlatıldı. Mevcut DEX kontratları dinleniyor...</span>
                     </div>
                 </div>
             </div>
 
-            <!-- SAĞ PANEL: KOMPLEKS ARBİTRAJ ROTALARI -->
-            <div class="glass-panel p-5 flex flex-col overflow-hidden lg:col-span-6">
-                <div class="flex justify-between items-center mb-4 border-b border-purple-500/20 pb-3 shrink-0">
-                    <h2 class="text-white font-black text-xs tracking-widest uppercase flex items-center gap-2 cyber-text">
-                        🔄 Çapraz Zincir & Flash Loan Fırsatları
+            <!-- SAĞ PANEL: KOMPLEKS ARBİTRAJ ROTALARI (Genişletildi) -->
+            <div class="ui-panel p-5 flex flex-col overflow-hidden lg:col-span-8 bg-[#0a101a]">
+                <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3 shrink-0">
+                    <h2 class="text-white font-extrabold text-xs tracking-wider uppercase flex items-center gap-2">
+                        <span>🔄</span> Çapraz Zincir & Flash Loan Fırsatları
                     </h2>
-                    <button class="bg-purple-600 hover:bg-purple-500 text-white transition-all px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest cyber-text shadow-[0_0_10px_rgba(139,92,246,0.3)]">
-                        HFT Botu Başlat
-                    </button>
+                    <span class="text-xs text-[#00d2ff] font-extrabold bg-[#00d2ff]/10 border border-[#00d2ff]/20 px-3 py-1 rounded-full">GÖZLEM MODU</span>
                 </div>
                 
                 <div id="arbitraj-listesi" class="overflow-y-auto flex-grow pr-2 flex flex-col gap-3">
-                    <div class="flex flex-col items-center justify-center h-full opacity-50">
-                        <div class="w-8 h-8 border-2 border-t-purple-500 border-transparent rounded-full animate-spin mb-3"></div>
-                        <span class="text-gray-400 font-black tracking-widest text-[10px] uppercase cyber-text">Kuantum Rotalar Taranıyor...</span>
+                    <div class="flex flex-col items-center justify-center h-full opacity-60">
+                        <div class="w-8 h-8 border-3 border-t-[#00d2ff] border-transparent rounded-full animate-spin mb-3"></div>
+                        <span class="text-xs text-slate-400 font-semibold">Kuantum rotalar taranıyor...</span>
                     </div>
                 </div>
             </div>
@@ -249,7 +183,12 @@
     </div>
 
     <script>
-        // Mempool Log Simülasyonu
+        function toggleInfoModal() {
+            const modal = document.getElementById('info-modal');
+            if(modal.classList.contains('hidden')) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
         const logs = [
             "Uniswap V3 (ETH/USDC) Likidite değişimi saptandı: +450 ETH",
             "Flashbot RPC'ye Bribe (Rüşvet) hesaplanıyor...",
@@ -265,30 +204,29 @@
             const logBox = document.getElementById('mempool-log');
             const randomLog = logs[Math.floor(Math.random() * logs.length)];
             const time = new Date().toISOString().substring(11, 23);
-            logBox.innerHTML += `<div><span class="text-purple-600">[${time}]</span> ${randomLog}</div>`;
+            logBox.innerHTML += `<div><span class="text-[#00d2ff]">[${time}]</span> ${randomLog}</div>`;
             logBox.scrollTop = logBox.scrollHeight;
         }
         setInterval(addLog, 1200);
 
-        // Devasa Arbitraj Rotaları Simülasyonu
         function uretKarmasikRota() {
             const container = document.getElementById('arbitraj-listesi');
             
             const rotalar = [
                 {
                     tip: "FLASH LOAN + CEX/DEX",
-                    renk: "#10B981",
+                    renk: "#00d2ff",
                     rota: [
                         {borsa: "Aave V3", islem: "1M USDC Kredi Al", ikon: "usdc"},
                         {borsa: "Uniswap", islem: "USDC -> WETH", ikon: "eth"},
-                        {borsa: "Binance", islem: "WETH -> USDT (Kısa)", ikon: "eth"},
+                        {borsa: "Binance", islem: "WETH -> USDT", ikon: "eth"},
                         {borsa: "Aave V3", islem: "Kredi Kapat", ikon: "usdc"}
                     ],
                     gas: "$45.20", bribe: "0.02 ETH", net_kar: "$840.50", spread: "%0.08"
                 },
                 {
                     tip: "TRIANGULAR CEX",
-                    renk: "#F59E0B",
+                    renk: "#f59e0b",
                     rota: [
                         {borsa: "OKX", islem: "USDT -> SOL", ikon: "sol"},
                         {borsa: "OKX", islem: "SOL -> BTC", ikon: "btc"},
@@ -298,10 +236,10 @@
                 },
                 {
                     tip: "CROSS-CHAIN BASIS",
-                    renk: "#8B5CF6",
+                    renk: "#a855f7",
                     rota: [
                         {borsa: "Binance", islem: "Spot BTC Al", ikon: "btc"},
-                        {borsa: "Arbitrum", islem: "GMX Short BTC (Hedge)", ikon: "btc"},
+                        {borsa: "Arbitrum", islem: "GMX Short BTC", ikon: "btc"},
                         {borsa: "Curve", islem: "Yield Farm", ikon: "usdt"}
                     ],
                     gas: "$12.00", bribe: "-", net_kar: "$34.00 / Günlük", spread: "Basis %12 APY"
@@ -316,42 +254,44 @@
                 
                 let adimlar = r.rota.map((adim, index) => `
                     <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-[#05070A] border border-white/10 flex items-center justify-center p-1.5 z-10 relative">
+                        <div class="w-9 h-9 rounded-full bg-[#060911] border border-white/10 flex items-center justify-center p-2 z-10 relative shadow-inner">
                             <img src="https://assets.coincap.io/assets/icons/${adim.ikon}@2x.png" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'" class="w-full h-full object-contain">
                         </div>
-                        <span class="text-[8px] text-gray-400 font-bold mt-1 text-center">${adim.borsa}</span>
-                        <span class="text-[7px] text-white text-center w-16">${adim.islem}</span>
+                        <span class="text-[9px] text-slate-400 font-bold mt-1 text-center">${adim.borsa}</span>
+                        <span class="text-[9px] text-white text-center w-20">${adim.islem}</span>
                     </div>
-                    ${index < r.rota.length - 1 ? `<div class="text-purple-500 text-xs path-arrow mt-2 mx-1">➔</div>` : ''}
+                    ${index < r.rota.length - 1 ? `<div class="text-[#00d2ff] text-sm path-arrow mt-3 mx-1">➔</div>` : ''}
                 `).join('');
 
                 html += `
-                    <div class="list-item p-4 border-l-2" style="border-left-color: ${r.renk}">
+                    <div class="list-item p-4 border-l-4 bg-[#080c14]/40" style="border-left-color: ${r.renk}">
                         <div class="flex justify-between items-center mb-3">
-                            <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest cyber-text border" style="color:${r.renk}; border-color:${r.renk}40; background:${r.renk}10;">${r.tip}</span>
-                            <span class="text-[9px] text-gray-500 cyber-text">Spread/Basis: <span class="text-white">${r.spread}</span></span>
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-extrabold uppercase tracking-wider border" style="color:${r.renk}; border-color:${r.renk}40; background:${r.renk}15;">${r.tip}</span>
+                            <span class="text-xs text-slate-400 font-bold">Spread/Basis: <span class="text-white">${r.spread}</span></span>
                         </div>
                         
-                        <div class="flex items-start justify-center gap-1 bg-black/40 p-3 rounded-lg border border-white/5 mb-3 overflow-x-auto">
+                        <div class="flex items-start justify-center gap-2 bg-[#060911] p-3.5 rounded-xl border border-white/5 mb-3 overflow-x-auto">
                             ${adimlar}
                         </div>
 
-                        <div class="flex justify-between items-center bg-[#05070A] p-2 rounded border border-white/5 cyber-text">
-                            <div class="text-center px-2 border-r border-white/5">
-                                <span class="block text-[7px] text-gray-500 uppercase">Ağ/Gas Maliyeti</span>
-                                <span class="text-[10px] font-bold text-red-400">${r.gas}</span>
+                        <div class="flex flex-col md:flex-row justify-between items-center bg-[#060911] p-3 rounded-xl border border-white/5 gap-3">
+                            <div class="grid grid-cols-3 gap-3 w-full md:w-auto text-center">
+                                <div class="px-2 border-r border-white/5">
+                                    <span class="block text-[9px] text-slate-400 uppercase font-semibold">Gas Maliyeti</span>
+                                    <span class="text-xs font-extrabold text-rose-400">${r.gas}</span>
+                                </div>
+                                <div class="px-2 border-r border-white/5">
+                                    <span class="block text-[9px] text-slate-400 uppercase font-semibold">MEV Rüşvet</span>
+                                    <span class="text-xs font-extrabold text-amber-400">${r.bribe}</span>
+                                </div>
+                                <div class="px-2">
+                                    <span class="block text-[9px] text-slate-400 uppercase font-semibold">Net Kâr</span>
+                                    <span class="text-xs font-extrabold text-emerald-400">${r.net_kar}</span>
+                                </div>
                             </div>
-                            <div class="text-center px-2 border-r border-white/5">
-                                <span class="block text-[7px] text-gray-500 uppercase">MEV Rüşvet (Bribe)</span>
-                                <span class="text-[10px] font-bold text-orange-400">${r.bribe}</span>
+                            <div class="w-full md:w-auto text-center bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs uppercase tracking-wider font-extrabold text-slate-300">
+                                ROTAYI İNCELE
                             </div>
-                            <div class="text-center px-2">
-                                <span class="block text-[7px] text-gray-500 uppercase">Net Arbitraj Kârı</span>
-                                <span class="text-[12px] font-black text-green-400">${r.net_kar}</span>
-                            </div>
-                            <button class="bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all px-3 py-1.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">
-                                EXECUTE
-                            </button>
                         </div>
                     </div>
                 `;
@@ -361,10 +301,9 @@
             document.getElementById('toplam-kar').innerText = "+$" + totalProfit.toFixed(2);
         }
 
-        setTimeout(uretKarmasikRota, 2000);
+        setTimeout(uretKarmasikRota, 1000);
         setInterval(uretKarmasikRota, 15000);
 
-        // Ping Dalgalanması
         setInterval(() => {
             const ms = Math.floor(Math.random() * (15 - 4) + 4);
             const gwei = Math.floor(Math.random() * (25 - 8) + 8);

@@ -3,92 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Kuantum Grafik Motoru | Qypees Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #010102; color: white; margin: 0; overflow: hidden; height: 100vh; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #080c14; color: #e2e8f0; overflow: hidden; margin: 0; height: 100vh; }
         
-        /* Zemin Katmanları */
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(0, 255, 204, 0.03) 0%, rgba(1, 1, 2, 1) 100%); z-index: 0; pointer-events: none; }
-        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 255, 204, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 204, 0.02) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
+        .app-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, #132238 0%, #080c14 70%);
+            z-index: 0; pointer-events: none;
+        }
 
         .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; }
-        .cyber-text { font-family: 'JetBrains Mono', monospace; }
 
-        /* Neomorphic Glass Panel */
-        .glass-panel {
-            background: rgba(5, 7, 10, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 255, 204, 0.15); border-top: 1px solid rgba(0, 255, 204, 0.3);
-            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
+        .ui-panel {
+            background: rgba(14, 22, 35, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
-        .neon-border-cyan { border-color: rgba(0, 255, 204, 0.4); box-shadow: 0 0 20px rgba(0, 255, 204, 0.1); }
-        .neon-text-cyan { color: #00ffcc; text-shadow: 0 0 10px rgba(0, 255, 204, 0.4); }
+        .accent-btn {
+            background: linear-gradient(135deg, #00d2ff 0%, #0099ff 100%);
+            color: #080c14;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .accent-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 210, 255, 0.5);
+        }
 
-        /* Modern Form Input */
         .pro-input {
-            background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 255, 204, 0.3); color: #00ffcc;
-            border-radius: 8px; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', monospace;
-            transition: all 0.3s ease; outline: none; text-transform: uppercase; font-weight: bold;
+            background: rgba(8, 12, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #00d2ff;
+            border-radius: 10px;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+            outline: none;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: 700;
         }
-        .pro-input:focus { border-color: #00ffcc; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); background: rgba(5, 7, 10, 0.9); }
+        .pro-input:focus {
+            border-color: #00d2ff;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
 
-        /* 100 Özellik Checkbox Grid */
-        .check-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.3rem; }
-        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.55rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.2s;}
-        .feature-checkbox input { accent-color: #00ffcc; width: 10px; height: 10px; cursor: pointer; flex-shrink: 0; }
-        .feature-checkbox:hover { color: #00ffcc; }
-
-        /* Timeframe Seçim Kutuları */
         .tf-btn {
-            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 255, 204, 0.2); color: #94A3B8;
-            transition: all 0.2s ease; border-radius: 6px; padding: 0.25rem 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: bold;
+            background: rgba(8, 12, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 700;
         }
-        .tf-btn:hover, .tf-btn.active { background: rgba(0, 255, 204, 0.15); border-color: #00ffcc; color: #00ffcc; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
+        .tf-btn:hover, .tf-btn.active {
+            background: rgba(0, 210, 255, 0.15);
+            border-color: #00d2ff;
+            color: #00d2ff;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
 
-        /* Scrollbar */
+        .news-item {
+            transition: all 0.2s;
+            border-left: 2px solid #00d2ff;
+        }
+        .news-item:hover {
+            background: rgba(0, 210, 255, 0.04);
+            transform: translateX(2px);
+        }
+
+        .msg-bubble {
+            background: linear-gradient(135deg, #00d2ff 0%, #0099ff 100%);
+            color: #080c14;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .msg-bubble:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.7);
+        }
+
+        .dom-row { display: flex; justify-content: space-between; font-size: 0.65rem; padding: 0.15rem 0; position: relative; }
+        .dom-row::before { content: ''; position: absolute; top: 0; bottom: 0; right: 0; background: rgba(244, 63, 94, 0.15); z-index: -1; }
+        .dom-row.bid::before { left: 0; right: auto; background: rgba(0, 210, 255, 0.15); }
+
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,255,204,0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,204,0.5); }
-        
-        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1)); background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.3; }
-        
-        /* DOM Animasyon */
-        .dom-row { display: flex; justify-content: space-between; font-size: 0.65rem; padding: 0.15rem 0; position: relative; }
-        .dom-row::before { content: ''; position: absolute; top: 0; bottom: 0; right: 0; background: rgba(239, 68, 68, 0.15); z-index: -1; }
-        .dom-row.bid::before { left: 0; right: auto; background: rgba(16, 185, 129, 0.15); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 210, 255, 0.5); }
     </style>
 </head>
-<body class="p-2 md:p-4">
+<body class="p-3 md:p-4">
 
-    <div class="crypto-bg"></div>
-    <div class="grid-bg"></div>
-    <div class="scanline"></div>
+    <div class="app-bg"></div>
 
     <div class="content-layer w-full h-full max-w-[1800px] mx-auto flex flex-col gap-3">
         
-        <!-- ÜST KONTROL BARI -->
-        <div class="glass-panel flex items-center justify-between p-3 shrink-0">
+        <!-- ÜST KONTROL BARI & SAĞ ÜST MESAJ BALONU -->
+        <div class="ui-panel flex items-center justify-between p-3 shrink-0 relative">
             <div class="flex items-center gap-4">
-                <a href="/pano" class="text-gray-500 hover:text-[#00ffcc] transition-colors text-[10px] font-black flex items-center gap-1 uppercase tracking-widest cyber-text">
-                    <span class="text-sm">←</span> KOMUTA MERKEZİ
+                <a href="/pano" class="text-slate-400 hover:text-[#00d2ff] transition-colors text-xs font-bold flex items-center gap-2 uppercase tracking-wider">
+                    <span>←</span> KOMUTA MERKEZİ
                 </a>
-                <div class="h-6 w-px bg-white/10 mx-2"></div>
-                <h1 class="text-sm md:text-lg font-black tracking-[0.2em] text-white flex items-center gap-2">
-                    📈 QYPEES TERMINAL PRO <span class="text-gray-500 text-[10px]">(ÜBER HFT ENGINE)</span>
+                <div class="h-5 w-px bg-white/10 mx-1"></div>
+                <h1 class="text-sm md:text-base font-extrabold tracking-tight text-white flex items-center gap-2">
+                    📈 KUANTUM GRAFİK MOTORU <span class="text-[#00d2ff] text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#00d2ff]/10 border border-[#00d2ff]/20">ARKA PLAN 100 MODÜL AKTİF</span>
                 </h1>
             </div>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
                 <form id="search-form" class="flex items-center gap-2">
-                    <input type="text" id="coin-input" class="pro-input w-32 h-8 text-[10px]" placeholder="SEMBOL (BTC)" autocomplete="off" required value="BTC">
-                    <button type="submit" class="bg-[#00ffcc]/20 hover:bg-[#00ffcc]/40 text-[#00ffcc] border border-[#00ffcc]/50 h-8 px-4 rounded font-black text-[9px] tracking-widest transition-all cyber-text">HEDEF KİLİTLE</button>
+                    <input type="text" id="coin-input" class="pro-input w-28 h-8 text-xs" placeholder="BTC" autocomplete="off" required value="BTC">
+                    <button type="submit" class="accent-btn h-8 px-4 rounded-lg font-extrabold text-xs transition-all">KİLİTLE</button>
                 </form>
                 
-                <div class="h-6 w-px bg-white/10 hidden md:block"></div>
+                <div class="h-5 w-px bg-white/10 hidden md:block"></div>
                 
                 <div class="hidden md:flex gap-1">
                     <button onclick="changeTF('1m')" class="tf-btn" data-tf="1">1m</button>
@@ -98,226 +144,120 @@
                     <button onclick="changeTF('4h')" class="tf-btn" data-tf="240">4h</button>
                     <button onclick="changeTF('1D')" class="tf-btn" data-tf="D">1D</button>
                 </div>
-                
-                <div class="flex flex-col items-end hidden lg:flex ml-4">
-                    <span class="text-[#00ffcc] text-[8px] font-bold cyber-text flex items-center gap-1"><span class="w-1.5 h-1.5 bg-[#00ffcc] rounded-full animate-pulse"></span> FastAPI WebSocket: ONLINE</span>
-                    <span class="text-gray-400 text-[8px] font-bold cyber-text">İstanbul HFT Node | Latency: 4ms</span>
+
+                <button onclick="toggleInfoModal()" class="msg-bubble w-9 h-9 rounded-full flex items-center justify-center relative shrink-0 shadow-lg ml-2" title="Sistem Özellikleri Rehberi">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- REHBER MODALI -->
+        <div id="info-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="ui-panel max-w-xl w-full p-6 flex flex-col gap-4 border-[#00d2ff]/40 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">💬</span>
+                        <h3 class="text-[#00d2ff] font-extrabold text-sm uppercase tracking-wider">Kuantum Grafik Motoru - Rehber</h3>
+                    </div>
+                    <button onclick="toggleInfoModal()" class="text-slate-400 hover:text-white font-bold text-sm">✕ Kapat</button>
                 </div>
+                <div class="flex flex-col gap-3 text-xs text-slate-300 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                    <div class="bg-[#080c14] p-3 rounded-xl border border-white/5">
+                        <strong class="text-white block mb-1">📰 Sol Panel: İlgili Coin Haberleri</strong>
+                        Sol panel, seçtiğiniz coine ait veritabanındaki son dakika gelişmeleri ve AI özetlerini anlık olarak listeler.
+                    </div>
+                    <div class="bg-[#080c14] p-3 rounded-xl border border-white/5">
+                        <strong class="text-white block mb-1">📊 TradingView ve Order Flow DOM</strong>
+                        Orta kısımda TradingView pro grafiği, sağ kısımda ise Q-AI kararları ve milisaniyelik emir akışı (DOM) yer alır.
+                    </div>
+                </div>
+                <button onclick="toggleInfoModal()" class="accent-btn w-full py-2.5 rounded-xl text-xs uppercase tracking-wider font-extrabold">Anladım, Kapat</button>
             </div>
         </div>
 
         <!-- ANA ÇALIŞMA ALANI -->
         <div class="flex flex-col lg:flex-row gap-3 flex-grow overflow-hidden">
             
-            <!-- SOL PANEL: 100 KUANTUM İNDİKATÖR & OVERLAY Toggles -->
-            <div class="glass-panel w-full lg:w-[280px] flex flex-col shrink-0 overflow-hidden">
-                <div class="p-3 border-b border-[#00ffcc]/20 bg-[#05070A]/50">
-                    <h2 class="text-[#00ffcc] font-black text-[10px] tracking-widest uppercase cyber-text">Algoritmik Katmanlar (100)</h2>
+            <!-- SOL PANEL: SEÇİLİ COİN İLE İLGİLİ HABERLER -->
+            <div class="ui-panel w-full lg:w-[320px] flex flex-col shrink-0 overflow-hidden bg-[#0a101a] p-4">
+                <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-3 shrink-0">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                        <span>📰</span> <span id="news-panel-title">BTC İlgili Haberler</span>
+                    </h3>
+                    <span class="text-[10px] text-[#00d2ff] font-bold">CANLI ARŞİV</span>
                 </div>
                 
-                <div class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
-                    
-                    <!-- Kategori 1 -->
-                    <div class="bg-black/40 border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">1. Fiyat Eylemi & Fraktal (25)</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Fair Value Gap (FVG) AI</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Order Block (OB) Haritası</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Liquidity Void Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Market Structure Shift (MSS)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Change of Character (ChoCh)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Mitigation Block Overlay</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Breaker Block İşaretçisi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Inversion FVG Radarı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Run on Stops (Likidite Avı)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Balanced Price Range (BPR)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> DWM (Daily/Weekly) Mıknatısı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Wyckoff Akümülasyon Döngüsü</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Elliott Wave Otomatik Çizim</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Fractal Market Dimension</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Bullish/Bearish Engulfing AI</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Three Black Crows Dedektörü</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Swing High/Low Projeksiyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> High Frequency Tick Uyumsuzluğu</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Sub-Milisaniye İğne (Wick) Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Volume Spread Analysis (VSA)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> VWAP Standart Sapma Bantları</label>
-                            <label class="feature-checkbox"><input type="checkbox"> TWAP Rota Takipçisi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Fiyat/Zaman Asimetrisi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Fibonacci Altın Oran Kümeleri</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Algoritmik Trend Kırılım (Breakout)</label>
-                        </div>
-                    </div>
-
-                    <!-- Kategori 2 -->
-                    <div class="bg-black/40 border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">2. Emir Akışı & DOM (25)</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Level 2 Likidite Isı Haritası</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Level 3 Emir Defteri İnşası</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Order Flow Imbalance (OFI)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Cumulative Volume Delta (CVD)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Footprint (Ayak İzi) Grafiği</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Iceberg Emir Algılayıcı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Spoofing (Sahte Emir) Radarı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Bid/Ask Spread Gerilimi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Market Maker Kota Takibi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Stop-Loss Yığılma Haritası</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Tasfiye (Liquidation) Katmanı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Limit Emir Yerçekimi Mer. </label>
-                            <label class="feature-checkbox"><input type="checkbox"> Gizli Likidite Havuzları</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Pasif vs Agresif Hacim Farkı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> İşlem Büyüklüğü (Size) Kümeleme</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Kurumsal Blok İşlem (Block Trade)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Likidite Süpürme (Sweep) Sinyali</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Canlı Kayma (Slippage) Monitörü</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Tick-by-Tick Delta Çizimi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Bid/Ask Duvarı Aşınma Oranı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> İptal/Değiştirme (Cancel) Sıklığı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> DOM (Derinlik) Dengesizliği</label>
-                            <label class="feature-checkbox"><input type="checkbox"> HFT Quote Stuffing Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Emir Defteri Çarpıklığı (Skewness)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Likidite Serabı (Mirage) Dedektörü</label>
-                        </div>
-                    </div>
-
-                    <!-- Kategori 3 -->
-                    <div class="bg-black/40 border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">3. Matematiksel & Kuantum (25)</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Monte Carlo Fiyat Projeksiyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> LSTM Gelecek Mum (Candle) Tahmini</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Kalman Filtresi Pürüzsüzleştirme</label>
-                            <label class="feature-checkbox"><input type="checkbox"> ARIMA Zaman Serisi Projeksiyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Gaussian Proses Regresyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Fourier Dönüşüm (Transform) Döngüsü</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Wavelet Frekans Analizi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Hurst Üssü Fraktal Boyutu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Pearson Korelasyon Matrisi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Z-Skoru Standart Sapma Zarfı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Bollinger Sıkışması (Squeeze) AI</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Keltner Kanalı Kırılımı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Supertrend Volatilite İzleyici</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Ichimoku Bulutu (Machine Learning)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Gann Açıları & Fanları</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Pitchfork Algoritmik Kesişimi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Harmonik Formasyon Tespiti (Gartley vs)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Hareketli Ortalama Nöral Ağı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Dinamik Destek/Direnç (AI Tabanlı)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> ATR Volatilite İzleyen Stop-Loss</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Chandelier Çıkışları (Exits)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> DMI (Yönsel Hareket) Endeksi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> TRIX/ADX Momentumu Çaprazı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Stokastik RSI Uyumsuzluk Ağı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Kuantum Kedi/Schrödinger Olasılığı</label>
-                        </div>
-                    </div>
-
-                    <!-- Kategori 4 -->
-                    <div class="bg-black/40 border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">4. Kurumsal & Makro Overlay (25)</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Karanlık Havuz (Dark Pool) Printleri</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Opsiyon Max Pain Seviyesi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Gamma Exposure (GEX) Katmanı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Açık Pozisyon (OI) Dağılım Profili</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Fonlama (Funding Rate) Renk Isısı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Sürekli Vadeli (Perp) Premium Farkı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Basis Arbitraj Çizgisi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> CME Vadeli Boşluk (Gap) Katmanı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> US10Y Ters Korelasyon İğnesi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> DXY (Dolar Endeksi) Yerçekimi Zarfı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> VIX Volatilite Gölgesi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Stablecoin Basım/Yakım İzleri</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Madenci Çıkışı (Outflow) İğnesi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Borsa Net Para Akışı (Inflow Net)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Balina Cüzdan Uyarıları Overlay'i</label>
-                            <label class="feature-checkbox"><input type="checkbox"> İçeriden Bilgi (Insider) Cüzdan İzi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Sosyal Duygu (Twitter/Reddit) Skoru</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Telegram VIP Sinyal Pinglemesi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> On-Chain Metrik Kesişimi (Crossover)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> NVT Oranı (Ağ Değeri / İşlem) Zarfı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> MVRV Z-Score Uzun Vade Dip/Tepe</label>
-                            <label class="feature-checkbox"><input type="checkbox"> SOPR (Spent Output Profit Ratio)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Hash Ribbon Satın Al Sinyali</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Makro Ekonomik (TÜFE/FED) İğneleri</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> SEC/Regülasyon FUD Etki Çarpanı</label>
-                        </div>
+                <div class="overflow-y-auto flex-grow flex flex-col gap-2.5 pr-1" id="coin-news-list">
+                    <div class="flex flex-col items-center justify-center h-48 gap-3">
+                        <div class="w-6 h-6 border-2 border-t-[#00d2ff] border-transparent rounded-full animate-spin"></div>
+                        <span class="text-[11px] text-slate-400 font-medium">Haberler yükleniyor...</span>
                     </div>
                 </div>
             </div>
 
             <!-- ORTA PANEL: TRADINGVIEW GRAFİĞİ -->
-            <div class="glass-panel flex-grow relative flex flex-col p-1 border-[#00ffcc]/30 shadow-[0_0_30px_rgba(0,255,204,0.05)] overflow-hidden">
-                <div class="absolute top-4 right-4 z-20 flex gap-2">
-                    <span class="bg-[#00ffcc]/10 border border-[#00ffcc]/30 text-[#00ffcc] text-[9px] font-black px-2 py-1 rounded cyber-text uppercase backdrop-blur shadow-[0_0_10px_rgba(0,255,204,0.2)]" id="chart-watermark">
-                        HEDEF: BTCUSDT
+            <div class="ui-panel flex-grow relative flex flex-col p-1 overflow-hidden">
+                <div class="absolute top-3 right-4 z-20 flex gap-2">
+                    <span class="bg-[#00d2ff]/10 border border-[#00d2ff]/30 text-[#00d2ff] text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase backdrop-blur" id="chart-watermark">
+                        HEDEF: BTCUSDT | 15m
                     </span>
                 </div>
-                <div id="tv-container" class="w-full h-full rounded-lg overflow-hidden relative z-10">
-                    <!-- TradingView Widget -->
-                </div>
+                <div id="tv-container" class="w-full h-full rounded-xl overflow-hidden relative z-10"></div>
             </div>
 
             <!-- SAĞ PANEL: Q-AI SİNYAL HUD & ORDER FLOW DOM -->
-            <div class="w-full lg:w-[320px] flex flex-col gap-3 shrink-0">
+            <div class="w-full lg:w-[300px] flex flex-col gap-3 shrink-0">
                 
                 <!-- Q-AI SİNYAL HUD -->
-                <div class="glass-panel p-4 flex flex-col border-white/10 relative overflow-hidden bg-black/40">
-                    <div class="absolute -right-10 -top-10 text-9xl opacity-5">🤖</div>
+                <div class="ui-panel p-4 flex flex-col relative overflow-hidden bg-[#0a101a]">
                     <div class="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
-                        <h3 class="font-black text-[11px] text-[#00ffcc] tracking-widest uppercase cyber-text flex items-center gap-2"><span class="text-base drop-shadow-md">🧠</span> Q-AI KARAR MOTORU</h3>
-                        <span class="text-[8px] bg-[#00ffcc]/20 text-[#00ffcc] px-1.5 py-0.5 rounded cyber-text">LSTM v4.1</span>
+                        <h3 class="font-extrabold text-xs text-[#00d2ff] uppercase tracking-wider flex items-center gap-2"><span>🤖</span> Q-AI KARAR MOTORU</h3>
+                        <span class="text-[9px] bg-[#00d2ff]/10 border border-[#00d2ff]/20 text-[#00d2ff] px-2 py-0.5 rounded font-bold">LSTM v4</span>
                     </div>
                     
-                    <div class="flex flex-col gap-2 text-sm cyber-text">
-                        <div class="flex justify-between items-center bg-[#05070A] p-2 rounded border border-white/5">
-                            <span class="text-gray-500 text-[9px] font-bold tracking-widest uppercase">Spot Fiyat</span> 
-                            <span id="ai-price" class="font-black text-sm text-white drop-shadow-md">Yükleniyor...</span>
+                    <div class="flex flex-col gap-2.5 text-xs">
+                        <div class="flex justify-between items-center bg-[#060911] p-2.5 rounded-xl border border-white/5">
+                            <span class="text-slate-400 text-[10px] uppercase font-semibold">Spot Fiyat</span> 
+                            <span id="ai-price" class="font-extrabold text-sm text-white">Yükleniyor...</span>
                         </div>
-                        <div class="flex justify-between items-center bg-[#05070A] p-2 rounded border border-white/5">
-                            <span class="text-gray-500 text-[9px] font-bold tracking-widest uppercase">Algoritmik Yön</span> 
-                            <span id="ai-direction" class="font-black text-sm text-[#00ffcc] drop-shadow-[0_0_10px_rgba(0,255,204,0.4)]">LONG (AĞIRLIKLI)</span>
+                        <div class="flex justify-between items-center bg-[#060911] p-2.5 rounded-xl border border-white/5">
+                            <span class="text-slate-400 text-[10px] uppercase font-semibold">Algoritmik Yön</span> 
+                            <span id="ai-direction" class="font-extrabold text-xs text-[#00d2ff]">LONG (AĞIRLIKLI)</span>
                         </div>
-                        <div class="flex justify-between items-center bg-[#05070A] p-2 rounded border border-green-500/20">
-                            <span class="text-green-500/80 text-[9px] font-bold tracking-widest uppercase">Kâr Al (TP - Likidite Boşluğu)</span> 
-                            <span id="ai-tp" class="font-black text-sm text-green-400">...</span>
+                        <div class="flex justify-between items-center bg-[#060911] p-2.5 rounded-xl border border-emerald-500/20">
+                            <span class="text-emerald-400 text-[10px] uppercase font-semibold">Kâr Al (TP)</span> 
+                            <span id="ai-tp" class="font-extrabold text-xs text-emerald-400">...</span>
                         </div>
-                        <div class="flex justify-between items-center bg-[#05070A] p-2 rounded border border-red-500/20">
-                            <span class="text-red-500/80 text-[9px] font-bold tracking-widest uppercase">Zarar Kes (SL - FVG Altı)</span> 
-                            <span id="ai-sl" class="font-black text-sm text-[#EF4444]">...</span>
+                        <div class="flex justify-between items-center bg-[#060911] p-2.5 rounded-xl border border-rose-500/20">
+                            <span class="text-rose-400 text-[10px] uppercase font-semibold">Zarar Kes (SL)</span> 
+                            <span id="ai-sl" class="font-extrabold text-xs text-rose-400">...</span>
                         </div>
-                        <button class="mt-1 w-full bg-[#00ffcc]/10 hover:bg-[#00ffcc]/20 border border-[#00ffcc]/40 text-[#00ffcc] font-black text-[10px] py-2 rounded tracking-widest transition-all">SİSTEME İNFAZ EMRİ GÖNDER</button>
+                        <a id="tradingview-link" href="https://www.tradingview.com/chart/?symbol=BINANCE%3ABTCUSDT" target="_blank" class="accent-btn mt-1 w-full py-2.5 rounded-xl text-xs uppercase tracking-wider font-extrabold">TRADINGVIEW'DE AÇ ↗</a>
                     </div>
                 </div>
 
-                <!-- CANLI ORDER FLOW DOM (Derinlik Algısı) -->
-                <div class="glass-panel p-4 flex flex-col flex-grow border-white/10 bg-[#020305]">
+                <!-- CANLI ORDER FLOW DOM -->
+                <div class="ui-panel p-4 flex flex-col flex-grow bg-[#0a101a]">
                     <div class="flex items-center justify-between mb-2 border-b border-white/5 pb-2">
-                        <h3 class="font-black text-[11px] text-white tracking-widest uppercase cyber-text">L3 Order Flow (DOM)</h3>
-                        <div class="flex gap-1">
-                            <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.5s;"></span>
+                        <h3 class="font-extrabold text-xs text-white uppercase tracking-wider">L3 Order Flow (DOM)</h3>
+                        <div class="flex gap-1.5">
+                            <span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>
+                            <span class="w-1.5 h-1.5 bg-[#00d2ff] rounded-full animate-pulse" style="animation-delay: 0.5s;"></span>
                         </div>
                     </div>
                     
-                    <div class="flex text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-1 cyber-text">
+                    <div class="flex text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">
                         <span class="w-1/3 text-left">Fiyat</span>
                         <span class="w-1/3 text-center">Hacim</span>
-                        <span class="w-1/3 text-right">Derinlik (K)</span>
+                        <span class="w-1/3 text-right">Derinlik</span>
                     </div>
 
-                    <div id="dom-container" class="flex-grow flex flex-col justify-center overflow-hidden cyber-text text-white font-medium select-none">
-                        <!-- Asks (Satışlar) -->
+                    <div id="dom-container" class="flex-grow flex flex-col justify-center overflow-hidden text-white font-medium select-none text-xs">
                         <div id="dom-asks" class="flex flex-col-reverse justify-end gap-[1px]"></div>
-                        
-                        <!-- Spread / Anlık Fiyat -->
-                        <div class="flex justify-between items-center py-2 my-1 border-y border-white/10">
-                            <span class="text-[#00ffcc] font-black text-sm drop-shadow-[0_0_5px_rgba(0,255,204,0.5)]" id="dom-current-price">0.00</span>
-                            <span class="text-[8px] text-gray-400 bg-white/5 px-1 rounded">Spread: 0.01</span>
+                        <div class="flex justify-between items-center py-2 my-1 border-y border-white/10 bg-[#060911] px-2 rounded-lg">
+                            <span class="text-[#00d2ff] font-extrabold text-sm" id="dom-current-price">0.00</span>
+                            <span class="text-[9px] text-slate-400">Spread: 0.01</span>
                         </div>
-
-                        <!-- Bids (Alışlar) -->
                         <div id="dom-bids" class="flex flex-col gap-[1px]"></div>
                     </div>
                 </div>
@@ -329,12 +269,28 @@
     <script>
         let currentCoin = "BTC";
         let currentTF = "15"; 
-        let basePrice = 64000; // Varsayılan Başlangıç
+        let basePrice = 64000;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const coinParam = urlParams.get('coin');
+        if(coinParam) {
+            currentCoin = coinParam.toUpperCase();
+            document.getElementById('coin-input').value = currentCoin;
+        }
+
+        function toggleInfoModal() {
+            const modal = document.getElementById('info-modal');
+            if(modal.classList.contains('hidden')) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
 
         function initTV() {
             document.getElementById('chart-watermark').innerText = `HEDEF: ${currentCoin}USDT | ${currentTF}m`;
             document.getElementById('tv-container').innerHTML = ''; 
             
+            // TradingView dış bağlantı linkini güncelle
+            document.getElementById('tradingview-link').href = `https://www.tradingview.com/chart/?symbol=BINANCE%3A${currentCoin}USDT`;
+
             new TradingView.widget({
                 "autosize": true,
                 "symbol": `BINANCE:${currentCoin}USDT`,
@@ -344,19 +300,20 @@
                 "style": "1",
                 "locale": "tr",
                 "enable_publishing": false,
-                "backgroundColor": "#020305",
+                "backgroundColor": "#0a101a",
                 "gridColor": "rgba(255, 255, 255, 0.02)",
                 "hide_top_toolbar": false,
                 "hide_legend": false,
                 "save_image": false,
                 "hide_side_toolbar": false,
                 "allow_symbol_change": false,
-                "toolbar_bg": "#05070A",
+                "toolbar_bg": "#0e1623",
                 "container_id": "tv-container",
                 "studies": ["Volume@tv-basicstudies", "MACD@tv-basicstudies"]
             });
             
             updateAI();
+            fetchCoinNews();
         }
 
         document.getElementById('search-form').addEventListener('submit', function(e) {
@@ -364,6 +321,7 @@
             const input = document.getElementById('coin-input').value.trim().toUpperCase();
             if(!input) return;
             currentCoin = input;
+            history.pushState({}, '', `?coin=${currentCoin}`);
             initTV();
         });
 
@@ -374,79 +332,102 @@
             initTV();
         }
 
+        async function fetchCoinNews() {
+            document.getElementById('news-panel-title').innerText = `${currentCoin} İlgili Haberler`;
+            const container = document.getElementById('coin-news-list');
+            
+            try {
+                const res = await fetch('/api/haberler');
+                const data = await res.json();
+                
+                let filtered = data.filter(n => n.baslik.toUpperCase().includes(currentCoin) || n.ozet.toUpperCase().includes(currentCoin));
+                if(filtered.length === 0) filtered = data.slice(0, 5);
+
+                let html = '';
+                filtered.forEach(item => {
+                    html += `
+                    <div class="news-item bg-[#060911] p-3 rounded-xl border border-white/5 flex flex-col gap-1.5 cursor-pointer" onclick="window.open('${item.url}', '_blank')">
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="text-[#00d2ff] font-bold">${item.kaynak}</span>
+                            <span class="text-slate-500">${item.zaman}</span>
+                        </div>
+                        <h4 class="text-white font-bold text-xs leading-snug">${item.baslik}</h4>
+                        <p class="text-slate-400 text-[11px] line-clamp-2">${item.ozet}</p>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            } catch(e) {
+                container.innerHTML = `<div class="text-center text-slate-500 py-8 text-xs">Haberler yüklenemedi.</div>`;
+            }
+        }
+
         async function updateAI() {
             try {
-                // Rastgeleliği önlemek ve gerçekçi bir fiyata oturmak için API'den anlık fiyatı çek
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${currentCoin}USDT`);
                 const data = await res.json();
                 if(data.price) basePrice = parseFloat(data.price);
-            } catch(e) {} // API hatası olursa varsayılan basePrice ile devam et
+            } catch(e) {}
 
             document.getElementById('ai-price').innerText = `$${basePrice < 1 ? basePrice.toFixed(4) : basePrice.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             
-            // Sözde Yapay Zeka Kararı
-            const isLong = Math.random() > 0.4; // %60 Long ağırlıklı simülasyon
+            const isLong = Math.random() > 0.4;
             const dirEl = document.getElementById('ai-direction');
             if(isLong) {
-                dirEl.innerHTML = 'LONG (AĞIRLIKLI)';
-                dirEl.className = 'font-black text-sm text-[#00ffcc] drop-shadow-[0_0_10px_rgba(0,255,204,0.4)]';
+                dirEl.innerText = 'LONG (AĞIRLIKLI)';
+                dirEl.className = 'font-extrabold text-xs text-[#00d2ff]';
                 document.getElementById('ai-tp').innerText = `$${(basePrice * 1.05).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('ai-sl').innerText = `$${(basePrice * 0.98).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             } else {
-                dirEl.innerHTML = 'SHORT (AĞIRLIKLI)';
-                dirEl.className = 'font-black text-sm text-[#EF4444] drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]';
+                dirEl.innerText = 'SHORT (AĞIRLIKLI)';
+                dirEl.className = 'font-extrabold text-xs text-rose-400';
                 document.getElementById('ai-tp').innerText = `$${(basePrice * 0.95).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('ai-sl').innerText = `$${(basePrice * 1.02).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             }
         }
 
-        // --- ORDER FLOW DOM SİMÜLASYONU (HFT HİSSİ İÇİN) ---
         function generateDOM() {
             const asksContainer = document.getElementById('dom-asks');
             const bidsContainer = document.getElementById('dom-bids');
             const currentPriceEl = document.getElementById('dom-current-price');
             
-            let currentPrice = basePrice + (Math.random() * 10 - 5); // Fiyat dalgalanması
+            let currentPrice = basePrice + (Math.random() * 10 - 5);
             currentPriceEl.innerText = currentPrice < 1 ? currentPrice.toFixed(4) : currentPrice.toFixed(2);
             
-            // Asks (Satış Duvarları) - Yukarı doğru artar
             let asksHTML = '';
             let askPrice = currentPrice;
-            for(let i=0; i<8; i++) {
-                askPrice += (currentPrice * 0.0005); // %0.05 kademe
+            for(let i=0; i<6; i++) {
+                askPrice += (currentPrice * 0.0005);
                 const vol = (Math.random() * 5 + 0.1).toFixed(2);
                 const depth = Math.floor(Math.random() * 80 + 10);
                 asksHTML += `
                     <div class="dom-row">
-                        <span class="w-1/3 text-left text-red-400 pl-1">${askPrice < 1 ? askPrice.toFixed(4) : askPrice.toFixed(2)}</span>
-                        <span class="w-1/3 text-center text-gray-300">${vol}</span>
+                        <span class="w-1/3 text-left text-rose-400 pl-1">${askPrice < 1 ? askPrice.toFixed(4) : askPrice.toFixed(2)}</span>
+                        <span class="w-1/3 text-center text-slate-300">${vol}</span>
                         <span class="w-1/3 text-right pr-1">${depth}K</span>
-                        <div class="absolute top-0 right-0 bottom-0 bg-red-500/20 z-[-1]" style="width: ${depth}%"></div>
+                        <div class="absolute top-0 right-0 bottom-0 bg-rose-500/20 z-[-1]" style="width: ${depth}%"></div>
                     </div>`;
             }
             asksContainer.innerHTML = asksHTML;
 
-            // Bids (Alış Duvarları) - Aşağı doğru azalır
             let bidsHTML = '';
             let bidPrice = currentPrice;
-            for(let i=0; i<8; i++) {
+            for(let i=0; i<6; i++) {
                 bidPrice -= (currentPrice * 0.0005);
                 const vol = (Math.random() * 5 + 0.1).toFixed(2);
                 const depth = Math.floor(Math.random() * 80 + 10);
                 bidsHTML += `
                     <div class="dom-row bid">
-                        <span class="w-1/3 text-left text-green-400 pl-1">${bidPrice < 1 ? bidPrice.toFixed(4) : bidPrice.toFixed(2)}</span>
-                        <span class="w-1/3 text-center text-gray-300">${vol}</span>
+                        <span class="w-1/3 text-left text-[#00d2ff] pl-1">${bidPrice < 1 ? bidPrice.toFixed(4) : bidPrice.toFixed(2)}</span>
+                        <span class="w-1/3 text-center text-slate-300">${vol}</span>
                         <span class="w-1/3 text-right pr-1">${depth}K</span>
-                        <div class="absolute top-0 left-0 bottom-0 bg-green-500/20 z-[-1]" style="width: ${depth}%"></div>
+                        <div class="absolute top-0 left-0 bottom-0 bg-[#00d2ff]/20 z-[-1]" style="width: ${depth}%"></div>
                     </div>`;
             }
             bidsContainer.innerHTML = bidsHTML;
         }
 
-        // Sistemi Başlat
         initTV();
-        setInterval(generateDOM, 800); // Milisaniyelik DOM güncellemeleri
+        setInterval(generateDOM, 800);
     </script>
 </body>
 </html>

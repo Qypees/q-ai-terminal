@@ -3,321 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuantum Balina & On-Chain Radarı | Q-AI Terminal Pro</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Kuantum Balina & On-Chain Radarı | Qypees Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.95) 0%, rgba(2, 2, 3, 0.99) 80%); z-index: 0; pointer-events: none; }
-        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none; }
-        .glass-panel { background: rgba(5, 8, 14, 0.75); backdrop-filter: blur(15px); border: 1px solid rgba(59, 130, 246, 0.15); border-top: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8); position: relative; z-index: 10; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #080c14; color: #e2e8f0; overflow-x: hidden; margin: 0; min-height: 100vh; }
         
+        .app-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, #132238 0%, #080c14 70%);
+            z-index: 0; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; min-height: 100vh; }
+
+        .ui-panel {
+            background: rgba(14, 22, 35, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .accent-btn {
+            background: linear-gradient(135deg, #00d2ff 0%, #0099ff 100%);
+            color: #080c14;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .accent-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 210, 255, 0.5);
+        }
+
         /* Derin Deniz Radarı Animasyonları */
         .sonar-wrapper { position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         .sonar-beam {
             position: absolute; width: 100%; height: 100%; border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.6) 100%);
+            background: conic-gradient(from 0deg, transparent 70%, rgba(0, 210, 255, 0.6) 100%);
             animation: radarSpin 2.5s linear infinite; z-index: 0; pointer-events: none;
         }
-        .sonar-grid { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(59, 130, 246, 0.2); background-image: radial-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px); background-size: 20px 20px; }
-        .sonar-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(59, 130, 246, 0.3); }
-        .sonar-target { position: absolute; width: 6px; height: 6px; background-color: #00ffcc; border-radius: 50%; box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        .sonar-grid { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(0, 210, 255, 0.2); background-image: radial-gradient(rgba(0, 210, 255, 0.1) 1px, transparent 1px); background-size: 20px 20px; }
+        .sonar-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(0, 210, 255, 0.3); }
+        .sonar-target { position: absolute; width: 6px; height: 6px; background-color: #00d2ff; border-radius: 50%; box-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
         @keyframes radarSpin { 100% { transform: rotate(360deg); } }
 
-        .list-item { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; transition: all 0.3s ease; position: relative; z-index: 1; }
-        .list-item:hover { background: rgba(15, 22, 35, 0.9); border-color: rgba(59, 130, 246, 0.6); transform: translateX(4px); box-shadow: 0 5px 20px -5px rgba(59, 130, 246, 0.3); }
-        
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.4); border-radius: 10px; }
-        .cyber-text { font-family: 'JetBrains Mono', monospace; }
-        
-        .check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
-        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.60rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;}
-        .feature-checkbox input { accent-color: #3b82f6; width: 10px; height: 10px; cursor: pointer; }
-        .feature-checkbox:hover { color: #93c5fd; }
-        
-        .data-stream { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.65rem; color: #60a5fa; font-family: 'JetBrains Mono', monospace; }
+        .list-item {
+            background: rgba(14, 22, 35, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .list-item:hover {
+            background: rgba(0, 210, 255, 0.04);
+            border-color: rgba(0, 210, 255, 0.3);
+            transform: translateX(3px);
+        }
+
+        .msg-bubble {
+            background: linear-gradient(135deg, #00d2ff 0%, #0099ff 100%);
+            color: #080c14;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .msg-bubble:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.7);
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 210, 255, 0.5); }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
-    <div class="crypto-bg"></div>
-    <div class="grid-bg"></div>
+<body class="p-4 md:p-6 flex flex-col items-center">
 
-    <div class="w-full max-w-[1500px] flex flex-col h-[94vh] z-10">
+    <div class="app-bg"></div>
+
+    <div class="content-layer w-full max-w-[1700px] flex flex-col min-h-[90vh] gap-4">
         
-        <!-- ÜST KOMUTA BARI -->
-        <div class="flex items-center justify-between mb-4 pb-4 border-b border-blue-500/20 shrink-0">
-            <a href="/pano" class="text-gray-400 hover:text-blue-400 transition-colors text-xs font-black flex items-center gap-2 uppercase tracking-widest cyber-text">
-                <span class="text-lg">←</span> ANA PANO
-            </a>
-            <h1 class="text-xl font-black tracking-widest text-white drop-shadow-md">🐋 KUANTUM BALİNA & <span class="text-blue-400">ON-CHAIN RADARI</span></h1>
-            <div class="flex items-center gap-3">
-                <span class="text-blue-400 text-[10px] font-bold cyber-text border border-blue-500/30 px-2 py-1 rounded bg-blue-500/10" id="block-height">BLOCK: 19,452,801</span>
-                <span class="text-[#00ffcc] text-[10px] font-bold cyber-text border border-[#00ffcc]/30 px-2 py-1 rounded bg-[#00ffcc]/10" id="tracked-value">TVL İZLENEN: $142.5B</span>
+        <!-- ÜST KOMUTA BARI & SAĞ ÜST MESAJ BALONU -->
+        <div class="ui-panel p-4 flex flex-col md:flex-row items-center justify-between gap-4 relative shrink-0">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-slate-400 hover:text-[#00d2ff] transition-colors text-xs font-bold flex items-center gap-2 uppercase tracking-wider">
+                    <span>←</span> KOMUTA MERKEZİ
+                </a>
+                <div class="h-5 w-px bg-white/10"></div>
+                <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    🐋 KUANTUM BALİNA & ON-CHAIN RADARI <span class="text-[#00d2ff] text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#00d2ff]/10 border border-[#00d2ff]/20">SONAR v4</span>
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 bg-[#080c14]/80 px-4 py-2 rounded-xl border border-white/5">
+                    <span class="text-[#00d2ff] text-xs font-bold" id="block-height">BLOCK: 19,452,801</span>
+                    <span class="text-slate-500">•</span>
+                    <span class="text-white text-xs font-bold" id="tracked-value">TVL: $142.5B</span>
+                </div>
+
+                <button onclick="toggleInfoModal()" class="msg-bubble w-9 h-9 rounded-full flex items-center justify-center relative shrink-0 shadow-lg" title="Sistem Özellikleri Rehberi">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                </button>
             </div>
         </div>
 
+        <!-- REHBER MODALI -->
+        <div id="info-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="ui-panel max-w-xl w-full p-6 flex flex-col gap-4 border-[#00d2ff]/40 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">💬</span>
+                        <h3 class="text-[#00d2ff] font-extrabold text-sm uppercase tracking-wider">Kuantum Balina Radarı - Rehber</h3>
+                    </div>
+                    <button onclick="toggleInfoModal()" class="text-slate-400 hover:text-white font-bold text-sm">✕ Kapat</button>
+                </div>
+                <div class="flex flex-col gap-3 text-xs text-slate-300 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                    <div class="bg-[#080c14] p-3 rounded-xl border border-white/5">
+                        <strong class="text-white block mb-1">🌊 Canlı Blokzincir Akışı</strong>
+                        Büyük cüzdan transferleri, borsa giriş/çıkışları, Tether darphane basımları ve akıllı para hareketleri saniyelik olarak radar ekranına düşer.
+                    </div>
+                </div>
+                <button onclick="toggleInfoModal()" class="accent-btn w-full py-2.5 rounded-xl text-xs uppercase tracking-wider font-extrabold">Anladım, Kapat</button>
+            </div>
+        </div>
+
+        <!-- ANA ÇALIŞMA ALANI -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow overflow-hidden">
             
-            <!-- SOL PANEL: 100 ON-CHAIN & BALİNA PARAMETRESİ (5 Kategori) -->
-            <div class="glass-panel p-4 flex flex-col gap-3 lg:col-span-3 overflow-y-auto border-r border-blue-500/20">
-                <div class="flex items-center justify-between border-b border-white/5 pb-2">
-                    <h2 class="text-blue-400 font-black text-[10px] tracking-widest uppercase cyber-text">Derin İzleme Düğümleri (100)</h2>
-                    <span class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <!-- Kat 1: Cüzdan & Kurumsal (1-20) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-blue-300">1. Cüzdan & Kurum Takibi</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Borsa Soğuk Cüzdan İzle</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Sıcak Cüzdan Tüketimi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Madenci Havuzu Satışları</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Satoshi-Dönemi Uyanışı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Hükümet Cüzdanları (US/DE)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> MicroStrategy/Tesla Adres</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Mt. Gox Alacaklı Dağıtımı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Tether Treasury Basımı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> USDC Yakım/Basım Radarı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> OTC Masası Akümülasyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Gölge Cüzdan Kümeleme</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Borsa Net Para Girişi (NFI)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Wash Trading İzolasyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Sybil Saldırısı Düğüm Haritası</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Dusting Attack Filtresi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> VC/Fon Takibi (a16z, Jump)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Uyuyan Token Aktivasyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Multi-Sig İşlem Onayları</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Akıllı Kontrat Dağıtıcı İzle</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Cüzdan Kara Liste Taraması</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 2: Ağ & Gas Metrikleri (21-40) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-blue-300">2. Ağ & Gas Metrikleri</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> ETH Base Fee Sıçraması</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> EIP-4844 Blob Kullanımı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Küresel Gwei Isı Haritası</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> L2 TVL Kayması (Arb/OP)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Validator Slashing Alarmı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Staking Çıkış Kuyruğu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Lido/RocketPool Pazar Payı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> MEV Bot Kârlılık Ölçer</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Gas Tüketenler Lider Tablosu</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Ağ Tıkanıklık İndeksi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Kesinleşme Süresi (TTF)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Düğüm (Node) Senkron Gecikmesi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Reorg Olasılık Skoru</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Flashbots Relay Dominansı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Blok Önerici Sansür Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> EigenLayer Restaking Hızı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Burn Oranı (ETH Deflasyon)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem İptal (Revert) Oranı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Mempool Bekleyen İşlem Sayacı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Bekleyen Blok Sniffing</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 3: Tokenomik & Likidite Akışı (41-60) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-blue-300">3. Tokenomik & Likidite Akışı</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Kilit Açılım (Unlock) Uyarısı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> DEX Likidite Havuzu Tahliyesi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Slippage Tolerans Duvarı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Büyük Emir Bloğu Ayrıştırma</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Smart Money Yön Uyumsuzluğu</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Bireysel vs Balina Hacim Oranı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Dolaşan Arz Şoku Tespiti</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Reel Enflasyon Oranı Takibi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Hak Edilmiş Token Boşaltımı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Airdrop Talep (Claim) Hızı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> DAO Hazine Hareketleri</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Likidite Parçalanma İndeksi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> TVL Düşüş Hızı Ölçümü</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Köprülenmiş Varlık Dengesizliği</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> CEX/DEX Hacim Oranlaması</label>
-                            <label class="feature-checkbox"><input type="checkbox"> OTC Prim/İskonto Radarı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Stabilcoin Hız (Velocity) Metriği</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Sarılmış Varlık (Peg) Takibi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Net Gerçekleşen Kâr/Zarar (NUPL)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Coin Günleri Yok Edildi (CDD)</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 4: DeFi & Kontrat İstihbaratı (61-80) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-blue-300">4. DeFi & Kontrat İstihbaratı</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Flaş Kredi Yürütme Sinyali</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Aave/Comp Tasfiye Duvarları</label>
-                            <label class="feature-checkbox"><input type="checkbox"> CDP Sağlık Faktörü İzleyici</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> DEX Swap Rota Toplulaştırma</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Yield Farming APY Arbitrajı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Rug Pull Sezgisel Tarayıcı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Hack İşlem Kesişimi (Intercept)</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Honeypot Kontrat Dedektörü</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Yükseltilebilir Proxy Alarmı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Oracle Fiyat Manipülasyonu</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> AMM Sabit Ürün Sapması</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Curve Havuz Dengesizliği (3pool)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> MakerDAO DSR Kaymaları</label>
-                            <label class="feature-checkbox"><input type="checkbox"> LRT (Likid Restaking) De-peg</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Ethena Mevduat Akışları</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Protokol Gelir Sıçraması</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Fee Switch (Ücret Şalteri) Açılışı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Token Geri Alım Oto-Takibi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Rüşvet (Votium) ROI Ölçümü</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Impermanent Loss Hesaplayıcı</label>
-                        </div>
-                    </div>
-
-                    <!-- Kat 5: Öngörücü AI & Yürütme (81-100) -->
-                    <div class="bg-[#05070A] border border-white/5 rounded p-2">
-                        <h3 class="text-white text-[9px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 text-blue-300">5. Öngörücü AI & HFT Yürütme</h3>
-                        <div class="check-grid">
-                            <label class="feature-checkbox"><input type="checkbox" checked> Balina Niyet Skoru (0-100)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> AI Satış (Dump) Olasılığı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Kopya-İşlem (Copy-Trade) Kontratları</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Önden Koşma (Front-Run) Kalkanı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Arkadan Koşma (Back-Run) İnfazı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Sandviç Saldırı Kaçıcısı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Slippage Limit Dayatıcısı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Otomatik-Hedge Balina Satışları</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Gecikme (Latency) Arbitrajı Pingi</label>
-                            <label class="feature-checkbox"><input type="checkbox"> TWAP Şifre Çözücü</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> VWAP Ortalama Dönüş Tetiği</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Kelly Kriteri (Balina Uyarlamalı)</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> AI Cüzdan Küme Profilleme</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Makine Öğrenimi Trend Yansıtma</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> En İyi 100 Balina Anlık PnL</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Short Squeeze Katalizör Bulucu</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Long Squeeze Şelale Tahmincisi</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Balina Tuzağı (Trap) Tanımlayıcı</label>
-                            <label class="feature-checkbox"><input type="checkbox"> Likidite Süpürme (Sweep) Algılayıcı</label>
-                            <label class="feature-checkbox"><input type="checkbox" checked> Kurumsal Akümülasyon Bölge Haritası</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ORTA PANEL: DERİN DENİZ RADARI VE CANLI AKIŞ -->
-            <div class="glass-panel p-4 flex flex-col gap-4 lg:col-span-6 border-r border-blue-500/10">
+            <!-- ORTA PANEL: DERİN DENİZ SONAR RADARI & CANLI AKIŞ (Genişletildi) -->
+            <div class="ui-panel p-4 flex flex-col gap-4 lg:col-span-8 bg-[#0a101a] overflow-hidden">
                 
                 <!-- Radar Animasyonu -->
-                <div class="sonar-wrapper bg-[#020408] rounded-2xl w-full h-48 border border-blue-500/20 shadow-[inset_0_0_50px_rgba(59,130,246,0.1)] relative shrink-0">
+                <div class="sonar-wrapper bg-[#04070d] rounded-2xl w-full h-44 border border-[#00d2ff]/20 shadow-inner relative shrink-0">
                     <div class="sonar-grid"></div>
                     <div class="sonar-ring w-1/4 h-1/4"></div>
                     <div class="sonar-ring w-2/4 h-2/4"></div>
                     <div class="sonar-ring w-3/4 h-3/4"></div>
                     <div class="sonar-beam"></div>
                     
-                    <!-- Dinamik Hedefler -->
                     <div class="sonar-target" style="top: 30%; left: 40%; animation-delay: 0.1s;"></div>
-                    <div class="sonar-target" style="top: 70%; left: 60%; animation-delay: 0.5s; background-color: #ef4444; box-shadow: 0 0 10px #ef4444;"></div>
+                    <div class="sonar-target" style="top: 70%; left: 60%; animation-delay: 0.5s; background-color: #f43f5e; box-shadow: 0 0 10px #f43f5e;"></div>
                     <div class="sonar-target" style="top: 20%; left: 80%; animation-delay: 1.2s; width: 10px; height: 10px;"></div>
-                    <div class="sonar-target" style="top: 65%; left: 25%; animation-delay: 0.8s;"></div>
 
-                    <div class="absolute top-2 left-2 text-[9px] text-blue-400 font-bold cyber-text tracking-widest">DERİN DENİZ TARAMASI: AKTİF</div>
-                    <div class="absolute bottom-2 right-2 text-[9px] text-[#00ffcc] font-bold cyber-text tracking-widest" id="entity-count">ENTİTELER: 4,102</div>
+                    <div class="absolute top-3 left-3 text-[10px] text-[#00d2ff] font-extrabold tracking-widest uppercase">DERİN DENİZ TARAMASI: AKTİF</div>
+                    <div class="absolute bottom-3 right-3 text-[10px] text-white font-extrabold tracking-widest uppercase" id="entity-count">ENTİTELER: 4,102</div>
                 </div>
 
-                <!-- Canlı Balina Akışı -->
-                <div class="flex justify-between items-center mb-1 pb-2 border-b border-blue-500/20 shrink-0">
-                    <h2 class="text-white font-black text-xs tracking-widest uppercase flex items-center gap-2 cyber-text">
-                        🌊 Canlı Blokzincir Akışı
+                <div class="flex justify-between items-center border-b border-white/5 pb-2 shrink-0">
+                    <h2 class="text-white font-extrabold text-xs tracking-wider uppercase flex items-center gap-2">
+                        <span>🌊</span> Canlı Blokzincir Akışı
                     </h2>
-                    <span class="text-blue-400 text-[9px] font-black uppercase tracking-widest cyber-text animate-pulse">Saniyelik Güncelleme</span>
+                    <span class="text-[#00d2ff] text-[10px] font-bold uppercase tracking-wider animate-pulse">Saniyelik Akış</span>
                 </div>
                 
-                <div id="balina-liste" class="overflow-y-auto flex-grow pr-2 flex flex-col gap-3">
-                    <div class="flex flex-col items-center justify-center h-full opacity-50">
-                        <div class="w-8 h-8 border-2 border-t-blue-500 border-transparent rounded-full animate-spin mb-3"></div>
-                        <span class="text-gray-400 font-black tracking-widest text-[10px] uppercase cyber-text">Ağlar Dinleniyor...</span>
+                <div id="balina-liste" class="overflow-y-auto flex-grow pr-1 flex flex-col gap-3">
+                    <div class="flex flex-col items-center justify-center h-48 gap-3">
+                        <div class="w-6 h-6 border-2 border-t-[#00d2ff] border-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs text-slate-400 font-semibold">Blokzincir düğümleri dinleniyor...</span>
                     </div>
                 </div>
             </div>
 
-            <!-- SAĞ PANEL: AKILLI PARA METRİKLERİ -->
-            <div class="glass-panel flex flex-col overflow-hidden lg:col-span-3">
-                <div class="p-4 border-b border-blue-500/20 bg-[#05070A]">
-                    <h2 class="text-white font-black text-[11px] tracking-widest uppercase cyber-text mb-1">Kurumsal Profil Ağı</h2>
-                    <p class="text-gray-500 text-[8px] cyber-text">Smart Money (Akıllı Para) Davranış Analizi</p>
+            <!-- SAĞ PANEL: AKILLI PARA METRİKLERİ VE HAM VERİ -->
+            <div class="ui-panel p-4 flex flex-col gap-5 lg:col-span-4 bg-[#0a101a] overflow-y-auto">
+                <div class="border-b border-white/5 pb-3">
+                    <h2 class="text-white font-extrabold text-xs tracking-wider uppercase mb-1">Kurumsal Profil Ağı</h2>
+                    <p class="text-slate-400 text-[10px]">Smart Money Davranış Analizi</p>
                 </div>
                 
-                <div class="p-4 flex flex-col gap-5 overflow-y-auto flex-grow">
-                    
-                    <!-- Metrik 1 -->
+                <div class="flex flex-col gap-4">
                     <div>
-                        <div class="flex justify-between items-end mb-1">
-                            <span class="text-[9px] text-gray-400 uppercase tracking-widest cyber-text">Smart Money Yönü</span>
-                            <span class="text-[11px] font-bold text-[#00ffcc] cyber-text" id="sm-dir">BİRİKİM (ACCUMULATION)</span>
+                        <div class="flex justify-between items-end mb-1.5">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Smart Money Yönü</span>
+                            <span class="text-xs font-extrabold text-[#00d2ff]">BİRİKİM (ACCUMULATION)</span>
                         </div>
-                        <div class="w-full bg-gray-800 rounded-full h-1.5 border border-white/5">
-                            <div class="bg-[#00ffcc] h-1.5 rounded-full" style="width: 78%"></div>
+                        <div class="w-full bg-white/5 rounded-full h-2 border border-white/5">
+                            <div class="bg-[#00d2ff] h-full rounded-full" style="width: 78%"></div>
                         </div>
                     </div>
 
-                    <!-- Metrik 2 -->
                     <div>
-                        <div class="flex justify-between items-end mb-1">
-                            <span class="text-[9px] text-gray-400 uppercase tracking-widest cyber-text">Borsa Çıkış Hızı (Outflow)</span>
-                            <span class="text-[11px] font-bold text-blue-400 cyber-text" id="ex-out">YÜKSEK (14,2k BTC/Gün)</span>
+                        <div class="flex justify-between items-end mb-1.5">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Borsa Çıkış Hızı (Outflow)</span>
+                            <span class="text-xs font-extrabold text-blue-400">YÜKSEK (14.2k BTC/Gün)</span>
                         </div>
-                        <div class="w-full bg-gray-800 rounded-full h-1.5 border border-white/5">
-                            <div class="bg-blue-400 h-1.5 rounded-full" style="width: 85%"></div>
+                        <div class="w-full bg-white/5 rounded-full h-2 border border-white/5">
+                            <div class="bg-blue-400 h-full rounded-full" style="width: 85%"></div>
                         </div>
                     </div>
 
-                    <!-- Metrik 3 -->
                     <div>
-                        <div class="flex justify-between items-end mb-1">
-                            <span class="text-[9px] text-gray-400 uppercase tracking-widest cyber-text">Madenci Satış Baskısı</span>
-                            <span class="text-[11px] font-bold text-green-400 cyber-text" id="miner-sell">DÜŞÜK (Tutuyorlar)</span>
+                        <div class="flex justify-between items-end mb-1.5">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Madenci Satış Baskısı</span>
+                            <span class="text-xs font-extrabold text-emerald-400">DÜŞÜK (Tutuyorlar)</span>
                         </div>
-                        <div class="w-full bg-gray-800 rounded-full h-1.5 border border-white/5">
-                            <div class="bg-green-400 h-1.5 rounded-full" style="width: 20%"></div>
+                        <div class="w-full bg-white/5 rounded-full h-2 border border-white/5">
+                            <div class="bg-emerald-400 h-full rounded-full" style="width: 20%"></div>
                         </div>
                     </div>
 
-                    <!-- Metrik 4 -->
                     <div>
-                        <div class="flex justify-between items-end mb-1">
-                            <span class="text-[9px] text-gray-400 uppercase tracking-widest cyber-text">DEX Likidite Tahliyesi</span>
-                            <span class="text-[11px] font-bold text-red-400 cyber-text" id="dex-drain">KRİTİK (ETH Havuzları)</span>
+                        <div class="flex justify-between items-end mb-1.5">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">DEX Likidite Tahliyesi</span>
+                            <span class="text-xs font-extrabold text-rose-400">KRİTİK (ETH Havuzları)</span>
                         </div>
-                        <div class="w-full bg-gray-800 rounded-full h-1.5 border border-white/5">
-                            <div class="bg-red-500 h-1.5 rounded-full" style="width: 92%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Ham Veri Logu -->
-                    <div class="mt-auto bg-black/50 border border-blue-500/20 rounded p-3 h-48 overflow-hidden flex flex-col">
-                        <span class="text-[8px] text-blue-400 font-bold uppercase tracking-widest cyber-text border-b border-blue-500/20 pb-1 mb-2">Ham Düğüm (Raw Node) Verisi</span>
-                        <div class="data-stream" id="raw-node-data">
-                            <span>> Bağlantı kuruldu...</span>
+                        <div class="w-full bg-white/5 rounded-full h-2 border border-white/5">
+                            <div class="bg-rose-500 h-full rounded-full" style="width: 92%"></div>
                         </div>
                     </div>
-
                 </div>
-            </div>
 
+                <div class="mt-auto bg-[#060911] border border-white/5 rounded-xl p-3 h-44 overflow-hidden flex flex-col">
+                    <span class="text-[10px] text-[#00d2ff] font-extrabold uppercase tracking-wider border-b border-white/5 pb-1 mb-2">Ham Düğüm Verisi</span>
+                    <div class="flex flex-col gap-1 text-[10px] text-slate-400 font-mono overflow-hidden" id="raw-node-data">
+                        <span>> Bağlantı kuruldu...</span>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
     <script>
-        // Rastgele On-Chain İşlem Simülatörü
+        function toggleInfoModal() {
+            const modal = document.getElementById('info-modal');
+            if(modal.classList.contains('hidden')) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
         const adresUret = () => '0x' + Array.from({length: 8}, () => Math.floor(Math.random()*16).toString(16)).join('') + '...' + Array.from({length: 4}, () => Math.floor(Math.random()*16).toString(16)).join('');
         
         const balinaOlaylari = [
-            { tip: "BÜYÜK TRANSFER", ikon: "📦", detay: (miktar, coin) => `Bilinmeyen Cüzdandan Coinbase'e ${miktar} ${coin} transfer edildi.`, etki: "Satış Baskısı / FUD", renk: "#EF4444" },
-            { tip: "SOĞUK CÜZDAN ÇIKIŞI", ikon: "🥶", detay: (miktar, coin) => `Binance'den Soğuk Cüzdanlara ${miktar} ${coin} çekildi.`, etki: "Arz Şoku / Birikim", renk: "#10B981" },
-            { tip: "TETHER DARPHANESİ", ikon: "🖨️", detay: (miktar, coin) => `Tether Treasury tarafından ${miktar} USDT basıldı.`, etki: "Likidite Enjeksiyonu", renk: "#00ffcc" },
-            { tip: "FLASH LOAN İNFAZI", ikon: "⚡", detay: (miktar, coin) => `Aave V3 üzerinden ${miktar} USDC flaş kredi çekildi ve Arbitraj yapıldı.`, etki: "MEV / Arbitraj", renk: "#8B5CF6" },
-            { tip: "SMART CONTRACT DAĞITIMI", ikon: "📜", detay: (miktar, coin) => `Yeni bir Akıllı Kontrata ${miktar} ${coin} kilitlendi.`, etki: "Yeni Proje / TVL Artışı", renk: "#3B82F6" },
-            { tip: "MADENCİ HAVUZU ÇIKIŞI", ikon: "⛏️", detay: (miktar, coin) => `AntPool cüzdanlarından borsalara ${miktar} BTC taşındı.`, etki: "Madenci Teslimiyeti", renk: "#F59E0B" }
+            { tip: "BÜYÜK TRANSFER", ikon: "📦", detay: (miktar, coin) => `Bilinmeyen Cüzdandan Coinbase'e ${miktar} ${coin} transfer edildi.`, etki: "Satış Baskısı", renk: "#f43f5e" },
+            { tip: "SOĞUK CÜZDAN ÇIKIŞI", ikon: "🥶", detay: (miktar, coin) => `Binance'den Soğuk Cüzdanlara ${miktar} ${coin} çekildi.`, etki: "Arz Şoku", renk: "#00d2ff" },
+            { tip: "TETHER DARPHANESİ", ikon: "🖨️", detay: (miktar, coin) => `Tether Treasury tarafından ${miktar} USDT basıldı.`, etki: "Likidite Girişi", renk: "#00ffcc" },
+            { tip: "FLASH LOAN İNFAZI", ikon: "⚡", detay: (miktar, coin) => `Aave V3 üzerinden ${miktar} USDC flaş kredi çekildi.`, etki: "MEV / Arbitraj", renk: "#a855f7" }
         ];
 
         const coinler = ["BTC", "ETH", "SOL", "USDT", "USDC", "LINK", "PEPE", "AVAX"];
@@ -341,49 +267,40 @@
         let islemGecmisi = [];
 
         async function fetchBalina() {
-            // Gerçek /api/balina_akimlari kullanılabilir, burada HFT hissi için görsel simülasyon eklenmiştir.
             try {
-                // Her çağrıda 1-3 yeni işlem ekle
-                const yeniIslemSayisi = Math.floor(Math.random() * 3) + 1;
+                const yeniIslemSayisi = Math.floor(Math.random() * 2) + 1;
                 for(let i=0; i<yeniIslemSayisi; i++) {
                     islemGecmisi.unshift(yeniBalinaIslemi());
                 }
-                
-                // Sadece son 50 işlemi tut
-                if(islemGecmisi.length > 50) islemGecmisi.length = 50;
+                if(islemGecmisi.length > 30) islemGecmisi.length = 30;
 
                 const listeDiv = document.getElementById('balina-liste');
                 listeDiv.innerHTML = islemGecmisi.map(b => `
-                    <div class="list-item p-3 border-l-2 flex flex-col gap-2" style="border-left-color: ${b.renk}">
+                    <div class="list-item p-3 border-l-4 flex flex-col gap-1.5" style="border-left-color: ${b.renk}">
                         <div class="flex justify-between items-center">
                             <div class="flex items-center gap-2">
-                                <span class="text-base">${b.ikon}</span>
-                                <span class="text-[10px] font-black uppercase tracking-widest cyber-text" style="color: ${b.renk}">${b.baslik}</span>
+                                <span class="text-sm">${b.ikon}</span>
+                                <span class="text-[10px] font-extrabold uppercase tracking-wider" style="color: ${b.renk}">${b.baslik}</span>
                             </div>
-                            <span class="text-gray-500 text-[8px] font-bold tracking-widest cyber-text">${b.zaman}</span>
+                            <span class="text-slate-400 text-[9px] font-semibold">${b.zaman}</span>
                         </div>
-                        <p class="text-white text-[11px] font-medium cyber-text ml-6 leading-tight">${b.detay}</p>
-                        <div class="flex justify-between items-center ml-6 mt-1">
-                            <span class="text-gray-600 text-[7px] cyber-text">TX: ${b.txHash}</span>
-                            <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest cyber-text border" style="color:${b.renk}; border-color:${b.renk}40; background:${b.renk}10;">${b.etki}</span>
+                        <p class="text-white text-xs font-medium ml-5">${b.detay}</p>
+                        <div class="flex justify-between items-center ml-5 mt-0.5 text-[9px]">
+                            <span class="text-slate-500 font-mono">TX: ${b.txHash}</span>
+                            <span class="px-2 py-0.5 rounded text-[9px] font-extrabold uppercase" style="color:${b.renk}; border: 1px solid ${b.renk}40; background:${b.renk}15;">${b.etki}</span>
                         </div>
                     </div>
                 `).join('');
                 
-                // Blok ve Entite sayaçlarını güncelle
                 document.getElementById('block-height').innerText = `BLOCK: ${(19452801 + Math.floor(Math.random()*10)).toLocaleString()}`;
                 document.getElementById('entity-count').innerText = `ENTİTELER: ${(4102 + Math.floor(Math.random()*50)).toLocaleString()}`;
-
-            } catch (e) {
-                console.error("Balina verisi çekilemedi", e);
-            }
+            } catch (e) {}
         }
 
-        // Ham Veri Akışı Animasyonu
         function updateRawData() {
             const stream = document.getElementById('raw-node-data');
-            const dataTypes = ["[ETH-MEMPOOL]", "[BTC-NODE-04]", "[SOL-RPC-MAIN]", "[FLASHBOTS-RELAY]"];
-            const actions = ["Tx Decoded", "Block Found", "Signature Verified", "Bribe Accepted", "Revert Detected"];
+            const dataTypes = ["[ETH-MEMPOOL]", "[BTC-NODE]", "[SOL-RPC]", "[FLASHBOTS]"];
+            const actions = ["Tx Decoded", "Block Found", "Signature Verified", "Bribe Accepted"];
             
             const type = dataTypes[Math.floor(Math.random() * dataTypes.length)];
             const action = actions[Math.floor(Math.random() * actions.length)];
@@ -393,13 +310,12 @@
             newLog.innerText = `> ${type} ${action} : ${hash}`;
             stream.appendChild(newLog);
             
-            if(stream.children.length > 8) stream.removeChild(stream.firstChild);
+            if(stream.children.length > 7) stream.removeChild(stream.firstChild);
         }
 
-        // Başlat
         fetchBalina();
-        setInterval(fetchBalina, 3000); // Çok daha hızlı akış (HFT)
-        setInterval(updateRawData, 800);
+        setInterval(fetchBalina, 3500);
+        setInterval(updateRawData, 900);
     </script>
 </body>
 </html>

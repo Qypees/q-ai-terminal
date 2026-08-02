@@ -10,7 +10,7 @@ import time
 import re
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-import json
+import sqlite3
 import os
 import httpx
 import asyncio
@@ -24,39 +24,88 @@ app = FastAPI(title="Qypees Terminal Pro - Quantum HFT & On-Chain Engine")
 templates = Jinja2Templates(directory="templates")
 
 # ==========================================
-# YEREL VERİTABANI VE SİSTEM YÖNETİMİ
+# SQLITE VERİTABANI YÖNETİMİ (Kalıcı ve Güvenli)
 # ==========================================
-DB_DOSYASI = "cuzdan.json"
+DB_DOSYASI = "qypees_terminal.db"
 
-def veritabani_yukle():
-    if os.path.exists(DB_DOSYASI):
-        try:
-            with open(DB_DOSYASI, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            pass
-    return {"spot": [], "vadeli": [], "paper_bakiye": 10000.0, "paper_islemler": [], "notlar": []}
+def veritabani_baslat():
+    conn = sqlite3.connect(DB_DOSYASI)
+    cursor = conn.cursor()
+    
+    # Tabloları oluştur
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ayarlar (
+            anahtar TEXT PRIMARY KEY,
+            deger TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS spot_varliklar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            borsa TEXT,
+            bakiye TEXT,
+            detay TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS vadeli_pozisyonlar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            coin TEXT,
+            kaldirac TEXT,
+            yon TEXT,
+            miktar TEXT,
+            zaman TEXT,
+            ai_yorum TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS paper_islemler (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            coin TEXT,
+            yon TEXT,
+            kaldirac TEXT,
+            teminat REAL,
+            giris_fiyati REAL,
+            zaman TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS trade_notlari (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            not_icerigi TEXT,
+            zaman TEXT
+        )
+    """)
+    
+    # Başlangıç bakiyesi yoksa 10000$ ata
+    cursor.execute("SELECT deger FROM ayarlar WHERE anahtar = 'paper_bakiye'")
+    if not cursor.fetchone():
+        cursor.execute("INSERT INTO ayarlar (anahtar, deger) VALUES ('paper_bakiye', '10000.0')")
+        
+    conn.commit()
+    conn.close()
 
-def veritabani_kaydet():
-    veri = {
-        "spot": spot_varliklar, 
-        "vadeli": aktif_pozisyonlar,
-        "paper_bakiye": paper_bakiye,
-        "paper_islemler": paper_islemler,
-        "notlar": trade_notlari
-    }
-    try:
-        with open(DB_DOSYASI, "w", encoding="utf-8") as f:
-            json.dump(veri, f, ensure_ascii=False, indent=4)
-    except Exception as e:
-        print("Veritabanı Kayıt Hatası:", e)
+veritabani_baslat()
 
-db_veri = veritabani_yukle()
-spot_varliklar = db_veri.get("spot", [])
-aktif_pozisyonlar = db_veri.get("vadeli", [])
-paper_bakiye = db_veri.get("paper_bakiye", 10000.0)
-paper_islemler = db_veri.get("paper_islemler", [])
-trade_notlari = db_veri.get("notlar", [])
+def get_db():
+    conn = sqlite3.connect(DB_DOSYASI)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def paper_bakiye_getir():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT deger FROM ayarlar WHERE anahtar = 'paper_bakiye'")
+    val = cursor.fetchone()
+    conn.close()
+    return float(val["deger"]) if val else 10000.0
+
+def paper_bakiye_guncelle(yeni_bakiye: float):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE ayarlar SET deger = ? WHERE anahtar = 'paper_bakiye'", (str(yeni_bakiye),))
+    conn.commit()
+    conn.close()
 
 spotify_tokens = {}
 
@@ -236,22 +285,36 @@ async def api_balina_akimlari():
 
 @app.get("/api/paper/durum")
 async def api_paper_durum():
-    return JSONResponse(content={"bakiye": paper_bakiye, "islemler": paper_islemler})
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM paper_islemler")
+    islemler = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return JSONResponse(content={"bakiye": paper_bakiye_getir(), "islemler": islemler})
 
 @app.post("/api/paper/islem_ac")
 async def api_paper_islem_ac(req: PaperTradeRequest):
-    global paper_bakiye
-    if req.teminat > paper_bakiye:
+    bakiye = paper_bakiye_getir()
+    if req.teminat > bakiye:
         raise HTTPException(status_code=400, detail="Yetersiz sanal bakiye!")
-    paper_bakiye -= req.teminat
+    
+    yeni_bakiye = bakiye - req.teminat
+    paper_bakiye_guncelle(yeni_bakiye)
+    
     tum_veriler = coklu_piyasa_verilerini_cek()
     bulunan_fiyat = next((v["fiyat"] for v in tum_veriler if v["sembol"] == req.coin.upper()), 100.0)
-    paper_islemler.append({
-        "coin": req.coin.upper(), "yon": req.yon, "kaldirac": req.kaldirac,
-        "teminat": req.teminat, "giris_fiyati": bulunan_fiyat, "zaman": datetime.datetime.now().strftime("%H:%M")
-    })
-    veritabani_kaydet()
-    return JSONResponse(content={"durum": "basarili", "kalan_bakiye": paper_bakiye})
+    zaman_str = datetime.datetime.now().strftime("%H:%M")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO paper_islemler (coin, yon, kaldirac, teminat, giris_fiyati, zaman)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (req.coin.upper(), req.yon, req.kaldirac, req.teminat, bulunan_fiyat, zaman_str))
+    conn.commit()
+    conn.close()
+    
+    return JSONResponse(content={"durum": "basarili", "kalan_bakiye": yeni_bakiye})
 
 @app.get("/api/arbitraj")
 async def api_arbitraj():
@@ -268,48 +331,81 @@ async def api_makro_takvim():
     ])
 
 @app.get("/api/notlar")
-async def api_notlar_get(): return JSONResponse(content=trade_notlari)
+async def api_notlar_get():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT not_icerigi as 'not', zaman FROM trade_notlari")
+    notlar = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return JSONResponse(content=notlar)
 
 @app.post("/api/notlar")
 async def api_notlar_post(req: NotRequest):
-    trade_notlari.append({"not": req.not_icerigi, "zaman": datetime.datetime.now().strftime("%d.%m.%Y - %H:%M")})
-    veritabani_kaydet()
+    zaman_str = datetime.datetime.now().strftime("%d.%m.%Y - %H:%M")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO trade_notlari (not_icerigi, zaman) VALUES (?, ?)", (req.not_icerigi, zaman_str))
+    conn.commit()
+    conn.close()
     return JSONResponse(content={"durum": "basarili"})
 
 @app.get("/api/cuzdan/spot")
-async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
+async def api_cuzdan_spot_get():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM spot_varliklar")
+    spotlar = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return JSONResponse(content=spotlar)
 
 @app.post("/api/cuzdan/spot")
 async def api_cuzdan_spot_post(req: SpotVarlikRequest):
-    spot_varliklar.append({"borsa": req.borsa, "bakiye": req.bakiye, "detay": req.detay})
-    veritabani_kaydet()
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO spot_varliklar (borsa, bakiye, detay) VALUES (?, ?, ?)", (req.borsa, req.bakiye, req.detay))
+    conn.commit()
+    conn.close()
     return JSONResponse(content={"durum": "basarili"})
 
-@app.delete("/api/cuzdan/spot/{index}")
-async def api_cuzdan_spot_delete(index: int):
-    if 0 <= index < len(spot_varliklar):
-        spot_varliklar.pop(index)
-        veritabani_kaydet()
+@app.delete("/api/cuzdan/spot/{item_id}")
+async def api_cuzdan_spot_delete(item_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM spot_varliklar WHERE id = ?", (item_id,))
+    conn.commit()
+    conn.close()
     return JSONResponse(content={"durum": "basarili"})
 
 @app.get("/api/cuzdan/vadeli")
-async def api_cuzdan_vadeli_get(): return JSONResponse(content=aktif_pozisyonlar)
+async def api_cuzdan_vadeli_get():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM vadeli_pozisyonlar")
+    vadeliler = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return JSONResponse(content=vadeliler)
 
 @app.post("/api/cuzdan/vadeli")
 async def api_cuzdan_vadeli_post(req: VadeliPozisyonRequest):
-    aktif_pozisyonlar.append({
-        "coin": req.coin.upper(), "kaldirac": req.kaldirac, "yon": req.yon,
-        "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M:%S"),
-        "ai_yorum": "Q-AI risk analizi başarılı. Volatilite seviyesi optimize edildi."
-    })
-    veritabani_kaydet()
+    zaman_str = datetime.datetime.now().strftime("%H:%M:%S")
+    ai_yorum = "Q-AI risk analizi başarılı. Volatilite seviyesi optimize edildi."
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO vadeli_pozisyonlar (coin, kaldirac, yon, miktar, zaman, ai_yorum)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (req.coin.upper(), req.kaldirac, req.yon, req.miktar, zaman_str, ai_yorum))
+    conn.commit()
+    conn.close()
     return JSONResponse(content={"durum": "basarili"})
 
-@app.delete("/api/cuzdan/vadeli/{index}")
-async def api_cuzdan_vadeli_delete(index: int):
-    if 0 <= index < len(aktif_pozisyonlar):
-        aktif_pozisyonlar.pop(index)
-        veritabani_kaydet()
+@app.delete("/api/cuzdan/vadeli/{item_id}")
+async def api_cuzdan_vadeli_delete(item_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM vadeli_pozisyonlar WHERE id = ?", (item_id,))
+    conn.commit()
+    conn.close()
     return JSONResponse(content={"durum": "basarili"})
 
 # ==========================================
@@ -364,6 +460,79 @@ def ai_haber_analizi(metin):
     if any(k in metin_kucuk for k in yuksek_onemli): return "YÜKSEK ÖNEMLİ 🚨", "#EF4444", "Yüksek Volatilite Beklentisi"
     elif any(k in metin_kucuk for k in onemli): return "ÖNEMLİ ⚠️", "#F59E0B", "Orta Volatilite Beklentisi"
     else: return "STANDART ℹ️", "#3B82F6", "Olağan Akış"
+
+@app.get("/api/haberler")
+async def api_haberler_db():
+    canli_haberler = await son_dakika_haberlerini_cek_async()
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    for h in canli_haberler:
+        cursor.execute("SELECT id FROM haberler_arsivi WHERE baslik = ?", (h["baslik"],))
+        if not cursor.fetchone():
+            cursor.execute("""
+                INSERT INTO haberler_arsivi (baslik, ozet, kaynak, url, zaman, onem, etkilenen_coinler, piyasa_yonu)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                h["baslik"], h["ozet"], h["kaynak"], h["url"], h["zaman"], h["onem"], 
+                "BTC, ETH, SOL", "ALIŞTA (BOĞA)" if "ÖNEMLİ" in h["onem"] else "SATIŞTA (FUD)"
+            ))
+    conn.commit()
+    
+    # EN YENİ HABER EN ÜSTTE OLMASI İÇİN id'ye göre azalan (DESC) sıralama
+    cursor.execute("SELECT * FROM haberler_arsivi ORDER BY id DESC LIMIT 50")
+    kayitlar = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return JSONResponse(content=kayitlar)
+
+# ==========================================
+# HABERLER VERİTABANI TABLOSU (main.py içine eklenecek)
+# ==========================================
+def haber_veritabani_baslat():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS haberler_arsivi (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            baslik TEXT,
+            ozet TEXT,
+            kaynak TEXT,
+            url TEXT,
+            zaman TEXT,
+            onem TEXT,
+            etkilenen_coinler TEXT,
+            piyasa_yonu TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+haber_veritabani_baslat()
+
+@app.get("/api/haberler")
+async def api_haberler_db():
+    # RSS'den canlı çekip veritabanına kaydeden ve arşivden sunan akıllı endpoint
+    canli_haberler = await son_dakika_haberlerini_cek_async()
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    for h in canli_haberler:
+        # Tekrarı önlemek için başlığa bak
+        cursor.execute("SELECT id FROM haberler_arsivi WHERE baslik = ?", (h["baslik"],))
+        if not cursor.fetchone():
+            cursor.execute("""
+                INSERT INTO haberler_arsivi (baslik, ozet, kaynak, url, zaman, onem, etkilenen_coinler, piyasa_yonu)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                h["baslik"], h["ozet"], h["kaynak"], h["url"], h["zaman"], h["onem"], 
+                "BTC, ETH, SOL", "ALIŞTA (BOĞA)" if "ÖNEMLİ" in h["onem"] else "SATIŞTA (FUD)"
+            ))
+    conn.commit()
+    
+    cursor.execute("SELECT * FROM haberler_arsivi ORDER BY id DESC LIMIT 20")
+    kayitlar = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return JSONResponse(content=kayitlar)
 
 async def rss_kaynaktan_haber_cek(client: httpx.AsyncClient, kaynak_adi: str, rss_url: str):
     try:
@@ -454,7 +623,7 @@ async def api_spotify_listeler(request: Request):
         return JSONResponse(content={"durum": "hata", "mesaj": str(e)})
 
 # ==========================================
-# 6. SAYFA YÖNLENDİRMELERİ (ÇEREZ TABANLI KARARLI YETKİ KONTROLÜ)
+# 6. SAYFA YÖNLENDİRMELERİ
 # ==========================================
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def splash_ekrani(request: Request, response: Response = None):
@@ -497,3 +666,8 @@ async def sayfa_yonlendir(request: Request, sayfa_adi: str):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
+@app.get("/Savas_Odasi", response_class=HTMLResponse)
+async def savas_odasi_sayfasi(request: Request):
+    if not yetki_kontrol(request): return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(request=request, name="Savas_Odasi.html", context={"request": request})
