@@ -426,8 +426,12 @@ async def api_spotify_listeler(request: Request):
 # ==========================================
 # 6. SAYFA YÖNLENDİRMELERİ
 # ==========================================
-@app.get("/", response_class=HTMLResponse)
+@app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def splash_ekrani(request: Request):
+    # Eğer gelen istek izleme botundan (HEAD) geliyorsa, sadece boş ve başarılı yanıt dön (sunucuyu yorma)
+    if request.method == "HEAD":
+        return HTMLResponse(content="")
+        
     onayli_kullanicilar.discard(request.client.host)
     return templates.TemplateResponse(request=request, name="splash.html", context={"request": request})
 
