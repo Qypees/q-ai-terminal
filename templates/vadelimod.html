@@ -3,144 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vadeli İşlem "God Mode" | Q-AI Terminal</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Vadeli Modüller & Kuantum Futures | Qypees Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; pointer-events: none; }
-        .dot-grid { position: fixed; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
-        .glass-panel { background: rgba(10, 15, 26, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.5); position: relative; z-index: 10; transition: transform 0.3s ease; }
-        .glass-panel:hover { transform: translateY(-3px); border-color: rgba(0,255,204,0.3); box-shadow: 0 20px 40px -10px rgba(0,255,204,0.2); }
-        .cyber-text { background: linear-gradient(to right, #00ffcc, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background-color: #010102; color: white; margin: 0; overflow: hidden; height: 100vh; }
         
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #00ffcc; border-color: #00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.5); }
-        input:checked + .slider:before { transform: translateX(18px); background-color: #020203; }
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(0, 255, 204, 0.05) 0%, rgba(1, 1, 2, 1) 85%); z-index: 0; pointer-events: none; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 255, 204, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 204, 0.02) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; }
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: rgba(5, 7, 10, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 255, 204, 0.15); border-top: 1px solid rgba(0, 255, 204, 0.3);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.9);
+        }
+
+        .check-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; }
+        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.55rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.2s; }
+        .feature-checkbox input { accent-color: #00ffcc; width: 10px; height: 10px; cursor: pointer; flex-shrink: 0; }
+        .feature-checkbox:hover { color: #00ffcc; }
+
+        .pro-input {
+            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 255, 204, 0.25); color: #00ffcc;
+            border-radius: 6px; padding: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+            transition: all 0.3s ease; outline: none; width: 100%;
+        }
+        .pro-input:focus { border-color: #00ffcc; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); background: rgba(5, 7, 10, 0.9); }
+
+        .neon-btn {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); color: white;
+            transition: all 0.3s; position: relative; overflow: hidden; border: 1px solid #00ffcc; cursor: pointer;
+        }
+        .neon-btn:hover { box-shadow: 0 0 25px rgba(0, 255, 204, 0.6); transform: translateY(-2px); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,255,204,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,204,0.6); }
+
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.35; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #00ffcc; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast-msg { padding: 12px 20px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-weight: bold; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: white; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
+        .toast-success { background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
+        .toast-error { background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
-    <div class="crypto-bg"></div>
-    <div class="dot-grid"></div>
+<body class="p-2 md:p-4">
 
-    <div class="w-full max-w-[1200px] flex flex-col z-10 pb-10">
+    <div class="crypto-bg"></div>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+    <div id="toast-container"></div>
+
+    <div class="content-layer w-full h-full max-w-[1750px] mx-auto flex flex-col gap-3">
         
-        <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10 shrink-0">
-            <a href="/pano" class="text-gray-400 hover:text-[#00ffcc] transition-colors text-xs font-black flex items-center gap-2 uppercase tracking-widest">
-                <span class="text-lg">←</span> ANA PANO
-            </a>
-            <h1 class="text-3xl font-black tracking-widest text-white drop-shadow-md">⚡ VADELİ <span class="cyber-text">10X SÜİT</span></h1>
+        <!-- ÜST KOMUTA BARI -->
+        <div class="glass-panel flex items-center justify-between p-3 shrink-0 border-cyan-500/30">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-gray-500 hover:text-[#00ffcc] transition-colors text-[10px] font-black flex items-center gap-1 uppercase tracking-widest cyber-text">
+                    <span class="text-sm">←</span> MERKEZE DÖN
+                </a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <h1 class="text-sm md:text-lg font-black tracking-[0.2em] text-white flex items-center gap-2 drop-shadow-md">
+                    ⚡ VADELİ KONTROL & <span class="text-[#00ffcc] text-[10px] cyber-text">(100 HFT FUTURES MODÜLÜ)</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex gap-2">
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-gray-400 text-[9px] font-bold cyber-text">GLOBAL OI: $34.8B</span>
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-red-400 text-[9px] font-bold cyber-text">24H LIQ: $385M</span>
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-[#00ffcc] text-[9px] font-bold cyber-text">LATENCY: 1.8ms</span>
+                </div>
+                <div class="h-6 w-px bg-white/10 hidden lg:block"></div>
+                <div class="flex flex-col items-end hidden lg:flex">
+                    <span class="text-[#00ffcc] text-[8px] font-bold cyber-text flex items-center gap-1"><div class="pulse-dot"></div> MATCHING ENGINE: SYNCED</span>
+                    <span class="text-gray-400 text-[8px] font-bold cyber-text mt-0.5">İstanbul HFT Node | Cross/Isolated Mode</span>
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="flex flex-col lg:flex-row gap-3 flex-grow overflow-hidden">
             
-            <!-- 1. Dinamik Kaldıraç Kilidi (Dynamic Leverage Lock) -->
-            <div class="glass-panel p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">🔒</span>
-                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            <!-- SOL PANEL: 100 VADELİ & KALDIRAÇ MODÜLÜ -->
+            <div class="glass-panel w-full lg:w-[340px] flex flex-col shrink-0 overflow-hidden bg-black/60 border-cyan-500/20">
+                <div class="p-3 border-b border-cyan-500/20 bg-black/80 flex justify-between items-center">
+                    <h2 class="text-[#00ffcc] font-black text-[10px] tracking-widest uppercase cyber-text">Vadeli Kontrol Matrisi (100)</h2>
+                    <span class="text-[8px] text-gray-500 cyber-text">FUTURES HFT</span>
                 </div>
-                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Dinamik Kaldıraç Kalkanı</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Piyasa volatilitesi %5'i aşarsa açık vadeli pozisyonların kaldıraç oranını otomatik olarak düşürür.</p>
+                
+                <div class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
+                    
+                    <!-- Kat 1: Vadeli Emir & İnfaz İzolasyonu (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">1. Vadeli Emir & İnfaz İzolasyonu (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Dinamik Kaldıraç Çarpanı Sınırlayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Post-Only Zorunlu Maker Emir Modu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> FOK (Fill-Or-Kill) Nano Yönlendirme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> IOC (Immediate-Or-Cancel) Kısmi Doldurma</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Stop-Limit Tetikleyici (Trigger) Bypass</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Trailing Stop-Loss (ATR Tabanlı Dinamik)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Step-Grid Kademeli Emir Parçalayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Market-Maker BBO (Best Bid/Offer) Pegging</label>
+                            <label class="feature-checkbox"><input type="checkbox"> TWAP (Zaman Ağırlıklı) Gizli İnfaz</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> VWAP (Hacim Ağırlıklı) Fiyat Kovalamaca</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Midpoint (Orta Nokta) Limit Eşleşme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> OCO (One-Cancels-the-Other) Otomasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Auto-Cancel-Replace (ACR) Gecikme Önleme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Iceberg Emir Gizleme Zarfı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Saniye Altı (Sub-Second) Tick Scalper</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Slippage (Tolerans) Tavan Güvenliği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Limit Chaser Agresyon Filtresi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Anti-Gaming Emir Defteri Saklayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Çapraz Borsa SOR (Smart Order Router)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Fat-Finger (Hatalı Miktar) Blokajı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> MinQty (Minimum İşlem Miktarı) Tavanı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Emrin Piyasa Etki (Price Impact) Tahmincisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Biquad Filtreli Limit Düzeltici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kar-Al / Zarar-Durdur Parçalı İnfaz</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Nükleer İptal (Cancel-All) Şalteri</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 2: Marjin, Tasfiye & ADL Kalkanı (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">2. Marjin, Tasfiye & ADL Kalkanı (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sürdürme Marjini (MMR) İhlal Uyarısı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> ADL (Oto-Kaldıraç Düşürme) Sıra Tahmincisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İflas Fiyatı (Bankruptcy) Mesafe Hesabı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Mark Price vs Endeks Sapma Kalkanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Otomatik İzole/Çapraz Dönüştürücü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Likidasyon Şelale (Cascading) Kaçış Botu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Haircut Oranı (Düzeltme) Optimizatörü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Teminat Tamamlama (Margin Call) Uyarısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sigorta Fonu (Insurance Fund) Alarmı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kelly Kriteri Otomatik Teminat Ayarlayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> VaR (Value-at-Risk) Bazlı Marjin Sınırı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Portföy Marjini (Portfolio Margin) Dengesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Delta-Nötr Sentetik Teminat Yaratımı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Flaş Çöküş Mark Fiyat Tamponu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Negatif Bakiye Otomatik Koruması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Açık Pozisyon (OI) Maksimum Tavanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Çapraz Borsa Teminat Dengeleme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Alt-Hesap (Sub-Account) Marjin Ayrıştırıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kademeli Kaldıraç Limiti Dayatıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Pozisyon Yaşlanma (Time-in-Force) Riski</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Volatilite Bazlı Teminat Artırım Şalteri</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Likidasyon Avcısı (Stop Hunt) Karşı-Pozisyon</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Asimetrik Risk Profil İzolasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kâr Kilitli Otomatik Teminat Çekimi (Auto-Sweep)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Nükleer Pozisyon Kapatma (Kill Switch)</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 3: Fonlama, Basis & Sentetik Getiri (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">3. Fonlama, Basis & Sentetik Getiri (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Negatif Fonlama Oranı (Funding) Avcısı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tahmini (Predicted) Fonlama Oranı Hesabı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Çapraz Borsa Fonlama Arbitrajı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Continuous vs Quarterly Basis Contango</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Backwardation Fırsat Yakalayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Roll Yield (Sözleşme Yenileme) Getirisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Taker Komisyon Amortisman Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Maker İade (Rebate) Maksimizasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Fonlama Saati Öncesi Otomatik Hedge</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sentetik Dolar (USDe/USDT) Yield Farming</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Spot-Perp Üçgensel Arbitraj Rotalama</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Borçlanma (Borrow) Faiz Oranı Tarama</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Implied Volatility (IV) Arb Fırsatları</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Options Put-Call Parite Türevi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Delta Exposure Dinamik Dengeleyici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Gamma Squeeze Erken Uyarı Sensörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Vega Risk Nötrleştirici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Theta Zaman Erimesi Capture Botu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Carry Trade Faiz Makası Sömürüsü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Basis Point (BPS) Net Maliyet Analizörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sentetik Short ile Spot Risk Sıfırlama</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Opsiyon Max Pain Seviyesi Çekim Gücü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Borsa Rezerv Kanıtı (PoR) Sağlık Skoru</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Geçici Kayıp (IL) Vadeli Hedge</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Otomatik Bileşik Getiri (Auto-Compound)</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 4: Volatilite, Squeeze & Tahta Mikroyapısı (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">4. Volatilite & Tahta Mikroyapısı (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Volatilite Sıkışması (Squeeze) Kırılımı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Short Squeeze (Açığa Satış) Yakıtı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Long Squeeze Şelale Tahmincisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> L2 Emir Defteri Ağırlık Merkezi (CoG)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> L3 Derinlik Duvarı Aşınma Hızı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> OFI (Order Flow Imbalance) Momentum Bipi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> CVD (Cumulative Volume Delta) Ayrışması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Micro-structure Gürültü Filtresi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Anlık Hacim Sıçraması (Volume Spike) Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tick-by-Tick Delta Scalp Ağı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Spread (Bid/Ask) Genişleme Alarmı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Reversion (Ortalamaya Dönüş) Flaş İşlem</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Saniye Altı (Sub-Second) Momentum İğnesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> VPIN (Informed Trading) Toksisite Skoru</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Keltner Kanalı Kırılım İnfazı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Bollinger Bandı Sıkışma Dedektörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> ATR Volatilite İzleyen Stop Hatları</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Fair Value Gap (FVG) Doldurma Hızı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Order Block (OB) Mükemmel Temas</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Market Structure Shift (MSS) Kırılımı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Liquidity Void (Boşluk) Avcısı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Wyckoff Şematik Faz Tespiti</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yüksek Frekanslı (HFT) Quote Stuffing</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tahta Kayma (Slippage) Tahmin Motoru</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kuantum Kedi (Schrödinger) Matrisi</label>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
-            <!-- 2. Likidasyon Avcısı (Liquidation Hunter) -->
-            <div class="glass-panel p-6 flex flex-col justify-between border-red-500/20 bg-red-500/5">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">🎯</span>
-                    <span class="text-red-400 font-black text-xs">AKTİF TARA</span>
+            <!-- ORTA PANEL: CANLI VADELİ METRİKLER VE İNFAZ PANOLARI -->
+            <div class="glass-panel flex-grow flex flex-col p-4 border-white/10 bg-[#020202] overflow-hidden gap-4">
+                
+                <!-- Canlı Fiyat & Spread Metrikleri -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
+                    <div class="bg-black/60 border border-white/5 p-3 rounded-lg flex flex-col justify-between">
+                        <span class="text-gray-500 text-[8px] font-bold uppercase tracking-widest cyber-text">Index Fiyatı</span>
+                        <span id="index-price" class="text-white font-black text-lg cyber-text">64,120.00</span>
+                    </div>
+                    <div class="bg-black/60 border border-white/5 p-3 rounded-lg flex flex-col justify-between">
+                        <span class="text-gray-500 text-[8px] font-bold uppercase tracking-widest cyber-text">Mark (Gösterge) Fiyat</span>
+                        <span id="mark-price" class="text-[#00ffcc] font-black text-lg cyber-text drop-shadow-[0_0_8px_rgba(0,255,204,0.3)]">64,121.50</span>
+                    </div>
+                    <div class="bg-black/60 border border-white/5 p-3 rounded-lg flex flex-col justify-between">
+                        <span class="text-gray-500 text-[8px] font-bold uppercase tracking-widest cyber-text">Fonlama (8S Prim)</span>
+                        <span id="funding-rate" class="text-yellow-400 font-black text-lg cyber-text">+0.0100%</span>
+                        <span id="funding-timer" class="text-[8px] text-gray-500 cyber-text mt-0.5">Kalan: 03:45:12</span>
+                    </div>
+                    <div class="bg-black/60 border border-white/5 p-3 rounded-lg flex flex-col justify-between">
+                        <span class="text-gray-500 text-[8px] font-bold uppercase tracking-widest cyber-text">Basis (Spread)</span>
+                        <span id="basis-spread" class="text-[#00ffcc] font-black text-lg cyber-text">+1.50</span>
+                    </div>
                 </div>
-                <h3 class="text-red-400 font-black text-sm uppercase tracking-widest mb-1">Likidasyon Avcısı</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Toplu patlatmaların (Long/Short sikişmesi) yaşanacağı kritik seviyeleri tarar ve ters yönde pozisyon açar.</p>
+
+                <!-- Manuel / HFT Emir Paneli -->
+                <div class="bg-[#05070a] border border-cyan-500/20 p-4 rounded-xl flex flex-col gap-3 shrink-0">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                        <span class="text-[#00ffcc] font-black text-[10px] uppercase tracking-widest cyber-text">HFT İnfaz & Pozisyon Simülatörü</span>
+                        <span class="text-gray-500 text-[8px] cyber-text">SÜRÜCÜ: FASTAPI</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="text-[8px] text-gray-500 uppercase font-bold tracking-widest block mb-1 cyber-text">Varlık / Sembol</label>
+                            <input type="text" id="v-coin" value="BTC" class="pro-input uppercase">
+                        </div>
+                        <div>
+                            <label class="text-[8px] text-gray-500 uppercase font-bold tracking-widest block mb-1 cyber-text">Kaldıraç Çarpanı</label>
+                            <select id="v-lev" class="pro-input">
+                                <option value="5x">5x (İzole)</option>
+                                <option value="10x" selected>10x (İzole)</option>
+                                <option value="20x">20x (Çapraz)</option>
+                                <option value="50x">50x (HFT Risk)</option>
+                                <option value="100x">100x (Nükleer)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[8px] text-gray-500 uppercase font-bold tracking-widest block mb-1 cyber-text">İzole Teminat ($)</label>
+                            <input type="number" id="v-margin" value="1000" class="pro-input">
+                        </div>
+                        <div>
+                            <label class="text-[8px] text-gray-500 uppercase font-bold tracking-widest block mb-1 cyber-text">Trailing Stop (%)</label>
+                            <input type="text" id="v-trail" value="0.8%" class="pro-input">
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <button onclick="executeOrder('LONG')" class="flex-1 bg-[#00ffcc]/10 hover:bg-[#00ffcc]/30 border border-[#00ffcc]/50 text-[#00ffcc] font-black py-2.5 rounded text-[10px] tracking-widest uppercase transition-all cyber-text">
+                            LONG (YÜKSELİŞ İNFAZI) 🚀
+                        </button>
+                        <button onclick="executeOrder('SHORT')" class="flex-1 bg-red-500/10 hover:bg-red-500/30 border border-red-500/50 text-red-400 font-black py-2.5 rounded text-[10px] tracking-widest uppercase transition-all cyber-text">
+                            SHORT (DÜŞÜŞ İNFAZI) 🩸
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canlı Emir Akışı & Derinlik Simülasyonu -->
+                <div class="flex-grow bg-[#050507] border border-white/5 rounded-xl p-3 flex flex-col overflow-hidden relative">
+                    <div class="flex justify-between items-center mb-2 border-b border-white/5 pb-2 shrink-0">
+                        <span class="text-white font-black text-[9px] uppercase tracking-widest cyber-text">L3 Micro-structure Order Stream</span>
+                        <span class="text-emerald-400 text-[8px] cyber-text animate-pulse">STREAM ONLINE</span>
+                    </div>
+                    <div id="order-stream" class="flex-grow overflow-y-auto flex flex-col gap-1 text-[8px] cyber-text text-gray-400">
+                        <!-- JS ile dolacak -->
+                    </div>
+                </div>
+
             </div>
 
-            <!-- 3. Akıllı Kar Al (Smart Trailing Take-Profit) -->
-            <div class="glass-panel p-6 flex flex-col justify-between border-[#00ffcc]/20">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">📈</span>
-                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                </div>
-                <h3 class="text-[#00ffcc] font-black text-sm uppercase tracking-widest mb-1">Akıllı Trailing TP</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Fiyat yükseldikçe kar al seviyesini yukarı taşıyan, trend bitene kadar seni pozisyondan atmayan akıllı algoritma.</p>
-            </div>
+            <!-- SAĞ PANEL: RİSK, ADL & CANLI LOGLAR -->
+            <div class="w-full lg:w-[320px] flex flex-col gap-3 shrink-0">
+                
+                <!-- ADL & Sürdürme Marjini (MMR) -->
+                <div class="glass-panel p-4 flex flex-col border-cyan-500/20 bg-[#020203] shrink-0">
+                    <h3 class="text-[#00ffcc] font-black text-[9px] tracking-widest uppercase mb-3 cyber-text">Risk & ADL Katmanı</h3>
+                    
+                    <div class="mb-3">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-[8px] text-gray-400 uppercase cyber-text">Sürdürme Marjini (MMR) Oranı</span>
+                            <span class="text-[10px] font-black text-emerald-400 cyber-text" id="mmr-val">%18.4 (GÜVENLİ)</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden border border-white/5">
+                            <div id="mmr-bar" class="h-full bg-emerald-400 shadow-[0_0_10px_#00ffcc]" style="width: 18.4%"></div>
+                        </div>
+                    </div>
 
-            <!-- 4. Fonlama Ücreti (Funding Rate) Arbitrajı -->
-            <div class="glass-panel p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">💰</span>
-                    <span class="text-green-400 font-black text-xs">+%0.03 / 8S</span>
-                </div>
-                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Fonlama Ücreti Avı</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Negatif veya pozitif fonlama oranlarından (Funding Fee) işlem açmadan sadece prim geliri toplama botu.</p>
-            </div>
+                    <div>
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-[8px] text-gray-400 uppercase cyber-text">ADL (Oto-Düşürme) Sıra Riski</span>
+                            <span class="text-[10px] font-black text-emerald-400 cyber-text">DÜŞÜK (1/5)</span>
+                        </div>
+                        <div class="flex gap-1 h-2">
+                            <div class="flex-1 bg-emerald-400 rounded-sm"></div>
+                            <div class="flex-1 bg-gray-800 rounded-sm"></div>
+                            <div class="flex-1 bg-gray-800 rounded-sm"></div>
+                            <div class="flex-1 bg-gray-800 rounded-sm"></div>
+                            <div class="flex-1 bg-gray-800 rounded-sm"></div>
+                        </div>
+                    </div>
 
-            <!-- 5. Pozisyon Boyutu Optimizasyonu (Kelly Criterion) -->
-            <div class="glass-panel p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">🧮</span>
-                    <span class="text-blue-400 font-black text-xs">OTOMATİK</span>
+                    <div class="mt-4 p-2 bg-black/50 border border-white/5 rounded text-center">
+                        <span class="block text-gray-500 text-[8px] font-bold uppercase tracking-widest cyber-text mb-0.5">Est. İflas Fiyatı Mesafesi</span>
+                        <span class="text-white font-black text-xs cyber-text">+$4,820.00 (Güvenli Tampon)</span>
+                    </div>
                 </div>
-                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Kelly Pozisyon Boyutu</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Kasanın büyüklüğüne ve risk skoruna göre bir sonraki işlem için kusursuz marjin miktarını hesaplar.</p>
-            </div>
 
-            <!-- 6. Negatif Bakiye Koruma Kalkanı -->
-            <div class="glass-panel p-6 flex flex-col justify-between border-yellow-500/20">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">🛡️</span>
-                    <span class="text-yellow-400 font-black text-xs">KORUMADA</span>
+                <!-- HFT Kayıt Defteri -->
+                <div class="glass-panel flex-grow flex flex-col border-white/10 overflow-hidden bg-[#030303]">
+                    <div class="px-3 py-2 border-b border-white/5 shrink-0 flex justify-between items-center bg-[#050505]">
+                        <h3 class="text-white font-black text-[9px] tracking-widest uppercase cyber-text">Sistem İnfaz Günlüğü</h3>
+                        <span class="text-[#00ffcc] text-[8px] cyber-text">RAW LOG</span>
+                    </div>
+                    
+                    <div id="futures-logs" class="flex-grow overflow-y-auto p-2 flex flex-col gap-1.5 text-[8px] cyber-text text-gray-400">
+                        <span class="text-center opacity-50 my-5 uppercase tracking-widest">Sistem hazır. İnfaz bekleniyor...</span>
+                    </div>
                 </div>
-                <h3 class="text-yellow-400 font-black text-sm uppercase tracking-widest mb-1">Marjin İzolatörü</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Vadeli işlemlerde cüzdandaki tüm paranın riske atılmasını önler, sadece atılan marjinin batmasına izin verir.</p>
-            </div>
 
-            <!-- 7. Hacim Patlaması Dedektörü (Volume Spike) -->
-            <div class="glass-panel p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">🚀</span>
-                    <span class="text-purple-400 font-black text-xs">ANLIK</span>
-                </div>
-                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Hacim Patlaması Radarı</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Son 5 dakikada normal hacminin 5 katı para giren vadeli tahtaları yakalar, kırılımı kaçırmaz.</p>
             </div>
-
-            <!-- 8. Otomatik DCA Çöküş Kurtarıcısı -->
-            <div class="glass-panel p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">📉</span>
-                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                </div>
-                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Düşüş Ortalama Botu</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Açtığın pozisyon ters yöne giderse kademeli olarak maliyeti düşürerek ilk tepkide kârla kapattırır.</p>
-            </div>
-
-            <!-- 9. Emir Defteri (Order Book) Duvar Analizi -->
-            <div class="glass-panel p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-3xl">🧱</span>
-                    <span class="text-cyan-400 font-black text-xs">DESTEK/DİRENÇ</span>
-                </div>
-                <h3 class="text-cyan-400 font-black text-sm uppercase tracking-widest mb-1">Balina Duvarı Tarayıcısı</h3>
-                <p class="text-gray-400 text-[10px] font-medium leading-relaxed">Tahtadaki milyon dolarlık alış/satış emir duvarlarını okuyarak fiyatın döneceği noktayı önceden söyler.</p>
-            </div>
-
-            <!-- 10. Risk/Ödül Otomatik Tetikleyicisi -->
-            <div class="glass-panel p-6 flex flex-col justify-between lg:col-span-3 xl:col-span-3">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="text-2xl">⚡</span>
-                    <h3 class="text-white font-black text-sm uppercase tracking-widest">1:3 Risk / Ödül Oranı Kilidi</h3>
-                </div>
-                <div class="flex justify-between items-center bg-[#05070A] p-4 rounded-xl border border-white/5">
-                    <span class="text-gray-400 text-xs font-medium">Sistem, potansiyel kazancı riskin en az 3 katı olmayan hiçbir vadeli işleme onay vermez.</span>
-                    <span class="px-3 py-1 bg-[#00ffcc]/10 border border-[#00ffcc]/30 text-[#00ffcc] rounded text-[10px] font-black uppercase tracking-widest">SİSTEM KİLİDİ AKTİF</span>
-                </div>
-            </div>
-
         </div>
     </div>
+
+    <script>
+        let basePrice = 64120.00;
+
+        function updateMetrics() {
+            basePrice = basePrice + (Math.random() * 8 - 4);
+            const markPrice = basePrice + (Math.random() * 1.5 - 0.75);
+            const basis = markPrice - basePrice;
+
+            document.getElementById('index-price').innerText = basePrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('mark-price').innerText = markPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('basis-spread').innerText = (basis >= 0 ? "+" : "") + basis.toFixed(2);
+            document.getElementById('basis-spread').style.color = basis >= 0 ? "#00ffcc" : "#EF4444";
+
+            pushOrderStream(basePrice);
+        }
+
+        const streamBox = document.getElementById('order-stream');
+        function pushOrderStream(price) {
+            if(streamBox.innerHTML.includes("Bekleniyor")) streamBox.innerHTML = '';
+            
+            const isBuy = Math.random() > 0.45;
+            const size = (Math.random() * 15 + 0.1).toFixed(2);
+            const p = (price + (Math.random() * 4 - 2)).toFixed(2);
+            const color = isBuy ? 'text-[#00ffcc]' : 'text-red-400';
+            const action = isBuy ? 'BUY (TAKER)' : 'SELL (TAKER)';
+
+            const div = document.createElement('div');
+            div.className = `flex justify-between items-center border-b border-white/5 pb-0.5 ${color}`;
+            div.innerHTML = `
+                <span>[${new Date().toLocaleTimeString('tr-TR')}]</span>
+                <span class="font-bold">$${p}</span>
+                <span>${size} BTC</span>
+                <span class="font-black">${action}</span>
+            `;
+
+            streamBox.prepend(div);
+            if(streamBox.children.length > 20) streamBox.removeChild(streamBox.lastChild);
+        }
+
+        const logBox = document.getElementById('futures-logs');
+        const hftMessages = [
+            "[FASTAPI] POST-ONLY Maker emri iletildi. Rebate kazanımı aktif.",
+            "[RISK_SHIELD] Mark Price / Index sapması %0.02 seviyesinde, güvenli.",
+            "[ICEBERG] Tahtadaki gizli 50 ETH alım emri tespit edildi.",
+            "[FUNDING] Tahmini fonlama oranı +0.012% olarak güncellendi.",
+            "[SLIPPAGE] Tolerans tavanı %0.1 altında tutuluyor.",
+            "[AUTOMATION] ATR tabanlı Trailing Stop hattı yukarı çekildi."
+        ];
+
+        function pushLog() {
+            if(logBox.innerHTML.includes("bekleniyor")) logBox.innerHTML = '';
+            const msg = hftMessages[Math.floor(Math.random() * hftMessages.length)];
+            const time = new Date().toISOString().substring(11, 23);
+            
+            const div = document.createElement('div');
+            div.className = "border-b border-white/5 pb-1 mb-1 text-gray-400";
+            div.innerHTML = `<span class="text-[#00ffcc]">[${time}]</span> ${msg}`;
+            
+            logBox.prepend(div);
+            if(logBox.children.length > 15) logBox.removeChild(logBox.lastChild);
+        }
+
+        window.executeOrder = function(yon) {
+            const coin = document.getElementById('v-coin').value || 'BTC';
+            const lev = document.getElementById('v-lev').value;
+            const margin = document.getElementById('v-margin').value;
+            
+            showToast(`[HFT İNFAZ] ${coin} ${lev} ${yon} Emri İletildi (Marjin: $${margin})`, 'success');
+            pushLog();
+        }
+
+        window.showToast = function(msg, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+
+        setInterval(updateMetrics, 600);
+        setInterval(pushLog, 2000);
+    </script>
 </body>
 </html>

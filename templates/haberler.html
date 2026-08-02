@@ -3,80 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Son Dakika Haberler | Q-AI Terminal Pro</title>
+    <title>Olay Güdümlü İstihbarat & Makro Ağ | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; }
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; }
-        .glass-panel { background: rgba(10, 15, 26, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; z-index: 10; position: relative; }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background-color: #020202; color: white; margin: 0; overflow-x: hidden; height: 100vh; }
+        
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.05) 0%, rgba(2, 2, 2, 1) 80%); z-index: 0; pointer-events: none; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(245, 158, 11, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245, 158, 11, 0.03) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none; }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; }
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: rgba(10, 8, 5, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(245, 158, 11, 0.15); border-top: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
+        }
+
+        .check-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.3rem; }
+        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.55rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;}
+        .feature-checkbox input { accent-color: #F59E0B; width: 10px; height: 10px; cursor: pointer; flex-shrink: 0;}
+        .feature-checkbox:hover { color: #F59E0B; }
+
+        /* NLP Stream Animasyonları */
+        .nlp-stream-box { background: rgba(0,0,0,0.6); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; overflow: hidden; position: relative; }
+        .nlp-scanline { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: rgba(245, 158, 11, 0.5); box-shadow: 0 0 10px rgba(245, 158, 11, 0.8); animation: scanDown 2s linear infinite; opacity: 0.7; }
+        @keyframes scanDown { 0% { top: -5%; } 100% { top: 105%; } }
+
+        .news-card { border-left: 2px solid #F59E0B; background: linear-gradient(90deg, rgba(245, 158, 11, 0.05) 0%, transparent 100%); transition: all 0.2s; }
+        .news-card:hover { background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%); transform: translateX(2px); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(245,158,11,0.6); }
+
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #ef4444; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+<body class="p-2 md:p-4">
+
     <div class="crypto-bg"></div>
-    <div class="w-full max-w-[1100px] flex flex-col h-[90vh] z-10">
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
-            <a href="/pano" class="text-gray-400 hover:text-amber-400 text-xs font-black uppercase tracking-widest">← ANA PANOYA DÖN</a>
-            <h1 class="text-2xl font-black tracking-widest text-white">📰 SON DAKİKA <span class="text-amber-400">PİYASA HABERLERİ</span></h1>
+    <div class="grid-bg"></div>
+
+    <div class="content-layer w-full h-full max-w-[1600px] mx-auto flex flex-col gap-3">
+        
+        <!-- ÜST KOMUTA BARI -->
+        <div class="glass-panel flex items-center justify-between p-3 shrink-0 border-amber-500/30">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-gray-500 hover:text-amber-400 transition-colors text-[10px] font-black flex items-center gap-1 uppercase tracking-widest cyber-text">
+                    <span class="text-sm">←</span> MERKEZE DÖN
+                </a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <h1 class="text-sm md:text-lg font-black tracking-[0.2em] text-white flex items-center gap-2 drop-shadow-md">
+                    🌍 GLOBAL EVENT-DRIVEN <span class="text-amber-500 text-[10px] cyber-text">(NLP İSTİHBARAT)</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end hidden lg:flex">
+                    <span class="text-amber-500 text-[8px] font-bold cyber-text flex items-center gap-1"><div class="pulse-dot"></div> AĞ DİNLENİYOR (4,592 Node)</span>
+                    <span class="text-gray-400 text-[8px] font-bold cyber-text mt-0.5">EDGAR / FED / CFTC SENKRONİZE</span>
+                </div>
+            </div>
         </div>
-        <div class="glass-panel p-6 flex-grow overflow-y-auto">
-            <div id="haberler-container" class="flex flex-col gap-4">
-                <div class="text-center text-gray-400 py-10 font-bold uppercase tracking-widest">Global RSS Ağlarına Bağlanılıyor...</div>
+
+        <div class="flex flex-col lg:flex-row gap-3 flex-grow overflow-hidden">
+            
+            <!-- SOL PANEL: 100 OLAY GÜDÜMLÜ (EVENT-DRIVEN) PARAMETRE -->
+            <div class="glass-panel w-full lg:w-[320px] flex flex-col shrink-0 overflow-hidden border-amber-500/20">
+                <div class="p-3 border-b border-amber-500/20 bg-black/40">
+                    <h2 class="text-amber-400 font-black text-[10px] tracking-widest uppercase cyber-text">Makro İstihbarat Filtreleri (100)</h2>
+                </div>
+                
+                <div class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
+                    
+                    <!-- Kat 1: Kurumsal & Hukuki Sızıntılar (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">1. Kurumsal & Hukuki Sızıntılar (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> SEC EDGAR Anlık Kazıyıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> CFTC İddianame Webhook'u</label>
+                            <label class="feature-checkbox"><input type="checkbox"> S1/S3 Halka Arz (IPO) Formları</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> ETF Onay/Red Flaş Sinyali</label>
+                            <label class="feature-checkbox"><input type="checkbox"> ABD Adalet Bakanlığı (DOJ) El Koymaları</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Mahkeme Kaydı (Docket) Botu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Borsa Kurucusu Tutuklanma Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Patent Başvuru Takibi (Web3)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Mt.Gox / SilkRoad Kayyum Hareketleri</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Çin (PBOC) Regülasyon FUD Algılayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> MiCA (Avrupa) Tasarı Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Vergi Kod Değişikliği (IRS) Sinyali</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Gizlilik Coin'i (Privacy) Yasak Alarmı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Menkul Kıymet İlan Edilme Korkusu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kurumsal Hazine Alımı (MicroStrategy vb.)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> FTX/Celsius İflas Komitesi Kararları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tether (USDT) Denetim Raporu Sızıntısı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Borsa (CEX) İflas Söylentisi Ağı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Merkez Bankası Dijital Para (CBDC) Adımları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kongre Yasa Tasarısı NLP Okuyucu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Interpol Kırmızı Bülten Tarayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yaptırım (OFAC) Kara Liste Senkronu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kripto Lobi Grupları (PAC) Finansmanı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Büyük Borsa Hack/Siber Saldırı Olayı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Finansal İstikrar Kurulu (FSB) Uyarıları</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 2: Makroekonomik Veri Akışı (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">2. Makroekonomi & Piyasalar (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> FED Faiz Kararı Milisaniye Çözücü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> TÜFE (CPI) Sapma (Deviation) Motoru</label>
+                            <label class="feature-checkbox"><input type="checkbox"> ÜFE (PPI) Enflasyon Beklentisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tarım Dışı İstihdam (NFP) Şok İndeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Küresel M2 Para Arzı Artış Hızı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> ABD 10 Yıllık Tahvil (US10Y) Sıçraması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> DXY (Dolar Endeksi) Parite Kırılımı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Getiri Eğrisi Tersinmesi (Inversion)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> FED Tutanakları (FOMC) Şahin/Güvercin NLP</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Powell Konuşması Canlı Duygu Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> ECB (Avrupa) Faiz Makas Farkı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> BOJ (Japonya) Likidite Enjeksiyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Perakende Satışlar Korku Faktörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> PCE Çekirdek Enflasyon İvmesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Altın (XAU) Uyumsuzluk Alarmı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Nasdaq (NDX) Çöküş Yayılımı (Contagion)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> TSMC / NVIDIA Yarı İletken Krizi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> S&P 500 VIX (Korku Endeksi) Kesişimi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kredi Temerrüt Takası (CDS) Patlaması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Egemen Varlık Fonu (Mubadala vb.) Girişi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> BRICS Yeni Para Birimi Hamlesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Banka İflas (Bank Run) Haber Doğrulayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Stres Testi (Stress Test) Sonuç Kodları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İssizlik Haklarından Yararlanma Serisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tüketici Güven Endeksi (Michigan) Taraması</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 3: Olay Güdümlü Algoritmik İnfaz (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">3. Event-Driven HFT Yürütme (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> NLP'den Emre (Text-to-Order) Yönlendirme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tier-1 Borsa (Binance) Listeleme Botu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Borsa Delist (Çıkarma) Otomatik Short</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Exploit/Hack Haberi İnfaz Motoru</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Airdrop Snapshot Saati PnL Koruması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Mainnet Lansmanı "Haberi Sat" Tetiği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Haber Bazlı Devre Kesici (Circuit Breaker)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kurumsal Ortaklık Algılayıcı (Apple, Google)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> CEO Twitter Mention İşlem Tetikleyicisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Olay Sonrası Momentum Tersine Dönüşü (Reversion)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Haber Metni Sarcasm (İroni) Filtresi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Cüzdan Etiketi Sızıntı Front-Running</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Asimetrik Bilgi (Insider) Arbitrajı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kilit Açılımı (Unlock) Fiyat Baskılama</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Hard Fork Bölünme (Split) Değerlemesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kötü Niyetli (Ransomware) Adres İzolatörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Haberin Hedef Kitle (Perakende) FOMO Puanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Söylenti Sınıflandırma (Rumor vs Fact) YZ</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Başlık (Headline) ile İçerik Uyuşmazlık Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> VADER Finansal Metin Duygu Skorlaması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Haberin Yayılma Hızı (Velocity) Monitörü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Haber Kaynağı Güvenilirlik Ağırlığı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Gizli Makale Değişikliği (Stealth Edit) Farkı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Deep-Fake Manipülasyon Engelleme Sistemi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Haber Etkisi Zaman Aşımı (Time-to-Impact)</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 4: Küresel Kriz & Jeopolitik Şoklar (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">4. Küresel Siyah Kuğu Kalkanları (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Jeopolitik Çatışma (Savaş) Algılayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Küresel Pandemi / Karantina İndeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Enerji Şebekesi (Grid) Çöküş İhbarı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> OPEC+ Petrol Üretim Kesintisi Şoku</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tayvan Boğazı (Çip Üretimi) Gerilimi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kuantum Bilgisayar Kriptografi Tehdidi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Doğal Afet (Deprem/Kasırga) Madenci Etkisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tedarik Zinciri (Supply Chain) Kopması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Küresel İnternet Kesintisi (BGP Bouncing)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Emlak (Gayrimenkul) Balonu Patlaması (Evergrande)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Uzay Havası (Güneş Fırtınası) Uydu Etkisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Devlet Destekli Hacker (Lazarus vb) Alarmı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Nükleer Tehdit (DEFCON) Seviye Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Swift Sistemi Yasakları Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> G7/G20 Ortak Bildiri NLP Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Seçim Sonuçları Kripto Dostu Haritası</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yüksek Profilli Suikast/Ölüm Şoku</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sabit Para Karşılığı El Koyma Riski</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Banka Hücumu (Bank Run) Yayılım Hızı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İklim Düzenlemeleri Madencilik Yasakları</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Uluslararası Vergi (OECD) Kripto Ağları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Merkez Bankası Altın Rezerv Hareketi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kripto Karşıtı Lobi Yasa Tasarısı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Yeraltı Ağı (Darknet) Büyük Satışları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Uzay Temelli İnternet (Starlink) İletişim Yedeği</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORTA PANEL: NLP SİNİR AĞI AKIŞI (Raw Data Stream) -->
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden border-white/10 bg-[#020202]">
+                <div class="px-4 py-3 border-b border-white/5 flex justify-between items-center shrink-0">
+                    <h2 class="text-white font-black text-[11px] tracking-widest uppercase flex items-center gap-2 cyber-text">
+                        <span class="text-amber-500 text-lg">⚡</span> KÜRESEL SİNİR AĞI & NLP PARSER
+                    </h2>
+                    <span class="bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[8px] font-bold px-2 py-0.5 rounded uppercase cyber-text tracking-widest">
+                        İnfaz Botuna Bağlı
+                    </span>
+                </div>
+                
+                <div class="nlp-stream-box flex-grow m-3 p-3 flex flex-col font-mono text-[9px] leading-relaxed relative">
+                    <div class="nlp-scanline"></div>
+                    <div id="raw-nlp-stream" class="flex flex-col gap-1.5 overflow-hidden justify-end h-full opacity-80">
+                        <!-- AI Parser Logları Buraya Akacak -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ PANEL: İŞLENMİŞ SİNYALLER VE OLAY İNFAZI -->
+            <div class="w-full lg:w-[380px] flex flex-col gap-3 shrink-0">
+                
+                <!-- Makro Skor Kartı -->
+                <div class="glass-panel p-4 flex flex-col border-amber-500/30 bg-[rgba(245,158,11,0.02)]">
+                    <h3 class="text-amber-500 font-black text-[9px] tracking-widest uppercase mb-3 cyber-text">Küresel Makro İndeks (Canlı)</h3>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-400 text-[10px] font-bold uppercase cyber-text">Duygu (Sentiment) Vektörü</span>
+                        <span class="text-white font-black text-xl cyber-text" id="macro-score">BEKLEMEDE</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden border border-white/5">
+                        <div id="macro-bar" class="h-full bg-amber-500 transition-all duration-1000" style="width: 50%"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <div class="bg-[#050505] border border-white/5 p-2 rounded text-center">
+                            <span class="block text-gray-500 text-[8px] font-bold tracking-widest uppercase cyber-text">EDGAR (SEC) Sızıntı</span>
+                            <span class="text-[#00ffcc] font-black text-[10px] cyber-text">TEMİZ</span>
+                        </div>
+                        <div class="bg-[#050505] border border-white/5 p-2 rounded text-center">
+                            <span class="block text-gray-500 text-[8px] font-bold tracking-widest uppercase cyber-text">Jeopolitik Risk</span>
+                            <span class="text-amber-500 font-black text-[10px] cyber-text">NORMAL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İşlenmiş HFT Haber Bildirimleri -->
+                <div class="glass-panel flex-grow flex flex-col border-white/10 overflow-hidden bg-[#030303]">
+                    <div class="px-4 py-3 border-b border-white/5 shrink-0 flex justify-between items-center">
+                        <h3 class="text-white font-black text-[10px] tracking-widest uppercase cyber-text">Ayrıştırılmış Sinyaller</h3>
+                        <span class="text-red-500 text-[8px] cyber-text animate-pulse">AUTO-TRADE ON</span>
+                    </div>
+                    
+                    <div id="processed-news" class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
+                        <div class="text-center text-gray-600 py-10 font-bold text-[9px] uppercase tracking-widest cyber-text">
+                            Ağ Dinleniyor... İlk Olay Bekleniyor.
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
+
     <script>
-        async function haberleriYukle() {
-            try {
-                const res = await fetch('/api/haberler');
-                const haberler = await res.json();
-                const container = document.getElementById('haberler-container');
-                container.innerHTML = haberler.map(h => {
-                    
-                    // Haber başlığı veya içeriğine göre Long/Short Duygu Tespiti
-                    const metin = (h.baslik + ' ' + h.ozet).toLowerCase();
-                    let etkiEtiketi = "NÖTR 🟡";
-                    let etkiRenk = "color: #F59E0B; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1);";
+        // NLP Akış Simülasyonu
+        const nlpStream = document.getElementById('raw-nlp-stream');
+        const nlpLogs = [
+            "[EDGAR_SCRAPER] Parsing Form 8-K... Entity: BlackRock. Keywords: [ETF, Application, Spot]. Probability: 0.98",
+            "[TWITTER_FIREHOSE] ElonMusk Tweet Detected. Regex Match: [DOGE, Space]. Sentiment: +0.85 (EXTREME GREED)",
+            "[FED_MONITOR] Powell Speech Segment: 'inflation remains elevated'. Hawkish Score: 7.2/10. DXY Impact: HIGH",
+            "[BINANCE_WSS] API Announcement Endpoint Pinged. Delisting Detected: [JASMY]. Short Protocol Initiated.",
+            "[REUTERS_TERMINAL] Headline: 'SEC Lawsuit against Tier-1 Exchange'. Vectors: Legal, FUD. Market Impact: SEVERE",
+            "[GITHUB_CRAWL] Project: SushiSwap. Dev Commits Dropped 80% over 30d. Abandonment Risk Flagged.",
+            "[MACRO_NODE] US CPI Data Released: 3.1% vs 2.9% Expected. Deviation: +0.2%. VIX Correlator Active.",
+            "[DARK_WEB] Exploit Code Listed for Curve Finance. Smart Contract Hash Matched. Auto-Hedge Deployed."
+        ];
 
-                    const pozitifKelimeler = ["etf", "onay", "boğa", "yükseliş", "kazanç", "rekor", "ortaklık", "alım", "devam", "büyüme", "destek", "binance", "artış"];
-                    const negatifKelimeler = ["dava", "hack", "çöküş", "düşüş", "iflas", "yasak", "saldırı", "sec", "ceza", "satış", "stres", "kriz", "baskı"];
-
-                    let posScore = pozitifKelimeler.filter(k => metin.includes(k)).length;
-                    let negScore = negatifKelimeler.filter(k => metin.includes(k)).length;
-
-                    if (posScore > negScore) {
-                        etkiEtiketi = "LONG BENT 🚀 (YÜKSELİŞ BEKLENTİSİ)";
-                        etkiRenk = "color: #10B981; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1);";
-                    } else if (negScore > posScore) {
-                        etkiEtiketi = "SHORT BENT 🩸 (DÜŞÜŞ BEKLENTİSİ)";
-                        etkiRenk = "color: #EF4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1);";
-                    }
-
-                    return `
-                        <div class="bg-[#05070A] border border-white/5 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-amber-400/30 transition-all">
-                            <div class="flex-grow">
-                                <div class="flex flex-wrap items-center gap-3 mb-2">
-                                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded border" style="color: ${h.onem_renk}; border-color: ${h.onem_renk}40; background: ${h.onem_renk}10;">${h.onem}</span>
-                                    
-                                    <!-- YENİ: HABER ETKİSİ LONG / SHORT ETİKETİ -->
-                                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded border" style="${etkiRenk}">${etkiEtiketi}</span>
-
-                                    <span class="text-gray-500 text-xs font-bold">${h.kaynak} • ${h.zaman}</span>
-                                </div>
-                                <h3 class="text-white font-black text-base md:text-lg mb-1">${h.baslik}</h3>
-                                <p class="text-gray-400 text-xs leading-relaxed">${h.ozet}</p>
-                            </div>
-                            <a href="${h.url}" target="_blank" class="shrink-0 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-black font-black px-4 py-2 rounded-lg text-xs uppercase tracking-widest transition-all border border-amber-500/30">Kaynağa Git ➔</a>
-                        </div>
-                    `;
-                }).join('');
-            } catch(e) {
-                document.getElementById('haberler-container').innerHTML = '<div class="text-red-500 text-center font-bold">Haberler yüklenirken hata oluştu.</div>';
+        function pushNlpLog() {
+            const log = nlpLogs[Math.floor(Math.random() * nlpLogs.length)];
+            const el = document.createElement('div');
+            el.className = "text-[#F59E0B] opacity-80 mb-0.5 truncate";
+            el.innerText = `> ${new Date().toISOString().split('T')[1].slice(0,-1)} ${log}`;
+            nlpStream.appendChild(el);
+            
+            if(nlpStream.children.length > 25) {
+                nlpStream.removeChild(nlpStream.firstChild);
             }
         }
-        haberleriYukle();
-        setInterval(haberleriYukle, 30000);
+        setInterval(pushNlpLog, 400);
+
+        // İşlenmiş Haberler (UI Sağ Panel) Simülasyonu
+        const processedContainer = document.getElementById('processed-news');
+        const eventDatabase = [
+            {
+                type: "REGULATORY",
+                title: "SEC Spot ETF Başvurusunu Reddetti",
+                source: "EDGAR Node", time: "Az Önce", color: "#EF4444",
+                action: "TÜM LONG POZİSYONLAR KAPATILDI", score: 15
+            },
+            {
+                type: "MACRO SHOCK",
+                title: "TÜFE Beklentinin Çok Üzerinde Geldi (%3.8)",
+                source: "FED Terminal", time: "2 Dk Önce", color: "#F59E0B",
+                action: "US10Y HEDGE ALGORİTMASI DEVREDE", score: 35
+            },
+            {
+                type: "EXCHANGE EVENT",
+                title: "Binance Yeni Altcoin Listelemesi Duyurdu",
+                source: "API Scraper", time: "Az Önce", color: "#10B981",
+                action: "0.1ms DEX SNIPER ALIMI YAPILDI", score: 85
+            },
+            {
+                type: "SMART CONTRACT",
+                title: "Tier-1 DeFi Protokolünde Açık (Exploit) Tespit Edildi",
+                source: "DarkWeb Node", time: "5 Dk Önce", color: "#EF4444",
+                action: "OTOMATİK SHORT İNFAZI BAŞLATILDI", score: 20
+            }
+        ];
+
+        let currentScore = 50;
+        
+        function fireEvent() {
+            if(processedContainer.innerHTML.includes("Ağ Dinleniyor")) {
+                processedContainer.innerHTML = '';
+            }
+
+            const ev = eventDatabase[Math.floor(Math.random() * eventDatabase.length)];
+            
+            const card = document.createElement('div');
+            card.className = "news-card p-3 rounded flex flex-col gap-2 border border-white/5";
+            card.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border cyber-text" style="color: ${ev.color}; border-color: ${ev.color}; background: ${ev.color}15;">${ev.type}</span>
+                    <span class="text-[8px] text-gray-500 font-bold cyber-text">${ev.source}</span>
+                </div>
+                <h4 class="text-white text-xs font-bold leading-tight">${ev.title}</h4>
+                <div class="bg-black/50 border border-white/5 p-1.5 rounded mt-1">
+                    <span class="text-[7px] text-gray-400 block mb-0.5 uppercase tracking-widest cyber-text">HFT İnfazı:</span>
+                    <span class="text-[9px] font-black tracking-widest cyber-text" style="color: ${ev.color}">${ev.action}</span>
+                </div>
+            `;
+            
+            processedContainer.insertBefore(card, processedContainer.firstChild);
+            if(processedContainer.children.length > 5) {
+                processedContainer.removeChild(processedContainer.lastChild);
+            }
+
+            // Makro Skoru Güncelle
+            currentScore = ev.score;
+            document.getElementById('macro-score').innerText = currentScore > 60 ? "AŞIRI BOĞA 🟢" : (currentScore < 40 ? "PANİK / FUD 🔴" : "NÖTR 🟡");
+            document.getElementById('macro-score').style.color = currentScore > 60 ? "#10B981" : (currentScore < 40 ? "#EF4444" : "#F59E0B");
+            document.getElementById('macro-bar').style.width = currentScore + "%";
+            document.getElementById('macro-bar').style.backgroundColor = currentScore > 60 ? "#10B981" : (currentScore < 40 ? "#EF4444" : "#F59E0B");
+        }
+
+        setInterval(fireEvent, 6000);
+
     </script>
 </body>
 </html>

@@ -3,319 +3,571 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Hub | Q-AI Terminal Pro</title>
+    <title>Kognitif Frekans Merkezi | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #010101; color: white; margin: 0; overflow-x: hidden; height: 100vh; }
         
-        /* Zemin Katmanları */
-        .crypto-bg {
-            position: fixed; inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
-            z-index: 0; pointer-events: none;
-        }
-        .dot-grid {
-            position: fixed; inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 24px 24px;
-            z-index: 1; pointer-events: none;
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, rgba(1, 1, 1, 1) 80%); z-index: 0; pointer-events: none; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(139, 92, 246, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.02) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none; }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; }
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: rgba(8, 5, 12, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(139, 92, 246, 0.2); border-top: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.9);
         }
 
-        .content-layer { position: relative; z-index: 10; }
+        .check-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; }
+        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.55rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;}
+        .feature-checkbox input { accent-color: #8b5cf6; width: 10px; height: 10px; cursor: pointer; flex-shrink: 0;}
+        .feature-checkbox:hover { color: #c4b5fd; }
 
-        /* Neomorphic Glass Panel */
-        .glass-card {
-            background: rgba(10, 15, 26, 0.45);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.02);
-            position: relative;
-            overflow: hidden;
+        .neon-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); color: white; border: 1px solid #8b5cf6;
+            transition: all 0.3s; position: relative; overflow: hidden; cursor: pointer;
         }
+        .neon-btn:hover { box-shadow: 0 0 25px rgba(139, 92, 246, 0.7); transform: translateY(-2px); }
 
-        /* Ambient Spotify Glow (Arka Plan Işıması) */
-        .spotify-glow {
-            position: absolute;
-            top: -50px; right: -50px;
-            width: 250px; height: 250px;
-            background: radial-gradient(circle, rgba(29, 185, 84, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            filter: blur(20px);
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.6); }
 
-        /* Çalma Listesi Kutuları */
-        .track-card {
-            background: rgba(3, 4, 7, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            z-index: 10;
-        }
-        .track-card:hover {
-            transform: translateY(-3px) scale(1.02);
-            background: rgba(15, 20, 30, 0.8);
-            border-color: rgba(29, 185, 84, 0.4);
-            box-shadow: 0 10px 20px -5px rgba(29, 185, 84, 0.15);
-        }
-
-        /* Spotify Ana Butonu */
-        .spotify-btn {
-            background: linear-gradient(135deg, #1DB954 0%, #179140 100%);
-            box-shadow: 0 10px 30px -10px rgba(29, 185, 84, 0.5);
-            color: #030407;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        .spotify-btn::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: all 0.6s ease;
-        }
-        .spotify-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px -10px rgba(29, 185, 84, 0.7);
-        }
-        .spotify-btn:hover::after { left: 200%; }
-
-        /* Beeper Butonu */
-        .beeper-btn {
-            background: rgba(3, 4, 7, 0.8);
-            border: 1px solid rgba(0, 255, 204, 0.2);
-            color: #00ffcc;
-            transition: all 0.2s ease;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-        .beeper-btn:active {
-            transform: scale(0.96);
-            background: rgba(0, 255, 204, 0.1);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(29, 185, 84, 0.5); }
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.3; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #8b5cf6; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
         
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Audio Visualizer / EQ */
+        .visualizer { display: flex; align-items: flex-end; gap: 2px; height: 60px; justify-content: center; }
+        .eq-bar { width: 8px; background-color: #8b5cf6; border-radius: 2px 2px 0 0; box-shadow: 0 0 10px #8b5cf6; transition: height 0.1s ease; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+<body class="p-2 md:p-4">
 
     <div class="crypto-bg"></div>
-    <div class="dot-grid"></div>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
 
-    <div class="content-layer w-full max-w-6xl flex flex-col fade-in">
-
-        <!-- Üst Menü / Geri Dön -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-5 border-b border-white/10 shrink-0 gap-5">
-            <div>
-                <a href="/" class="text-gray-400 hover:text-[#1DB954] transition-colors text-xs font-black flex items-center gap-2 mb-2 uppercase tracking-widest">
-                    <span class="text-lg">←</span> ANA PANOYA DÖN
+    <div class="content-layer w-full h-full max-w-[1600px] mx-auto flex flex-col gap-3">
+        
+        <!-- ÜST KOMUTA BARI -->
+        <div class="glass-panel flex items-center justify-between p-3 shrink-0 border-purple-500/30">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-gray-500 hover:text-purple-400 transition-colors text-[10px] font-black flex items-center gap-1 uppercase tracking-widest cyber-text">
+                    <span class="text-sm">←</span> MERKEZE DÖN
                 </a>
-                <h1 class="text-3xl md:text-4xl font-black tracking-widest text-white drop-shadow-[0_0_15px_rgba(29,185,84,0.2)]">TRADER <span class="text-[#1DB954]">AUDIO HUB</span></h1>
-                <p class="text-[11px] md:text-xs text-gray-500 font-bold uppercase tracking-widest mt-2">Derin Analiz ve Odaklanma İçin Ambiyans Akışı</p>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <h1 class="text-sm md:text-lg font-black tracking-[0.2em] text-white flex items-center gap-2 drop-shadow-md">
+                    🧠 BİLİŞSEL ODAK (COGNITIVE FOCUS) <span class="text-purple-500 text-[10px] cyber-text">(FREKANS AĞI V2)</span>
+                </h1>
             </div>
-            
-            <div class="md:text-right bg-[#05070A]/50 border border-white/5 p-3 rounded-xl backdrop-blur-md">
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Bağlantı Protokolü</p>
-                <div class="flex items-center justify-start md:justify-end gap-2 mt-1">
-                    <span class="relative flex h-2.5 w-2.5">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1DB954] opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#1DB954]"></span>
-                    </span>
-                    <p class="text-[#1DB954] text-xs font-black uppercase tracking-wide" id="global-status">Sistem Senkronize</p>
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end hidden lg:flex">
+                    <span class="text-purple-500 text-[8px] font-bold cyber-text flex items-center gap-1"><div class="pulse-dot"></div> AUDIO CONTEXT: AKTİF</span>
+                    <span class="text-gray-400 text-[8px] font-bold cyber-text mt-0.5">JS Nöro-Akustik Motor Senkronize</span>
                 </div>
             </div>
         </div>
 
-        <!-- Ana İçerik Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div class="flex flex-col lg:flex-row gap-3 flex-grow overflow-hidden">
             
-            <!-- Sol & Orta: İstasyonlar / Listeler (2 Kolon) -->
-            <div class="lg:col-span-2 space-y-6 md:space-y-8">
+            <!-- SOL PANEL: 100 FREKANS & ODAK FİLTRESİ -->
+            <div class="glass-panel w-full lg:w-[320px] flex flex-col shrink-0 overflow-hidden bg-black/60 border-purple-500/20">
+                <div class="p-3 border-b border-purple-500/20 bg-black/80">
+                    <h2 class="text-purple-400 font-black text-[10px] tracking-widest uppercase cyber-text">Nöro-Modülasyon Katmanları (100)</h2>
+                </div>
                 
-                <!-- Ana Oynatıcı Paneli -->
-                <div class="glass-card p-6 md:p-8">
-                    <div class="spotify-glow"></div>
+                <div class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
                     
-                    <div class="relative z-10 flex items-center justify-between mb-5 border-b border-white/5 pb-3">
-                        <span class="text-[10px] font-black bg-[#1DB954]/10 text-[#1DB954] px-3 py-1.5 rounded-md border border-[#1DB954]/30 uppercase tracking-widest flex items-center gap-2">
-                            <span class="text-base">🎧</span> Spotify Web Core
-                        </span>
-                        <span id="currentStatus" class="text-xs font-bold text-gray-400 tracking-wider">İstasyona Bağlanıldı</span>
+                    <!-- Kat 1: Binaural & Beyin Dalgaları (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">1. Binaural Beats & Beyin Dalgaları (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Gama (40-100 Hz) Yüksek Kavrama</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Beta (12-40 Hz) Analitik Odak</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Alfa (8-12 Hz) Flow State (Akış)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Teta (4-8 Hz) Sezgisel Karar Alma</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Delta (0.5-4 Hz) Nöral Reset</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Hemisferik Senkronizasyon Tetiği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Piyasaya Duyarlı Frekans Kayması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İsokronik Ton (Isochronic Tones)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Solfej (Solfeggio) 528 Hz Onarımı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Schumann Rezonansı (7.83 Hz) Kalkanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Volatilite ile Artan Amplitüd</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> HFT Tetikleyici Nöro-Spike</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yorgunluk Önleyici Subliminal Pulse</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Stres Kırıcı (Cortisol Lowering) Vektör</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Karar Yorgunluğu (Fatigue) Alarmı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Spatial Audio (360° Zihinsel Kafes)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Otonom Sinir Sistemi Dengeleyici</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Dopamin Tetikleyici Tiz Dalgalar</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Frontal Lob Aktivasyon Sinyali</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Görsel/İşitsel Uyarı (Cross-Modal) Senkronu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Monaral (Monaural) Beat Sıkıştırması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Panik (Black Swan) Modu Bastırıcısı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> FOMO Karşıtı Sub-Frekans</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Asimetrik İşitme Optimizasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Beyin Sapı (Brainstem) Yatıştırıcısı</label>
+                        </div>
                     </div>
-                    
-                    <h2 id="activeTitle" class="relative z-10 text-xl md:text-2xl font-black mb-4 tracking-wide text-white drop-shadow-md">Lofi Beats (Crypto Focus Edition)</h2>
-                    
-                    <!-- Resmi Spotify Embed Oynatıcı -->
-                    <div class="relative z-10 rounded-xl overflow-hidden bg-transparent w-full border border-white/5 shadow-2xl">
-                        <iframe id="spotifyPlayer" style="border-radius:12px; background: transparent;" 
-                            src="https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator&theme=0" 
-                            width="100%" height="352" frameBorder="0" allowfullscreen="" 
-                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy">
-                        </iframe>
+
+                    <!-- Kat 2: Terminal Ortam & Maskeleme (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">2. Gürültü Maskeleme & Ambiyans (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Beyaz Gürültü (White Noise) Çadırı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Pembe Gürültü (Pink Noise) Spektrumu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kahverengi Gürültü (Brown Noise) Duvarı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Blue Noise (Yüksek Frekans Örtücü)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ortam Sesi Kesici (Phase Cancellation)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Siberpunk Sunucu Odası Uğultusu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Daktilo/Mekanik Klavye ASMR</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kuantum Bilgisayar Soğutma Fanı Sesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Derin Uzay (Deep Space) Vakumu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Terminal Veri Akışı Çatırtısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Wall Street HFT Server Farm Uğultusu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Su Altı (Sonar) Akustik Yalıtımı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tinnitus (Çınlama) Bastırıcı Filtre</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Dinamik Frekans Modülasyonu (DFM)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> 8-Bit Retro İşlemci Harmonikleri</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Düşük Geçiren (Low-Pass) Kalkan</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yüksek Geçiren (High-Pass) Keskinlik</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> White Noise Pitch Shifter</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Dikkat Dağıtıcı (Distraction) Yok Edici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Hiper-Klostrofobik Focus Modu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Rezonans Tınlatıcı (Resonator)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Ses Sahnesi (Soundstage) Daraltıcısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Bina İçi Trafik Uğultusu Maskeleme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Jeneratör/AC Hum Frekans İptali</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Saf Sinüs (Sine) Dalga Temizleyicisi</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 3: Algoritmik Geri Bildirimler (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">3. HFT & Piyasa Veri Sonifikasyonu (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Bip (Ping) ile CEX Likidite Tespiti</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Alış (Bid) Baskısında Bass Artışı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Satış (Ask) Baskısında Treble Çarpıklığı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> FVG Doldurulduğunda Analog Çan</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Flaş Çöküşte (Flash Crash) Siren Modu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Balina Alımında Düşük Frekans Patlaması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Order Flow Imbalance Tıkırtısı (Tick)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Volatilite Artışında Tempo Hızlanması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Likidasyon Şelalesi Şok Dalga Sesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> MACD Kesişim (Crossover) Harmonikleri</label>
+                            <label class="feature-checkbox"><input type="checkbox"> PnL +%5 Geçince Dopamin Çanı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> PnL -%5 Olunca Korku (Dissonance) Akoru</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Haber Sızıntısında (EDGAR) Distorsiyon</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem İnfaz Edildi (Executed) Mekanik Klik</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Hata/Revert Durumunda Glitch Sesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Fiyat İvmesi (Velocity) Perde Değişimi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Saniyedeki İşlem (TPS) Taraması Sesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> RSI Aşırı Alım Uyarı Tınısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> VIX Sıçramasında Sub-Bass Basıncı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Fonlama (Funding) Sayacı Tiktakları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Mempool Tıkanıklığında Sürtünme Sesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kâr-Al (Take Profit) Tetiklenme Sentezleyicisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Stop-Loss Patlamasında Cam Kırılma Efekti</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Yapay Zeka Karar (Prediction) Bipi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Açık İşlem (OI) Duvarı Çarpma Sesi</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 4: Gelişmiş Ses Motoru (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">4. Web Audio API Motor Komutları (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> JS Osilatör (Oscillator) Çekirdeği</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Biquad Filtre Devresi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Gain (Kazanç) Zarfı Sıkıştırması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Stereo Panner (Yanal Kaydırma)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Delay (Gecikme) Nodu Entegrasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Reverb (Yankı) Havuzu Oluşturucu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Convolver (Evrişim) Filtre Ağı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Analizör (Analyzer) Node Fast Fourier</label>
+                            <label class="feature-checkbox"><input type="checkbox"> LFO (Düşük Frekans) Modülasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sinüs (Sine) Dalga Üreteci</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kare (Square) Dalga Çarpıklığı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Testere (Sawtooth) Dalga Agresyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Üçgen (Triangle) Dalga Sentezleyici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Envelope Generator (ADSR) Eğrisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Bitcrusher (Lofi Degradasyon) Nodu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tremolo Pan Efekti Şiddeti</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Flanger Genlik Titreşimi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Dinamik Kompresör (Dynamic Compressor)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Çoklu Bant (Multiband) Ekolayzır</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Anti-Aliasing (Örtüşme Önleyici) Filtre</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ses Arabelleği (AudioBuffer) Ön Bellek</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kesme Frekansı (Cutoff) Otomasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Rezonans (Q Faktörü) Keskinleştirici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> DC Sapma (Offset) Düzeltici</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Odyo Bağlam (AudioContext) Örnekleme</label>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <button class="w-full neon-btn font-black text-[10px] py-3 tracking-[0.2em] uppercase cyber-text shrink-0" onclick="initAudio()">NÖRO-MOTORU ATEŞLE</button>
+            </div>
+
+            <!-- ORTA PANEL: SES JENERATÖRLERİ & GÖRSELLEŞTİRİCİ -->
+            <div class="glass-panel flex-grow flex flex-col p-4 border-white/10 bg-[#020202] overflow-hidden gap-4 relative">
+                
+                <div class="flex justify-between items-center border-b border-white/5 pb-2 shrink-0">
+                    <h2 class="text-white font-black text-xs tracking-widest uppercase cyber-text">⚡ JavaScript Audio Generator</h2>
+                    <div class="flex gap-2">
+                        <span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-[9px] px-2 py-1 rounded font-bold cyber-text">WEB AUDIO API</span>
                     </div>
                 </div>
 
-                <!-- Kişisel Çalma Listelerin -->
-                <div id="kisiselListelerKarti" class="glass-card p-6 md:p-8 hidden">
-                    <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
-                        <span class="text-xl">💿</span>
-                        <h3 class="text-sm font-black uppercase tracking-widest text-[#1DB954] drop-shadow-[0_0_10px_rgba(29,185,84,0.3)]">Senin Çalma Listelerin</h3>
+                <!-- Kontrol Panosu -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+                    
+                    <!-- White Noise Generatörü -->
+                    <div class="bg-black/60 border border-purple-500/30 p-4 rounded-xl flex flex-col justify-center relative overflow-hidden shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-white font-black text-xs uppercase tracking-widest cyber-text">Bilişsel İzolasyon (Gürültü)</span>
+                            <span class="text-[8px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">White/Pink Noise</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="toggleNoise('white')" id="btn-noise" class="flex-1 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/50 text-gray-300 font-bold py-2 rounded text-[10px] transition-all cyber-text uppercase tracking-widest">
+                                White Noise Başlat
+                            </button>
+                        </div>
                     </div>
-                    <div id="kisiselListelerContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Javascript ile dolacak -->
+
+                    <!-- Binaural Beats Generatörü -->
+                    <div class="bg-black/60 border border-white/10 p-4 rounded-xl flex flex-col justify-center">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-white font-black text-xs uppercase tracking-widest cyber-text">Odak Frekansı (Binaural)</span>
+                            <span class="text-[8px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">Beta (14Hz)</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="toggleBinaural()" id="btn-binaural" class="flex-1 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/50 text-gray-300 font-bold py-2 rounded text-[10px] transition-all cyber-text uppercase tracking-widest">
+                                Beta Dalgası Başlat
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sonifikasyon (Veri -> Ses) Paneli -->
+                <div class="bg-[#050507] border border-white/5 p-4 rounded-xl flex flex-col justify-center shrink-0">
+                    <div class="flex justify-between items-center mb-3 border-b border-white/5 pb-2">
+                        <span class="text-purple-400 font-black text-[10px] uppercase tracking-widest cyber-text">Piyasa Verisi Sonifikasyonu (Test)</span>
+                    </div>
+                    <p class="text-[9px] text-gray-500 mb-3 cyber-text">Bu butonlar, piyasada ekstrem bir olay olduğunda arka planda otomatik tetiklenecek olan Web Audio API analog ses sentezleyicilerini test etmenizi sağlar.</p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <button onclick="playSynth('high')" class="bg-green-500/10 hover:bg-green-500/30 border border-green-500/30 text-green-400 font-bold py-2 rounded text-[9px] transition-all cyber-text uppercase">
+                            Büyük Alım (Long)
+                        </button>
+                        <button onclick="playSynth('low')" class="bg-red-500/10 hover:bg-red-500/30 border border-red-500/30 text-red-400 font-bold py-2 rounded text-[9px] transition-all cyber-text uppercase">
+                            Satış Baskısı (Short)
+                        </button>
+                        <button onclick="playSynth('alert')" class="bg-yellow-500/10 hover:bg-yellow-500/30 border border-yellow-500/30 text-yellow-400 font-bold py-2 rounded text-[9px] transition-all cyber-text uppercase">
+                            Hata / Tasfiye Alarmı
+                        </button>
+                        <button onclick="playSynth('execution')" class="bg-blue-500/10 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 font-bold py-2 rounded text-[9px] transition-all cyber-text uppercase">
+                            İşlem İnfaz Edildi (Tık)
+                        </button>
                     </div>
                 </div>
 
-                <!-- Q-AI Standart Ambiyans Modları -->
-                <div class="glass-card p-6 md:p-8">
-                    <div class="flex items-center gap-3 mb-5 border-b border-white/5 pb-3">
-                        <span class="text-xl">📻</span>
-                        <h3 class="text-sm font-black uppercase tracking-widest text-gray-400">Terminal Frekansları</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <button onclick="kanalDegistir('37i9dQZF1DWWQRwui0ExPn', 'Lofi Chill - Sakin & Odaklanma')" class="track-card p-5 rounded-xl text-left cursor-pointer">
-                            <div class="text-3xl mb-3 drop-shadow-md">☕</div>
-                            <div class="font-black text-sm text-white tracking-wide">Lofi Chill</div>
-                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Derin Odaklanma</div>
-                        </button>
-                        
-                        <button onclick="kanalDegistir('37i9dQZF1DXdLEN7aqioJC', 'Synthwave - Siberpunk Ritimler')" class="track-card p-5 rounded-xl text-left cursor-pointer">
-                            <div class="text-3xl mb-3 drop-shadow-md">🌆</div>
-                            <div class="font-black text-sm text-white tracking-wide">Synthwave</div>
-                            <div class="text-[10px] text-[#00ffcc]/80 font-bold uppercase tracking-widest mt-1">Siberpunk Akışı</div>
-                        </button>
-                        
-                        <button onclick="kanalDegistir('37i9dQZF1DX76Wlfdnj7Bg', 'Bull Run Beats - Yüksek Enerji')" class="track-card p-5 rounded-xl text-left cursor-pointer">
-                            <div class="text-3xl mb-3 drop-shadow-md">🚀</div>
-                            <div class="font-black text-sm text-white tracking-wide">Bull Run Beats</div>
-                            <div class="text-[10px] text-[#1DB954]/80 font-bold uppercase tracking-widest mt-1">Yüksek Enerji</div>
-                        </button>
+                <!-- Ses Görselleştirici (EQ) -->
+                <div class="flex-grow bg-[#050507] border border-white/5 rounded-xl overflow-hidden flex flex-col justify-end p-4 pb-0 relative">
+                    <span class="absolute top-2 left-2 text-[8px] text-purple-500 font-bold uppercase tracking-widest cyber-text">Spektrum Analizörü</span>
+                    <div class="visualizer w-full" id="eq-container">
+                        <!-- Çubuklar JS ile yaratılacak -->
                     </div>
                 </div>
 
             </div>
 
-            <!-- Sağ Kolon: Hesap & Araçlar -->
-            <div class="space-y-6 md:space-y-8">
+            <!-- SAĞ PANEL: LOGLAR VE FREKANS VERİSİ -->
+            <div class="w-full lg:w-[320px] flex flex-col gap-3 shrink-0">
                 
-                <!-- Spotify Hesap Bağlantı Kartı -->
-                <div class="glass-card p-6 md:p-8">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-12 h-12 rounded-full bg-[#1DB954]/10 border border-[#1DB954]/30 flex items-center justify-center text-[#1DB954] shadow-[0_0_20px_rgba(29,185,84,0.15)] shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.54.659.3 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15.06 10.56 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                <div class="glass-panel p-4 flex flex-col border-white/10 bg-[rgba(139,92,246,0.02)] shrink-0">
+                    <h3 class="text-purple-400 font-black text-[9px] tracking-widest uppercase mb-3 cyber-text">Aktif Bağlantılar & Durum</h3>
+                    
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400 text-[9px] font-bold cyber-text">AudioContext Status</span>
+                            <span class="text-gray-500 text-[9px] font-black cyber-text" id="ctx-status">KAPALI</span>
                         </div>
-                        <div>
-                            <div class="text-sm font-black tracking-wide text-white">Spotify API Ağı</div>
-                            <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1" id="spotifyStatus">Yetki Bekleniyor</div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400 text-[9px] font-bold cyber-text">Aktif Osilatör Sayısı</span>
+                            <span class="text-white text-[10px] font-black cyber-text" id="osc-count">0</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400 text-[9px] font-bold cyber-text">Master Gain (Ses)</span>
+                            <span class="text-[#00ffcc] text-[10px] font-black cyber-text">25% (Güvenli)</span>
                         </div>
                     </div>
                     
-                    <a href="/spotify/giris" class="w-full spotify-btn font-black py-3.5 rounded-xl text-xs tracking-widest uppercase flex items-center justify-center gap-2">
-                        Bağlantıyı Yenile ➔
-                    </a>
+                    <div class="mt-4 p-2 bg-purple-500/10 border border-purple-500/30 rounded text-center">
+                        <span class="block text-purple-400 text-[8px] font-bold uppercase tracking-widest cyber-text mb-0.5">Uyarı</span>
+                        <span class="text-white font-bold text-[8px] cyber-text">Binaural frekanslar kulaklık kullanımını gerektirir.</span>
+                    </div>
                 </div>
 
-                <!-- Terminal Ses Efekti Kartı -->
-                <div class="glass-card p-6 md:p-8">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-b border-white/5 pb-3">Sistem Geri Bildirimi</h3>
-                    <p class="text-[11px] font-medium text-gray-500 mb-5 leading-relaxed">İşlem butonlarına basıldığında veya sinyal geldiğinde çalacak analog ses efekti motoru.</p>
+                <div class="glass-panel flex-grow flex flex-col border-white/10 overflow-hidden bg-[#030303]">
+                    <div class="px-3 py-2 border-b border-white/5 shrink-0 flex justify-between items-center bg-[#050505]">
+                        <h3 class="text-white font-black text-[9px] tracking-widest uppercase cyber-text">Olay Sonifikasyon Kayıtları</h3>
+                        <span class="text-purple-500 text-[8px] cyber-text animate-pulse">SESSİZ</span>
+                    </div>
                     
-                    <button onclick="sesCal('success')" class="beeper-btn w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                        <span class="text-lg">🔊</span> Analog Beeper Test
-                    </button>
+                    <div id="audio-logs" class="flex-grow overflow-y-auto p-2 flex flex-col gap-1 text-[8px] cyber-text text-gray-400">
+                        <span class="text-center opacity-50 my-5 uppercase tracking-widest">Motor başlatılmadı.</span>
+                    </div>
                 </div>
 
             </div>
-
         </div>
-
     </div>
 
-    <!-- JavaScript Kontrolleri -->
     <script>
-        // URL Parametre Kontrolü
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('spotify') === 'baglandi') {
-            document.getElementById('spotifyStatus').innerText = "BAĞLANTI ONAYLANDI ✓";
-            document.getElementById('spotifyStatus').classList.remove('text-gray-500');
-            document.getElementById('spotifyStatus').classList.add('text-[#1DB954]');
+        // Web Audio API Değişkenleri
+        let audioCtx;
+        let noiseNode = null;
+        let leftOsc = null;
+        let rightOsc = null;
+        let isNoisePlaying = false;
+        let isBinauralPlaying = false;
+        let activeOscillators = 0;
+
+        // Log Fonksiyonu
+        function logAudio(msg) {
+            const logBox = document.getElementById('audio-logs');
+            if(logBox.innerHTML.includes("Motor başlatılmadı")) logBox.innerHTML = '';
+            
+            const time = new Date().toISOString().substring(11,23);
+            const div = document.createElement('div');
+            div.className = `border-b border-white/5 pb-1 mb-1 text-purple-400`;
+            div.innerHTML = `[${time}] ${msg}`;
+            
+            logBox.prepend(div);
+            if(logBox.children.length > 15) logBox.removeChild(logBox.lastChild);
         }
 
-        // Spotify Çalma Listesi Değiştirici
-        function kanalDegistir(playlistId, title) {
-            const frame = document.getElementById('spotifyPlayer');
-            frame.src = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0`;
-            document.getElementById('activeTitle').innerText = title;
-            document.getElementById('currentStatus').innerText = "İstasyon Yüklendi 🟢";
-        }
-
-        // API Üzerinden Kişisel Listeleri Çekme
-        async function kisiselListeleriGetir() {
-            try {
-                const response = await fetch('/api/spotify/kendi_listelerim');
-                const data = await response.json();
-                
-                if (data.durum === 'basarili' && data.listeler.length > 0) {
-                    const kart = document.getElementById('kisiselListelerKarti');
-                    const container = document.getElementById('kisiselListelerContainer');
-                    
-                    kart.classList.remove('hidden'); 
-                    container.innerHTML = ''; 
-                    
-                    data.listeler.forEach(liste => {
-                        const btn = document.createElement('button');
-                        btn.className = 'track-card p-4 rounded-xl text-left cursor-pointer';
-                        btn.onclick = () => kanalDegistir(liste.id, liste.isim);
-                        btn.innerHTML = `
-                            <div class="text-2xl mb-2 drop-shadow-md">💿</div>
-                            <div class="font-black text-xs text-white truncate tracking-wide" title="${liste.isim}">${liste.isim}</div>
-                            <div class="text-[9px] text-[#1DB954] font-bold uppercase tracking-widest mt-1.5">Özel Liste</div>
-                        `;
-                        container.appendChild(btn);
-                    });
-                }
-            } catch (error) {
-                console.log("Kişisel listeler çekilemedi:", error);
+        // Sistemi Başlatma (Kullanıcı etkileşimi şarttır)
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                document.getElementById('ctx-status').innerText = "ÇALIŞIYOR";
+                document.getElementById('ctx-status').className = "text-[#00ffcc] text-[9px] font-black cyber-text";
+                logAudio("AudioContext Motoru Başlatıldı.");
+                createEQ();
+                animateEQ();
             }
         }
 
-        function sesCal(tur) {
-            let ctx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = ctx.createOscillator();
-            let gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            
-            // Analog bir terminal bip sesi frekansı
-            osc.frequency.value = 600;
-            osc.type = "sine";
-            
-            gain.gain.setValueAtTime(0.05, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
-            
-            osc.start();
-            osc.stop(ctx.currentTime + 0.2);
+        // White Noise Üreteci
+        function toggleNoise() {
+            initAudio();
+            const btn = document.getElementById('btn-noise');
+
+            if (isNoisePlaying) {
+                if(noiseNode) { noiseNode.stop(); noiseNode.disconnect(); noiseNode = null; }
+                isNoisePlaying = false;
+                btn.innerText = "White Noise Başlat";
+                btn.className = "flex-1 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/50 text-gray-300 font-bold py-2 rounded text-[10px] transition-all cyber-text uppercase tracking-widest";
+                activeOscillators--;
+                updateStats();
+                logAudio("İzolasyon (White Noise) Kapatıldı.");
+            } else {
+                const bufferSize = audioCtx.sampleRate * 2; // 2 saniyelik buffer
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1; // Saf gürültü
+                }
+                
+                noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                noiseNode.loop = true;
+                
+                // Çok yüksek olmasın diye Gain ekle ve LowPass filtrele
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0.05; // Sessiz
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 1000; // Kulak tırmalamasın
+
+                noiseNode.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                noiseNode.start();
+                isNoisePlaying = true;
+                
+                btn.innerText = "White Noise Kapat";
+                btn.className = "flex-1 bg-purple-500/20 border border-purple-500/50 text-purple-400 font-bold py-2 rounded text-[10px] transition-all cyber-text uppercase tracking-widest";
+                activeOscillators++;
+                updateStats();
+                logAudio("İzolasyon (White Noise) Aktif.");
+            }
         }
 
-        // Sayfa Yüklendiğinde Listeleri Çekmeye Çalış
-        window.onload = () => {
-            kisiselListeleriGetir();
-        };
+        // Binaural Beat Üreteci (Beta Odak: Sol 200Hz, Sağ 214Hz = 14Hz fark)
+        function toggleBinaural() {
+            initAudio();
+            const btn = document.getElementById('btn-binaural');
+
+            if (isBinauralPlaying) {
+                if(leftOsc) { leftOsc.stop(); leftOsc.disconnect(); }
+                if(rightOsc) { rightOsc.stop(); rightOsc.disconnect(); }
+                isBinauralPlaying = false;
+                activeOscillators -= 2;
+                
+                btn.innerText = "Beta Dalgası Başlat";
+                btn.className = "flex-1 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/50 text-gray-300 font-bold py-2 rounded text-[10px] transition-all cyber-text uppercase tracking-widest";
+                updateStats();
+                logAudio("Binaural Dalgası Durduruldu.");
+            } else {
+                const baseFreq = 200;
+                const beatFreq = 14; // Beta dalgası
+
+                const merger = audioCtx.createChannelMerger(2);
+                
+                leftOsc = audioCtx.createOscillator();
+                leftOsc.type = 'sine';
+                leftOsc.frequency.value = baseFreq;
+                
+                rightOsc = audioCtx.createOscillator();
+                rightOsc.type = 'sine';
+                rightOsc.frequency.value = baseFreq + beatFreq;
+
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0.1; // Rahatsız etmesin
+
+                leftOsc.connect(merger, 0, 0); // Sol kanal
+                rightOsc.connect(merger, 0, 1); // Sağ kanal
+                
+                merger.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                leftOsc.start();
+                rightOsc.start();
+                isBinauralPlaying = true;
+                activeOscillators += 2;
+
+                btn.innerText = "Beta Dalgası Kapat";
+                btn.className = "flex-1 bg-purple-500/20 border border-purple-500/50 text-purple-400 font-bold py-2 rounded text-[10px] transition-all cyber-text uppercase tracking-widest";
+                updateStats();
+                logAudio(`Binaural Aktif: L=${baseFreq}Hz, R=${baseFreq+beatFreq}Hz`);
+            }
+        }
+
+        // Analog Sentetik Uyarı Sesleri (Piyasa Olaylarını Temsil Eder)
+        function playSynth(type) {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+
+            if (type === 'high') { // Alım (Long) - Yukarı kayan frekans
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+                logAudio("Sonifikasyon: Yüksek Alım Baskısı Sinyali.");
+            } 
+            else if (type === 'low') { // Satış (Short) - Aşağı kayan frekans
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+                logAudio("Sonifikasyon: Sert Satış Şoku.");
+            }
+            else if (type === 'alert') { // Alarm - Distortion
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.setValueAtTime(300, now + 0.1);
+                osc.frequency.setValueAtTime(200, now + 0.2);
+                osc.frequency.setValueAtTime(300, now + 0.3);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+                logAudio("Sonifikasyon: Tasfiye (Liquidation) Alarmı!");
+            }
+            else if (type === 'execution') { // Tık (Click) - Mekanik infaz
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1000, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+                logAudio("Sonifikasyon: HFT İnfazı Tamamlandı.");
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('osc-count').innerText = activeOscillators;
+        }
+
+        // Sahte Görselleştirici (Gerçek AnalyserNode yormaması için CSS Animasyonu)
+        const eqContainer = document.getElementById('eq-container');
+        const eqBars = [];
+        
+        function createEQ() {
+            eqContainer.innerHTML = '';
+            for(let i=0; i<32; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'eq-bar';
+                bar.style.height = '2px';
+                eqContainer.appendChild(bar);
+                eqBars.push(bar);
+            }
+        }
+
+        function animateEQ() {
+            if(!audioCtx) return;
+            
+            // Gerçek FFT yerine performans için rastgele ama tutarlı dalgalanma
+            const isPlaying = isNoisePlaying || isBinauralPlaying;
+            const baseHeight = isPlaying ? 10 : 2;
+            const volatility = isPlaying ? 40 : 5;
+
+            eqBars.forEach((bar, index) => {
+                // Ortadaki çubuklar daha yüksek, yanlar daha düşük (Çan eğrisi)
+                const distance = Math.abs(16 - index);
+                const multiplier = 1 - (distance / 16);
+                
+                const height = baseHeight + (Math.random() * volatility * multiplier);
+                bar.style.height = `${height}px`;
+                
+                // Renk değişimi
+                if(height > 40) bar.style.backgroundColor = '#00ffcc';
+                else if(height > 25) bar.style.backgroundColor = '#a855f7';
+                else bar.style.backgroundColor = '#6b21a8';
+            });
+
+            requestAnimationFrame(animateEQ);
+        }
+        
+        // Boş çubukları oluştur (Motor başlamadan önce)
+        createEQ();
+
     </script>
 </body>
 </html>

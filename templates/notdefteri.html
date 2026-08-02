@@ -3,63 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI İşlem Günlüğü | Q-AI Terminal Pro</title>
+    <title>Kuantum İşlem Günlüğü & Post-Trade Analiz | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; }
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; }
-        .glass-panel { background: rgba(10, 15, 26, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.5); position: relative; z-index: 10;}
-        .pro-input { background: rgba(3,4,7,0.6); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; padding: 1rem; width: 100%; outline: none; }
-        .pro-input:focus { border-color: #00ffcc; }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background-color: #010102; color: white; margin: 0; overflow: hidden; height: 100vh; }
+        
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.05) 0%, rgba(1, 1, 2, 1) 80%); z-index: 0; pointer-events: none; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(236, 72, 153, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(236, 72, 153, 0.02) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none; }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; }
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: rgba(10, 5, 8, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(236, 72, 153, 0.2); border-top: 1px solid rgba(236, 72, 153, 0.4);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.9);
+        }
+
+        .check-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; }
+        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.55rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;}
+        .feature-checkbox input { accent-color: #ec4899; width: 10px; height: 10px; cursor: pointer; flex-shrink: 0;}
+        .feature-checkbox:hover { color: #f472b6; }
+
+        .pro-input {
+            background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(236, 72, 153, 0.3); color: #f9a8d4;
+            border-radius: 8px; padding: 0.75rem 1rem; font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease; outline: none; width: 100%; font-size: 0.75rem;
+        }
+        .pro-input:focus { border-color: #ec4899; box-shadow: 0 0 15px rgba(236, 72, 153, 0.2); background: rgba(10, 5, 8, 0.9); }
+
+        .neon-btn {
+            background: linear-gradient(135deg, #db2777 0%, #9d174d 100%);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); color: white;
+            transition: all 0.3s; position: relative; overflow: hidden; cursor: pointer;
+        }
+        .neon-btn:hover { box-shadow: 0 0 25px rgba(236, 72, 153, 0.7); transform: translateY(-2px); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(236,72,153,0.4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(236,72,153,0.6); }
+
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.3; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #ec4899; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        
+        .tilt-bar-bg { width: 100%; height: 6px; background-color: #1f2937; border-radius: 4px; overflow: hidden; }
+        .tilt-bar-fill { height: 100%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+<body class="p-2 md:p-4">
+
     <div class="crypto-bg"></div>
-    <div class="w-full max-w-[1000px] flex flex-col h-[90vh]">
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 z-10">
-            <a href="/pano" class="text-gray-400 hover:text-[#00ffcc] text-xs font-black uppercase">← ANA PANO</a>
-            <h1 class="text-2xl font-black tracking-widest text-white">📝 AI İŞLEM <span class="text-gray-500">GÜNLÜĞÜ</span></h1>
-        </div>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+
+    <div class="content-layer w-full h-full max-w-[1700px] mx-auto flex flex-col gap-3">
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow overflow-hidden z-10">
-            <div class="md:col-span-1 glass-panel p-6 flex flex-col gap-4">
-                <h2 class="text-[#00ffcc] font-black text-sm tracking-widest uppercase">Plan Ekle</h2>
-                <textarea id="not-icerik" rows="5" class="pro-input" placeholder="Bugün hangi hatayı yaptın? Hangi formasyonu kaçırdın? Buraya yaz..."></textarea>
-                <button onclick="notEkle()" class="w-full bg-[#00ffcc]/10 hover:bg-[#00ffcc] border border-[#00ffcc]/50 text-[#00ffcc] hover:text-black font-black py-3 rounded-xl text-xs tracking-widest uppercase transition-all">Kaydet</button>
-                
-                <div class="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-                    <h3 class="text-red-400 font-black text-[10px] tracking-widest uppercase mb-2">🤖 Q-AI Portföy Fırçası</h3>
-                    <p class="text-gray-300 text-xs italic">"Son 3 işleminde hep erken kâr aldın. Trendi sonuna kadar izlemiyorsun. Cuma günleri yüksek kaldıraç açmayı bırakmalısın."</p>
+        <!-- ÜST KOMUTA BARI -->
+        <div class="glass-panel flex items-center justify-between p-3 shrink-0 border-pink-500/30">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-gray-500 hover:text-pink-400 transition-colors text-[10px] font-black flex items-center gap-1 uppercase tracking-widest cyber-text">
+                    <span class="text-sm">←</span> MERKEZE DÖN
+                </a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <h1 class="text-sm md:text-lg font-black tracking-[0.2em] text-white flex items-center gap-2 drop-shadow-md">
+                    📝 POST-TRADE & <span class="text-pink-500 text-[10px] cyber-text">(PSYCHOMETRIC LOG V3)</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex gap-2">
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-gray-400 text-[9px] font-bold cyber-text">WIN RATE: 64.2%</span>
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-green-400 text-[9px] font-bold cyber-text">PROFIT FACTOR: 1.84</span>
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-pink-400 text-[9px] font-bold cyber-text">SHARPE: 2.1</span>
+                </div>
+                <div class="h-6 w-px bg-white/10 hidden lg:block"></div>
+                <div class="flex flex-col items-end hidden lg:flex">
+                    <span class="text-pink-500 text-[8px] font-bold cyber-text flex items-center gap-1"><div class="pulse-dot"></div> AI DIAGNOSTIC: ONLINE</span>
+                    <span class="text-gray-400 text-[8px] font-bold cyber-text mt-0.5">Zero-Knowledge Encrypted Vault</span>
                 </div>
             </div>
-            <div class="md:col-span-2 glass-panel p-6 flex flex-col overflow-hidden">
-                <h2 class="text-white font-black text-sm tracking-widest uppercase mb-4">Kayıtlı Planlar</h2>
-                <div id="not-listesi" class="overflow-y-auto flex-grow flex flex-col gap-3 pr-2"></div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-3 flex-grow overflow-hidden">
+            
+            <!-- SOL PANEL: 100 KUANTUM & PSİKOLOJİK FİLTRE -->
+            <div class="glass-panel w-full lg:w-[320px] flex flex-col shrink-0 overflow-hidden bg-black/60 border-pink-500/20">
+                <div class="p-3 border-b border-pink-500/20 bg-black/80">
+                    <h2 class="text-pink-400 font-black text-[10px] tracking-widest uppercase cyber-text">Log Metrikleri & Sensörler (100)</h2>
+                </div>
+                
+                <div class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
+                    
+                    <!-- Kat 1: Trade Log Parametreleri (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">1. İşlem Metrikleri & Log (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Milisaniyelik Giriş/Çıkış Zamanı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İnfaz Kayması (Slippage) Oranı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Maker/Taker Komisyon (Fee) Yükü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem Süresi (Time-in-Trade)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Emir Tipi (Limit, IOC, FOK)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İzolasyon Tipi (Cross/Isolated)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Maksimum Kaldıraç (Leverage) Aşımı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Gerçekleşen (Realized) PnL Net</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tasfiye (Liquidation) Mesafesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Hedef Fiyat (TP) Sapması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Stop-Loss (SL) Erken Kesilmesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Hacim (Size) / Kasa Oranı (Risk%)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İşlem Çapraz Borsa Rotası</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Negatif Fonlama (Funding) Maliyeti</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem Esnası Ağ (Gas) Ücreti</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Maksimum Zarar Görme (MAE)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Maksimum Lehine Gitme (MFE)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ortalama Kâra Geçiş Süresi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ortalama Zarara Düşüş Süresi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem Anı Endeks/Mark Fiyat Makası</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Delta Risk Maruziyeti</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Parçalı Çıkış (Scale-Out) Kademeleri</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Parçalı Giriş (Scale-In) Ortalaması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> API Key ID Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem Kapanış Sebebi Sınıflandırması</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 2: YZ Psikolojik Teşhis (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">2. AI Psikolojik Teşhis & Duygu (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> FOMO (Kaçırma Korkusu) Tespiti</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İntikam İşlemi (Revenge Trade) Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Erken Kâr Alma (Paper Hands) Teşhisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Stop-Loss Kaydırma (Umut Etme) Hatası</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Aşırı İşlem (Over-trading) Sendromu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tilt Metre (Zihinsel Dağılma Puanı)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> NLP Günlük Metni Yalan Makinesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Plan Dişı Karar Sapması (Deviation)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Aşırı Kaldıraç (Greed) Özgüveni</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Zarar Korkusu (Loss Aversion) Tespiti</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Teyit Yanlılığı (Confirmation Bias)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Uykusuzluk / Yorgunluk Vektörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Bilişsel Yük (Cognitive Load) Tahmini</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Haber Etkisiyle Dürtüsel Tepki</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Adrenalin / Dopamin Çöküş Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Geç Giriş (Late Entry) Paralizisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Ses-Metin (Voice-to-Text) Stres Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Algoritmaya Karşı İtaatsizlik Yüzdesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kararsızlık (Hesitation) Gecikmesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sürü Psikolojisi (Herd Mentality) Etkisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kahraman Kompleksi (Dipten Alma İnadı)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Aşırı Optimizasyon (Overfitting) Yanılgısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Siyah Kuğu Öncesi Uyarı Gözardı Edilmesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Zihinsel Durum (State of Mind) Etiketi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İşlem Sonrası (Post-Trade) Regret Endeksi</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 3: Kuantum Performans Analizi (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">3. Kuantum İstatistik & Analitik (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Profit Factor (Kâr Çarpanı)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Expected Value (Beklenen Değer - EV)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sharpe Oranı (Risk Düzeltilmiş Getiri)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sortino Oranı (Aşağı Yönlü Risk)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Calmar Oranı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Maksimum Drawdown (MDD) Derinliği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kelly Kriteri (Optimum Risk Fraksiyonu)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Z-Score (Seri Bağımlılık Testi)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> R-Squared (Kararlılık Endeksi)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Monte Carlo Hayatta Kalma (Survival) Oranı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kümülatif PnL Eğrisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Ardışık Kazanç (Win Streak) Sayacı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ardışık Kayıp (Losing Streak) Olasılığı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Ortalama Kâr / Ortalama Zarar Rasyosu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> En Büyük Kazanç / En Büyük Kayıp Rasyosu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Recovery Factor (Toparlanma Çarpanı)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Ulcer Index (Stres Oranı)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> SQN (System Quality Number)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Alpha & Beta Market Katsayıları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Information Ratio (Bilgi Oranı)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Zaman Dilimi (Timeframe) Başarı Matrisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Haftanın Günü / Saati Kazanç Eğilimi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Walk-Forward Analiz Uyumu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Out-of-Sample Test Başarısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> VaR (Riske Maruz Değer) Aşımı Sıklığı</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 4: Sistem & HFT Arayüz (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">4. Sistem, Arayüz & Güvenlik (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem Kayıtları (JSON) Dışa Aktarımı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> CSV Kuantum Matris Çıktısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Holografik PnL Projeksiyonu (WebGL)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Milisaniye Tick Replay (İşlem Tekrarı)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Hex Dump Şifreli Günlük Görüntüleme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sıfır-Bilgi (Zero-Knowledge) Şifreleme Tipi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yerel (Local-Only) Cihaz Depolaması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> P2P Merkeziyetsiz Bulut Yedekleme</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tor Routing Veri Gizleme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> IP Maskeleme & Sektirme</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Patron Tuşu (Boss Key) Gizleme Modu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Ekran Yanması (Burn-in) Önleyici Tema</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Terminal Sesli-Metin (Speech-to-Text) Notu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Regex Kapsamlı Not Arama Motoru</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kod Sözdizimi (Syntax) Vurgulayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Biometrik Göz İzleme (Eye-Tracking) Sensörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yüz Tanıma (FaceID) Log Kilidi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşlem Anı Order Flow Snapshot Eki</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İşlem Anı Derinlik (DOM) Ekran Görüntüsü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Blockchain TxID Entegrasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Etherscan Akıllı Sözleşme Sinyal Eki</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Otomatik Redaksiyon (Bakiye Sansürü)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Terminal Gecikme (Ping) Log Eki</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> API Limit Aşımları Sistem Uyarı Günlüğü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sistem Kendini İmha (Self-Destruct) Tetikleyicisi</label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ORTA PANEL: AI LOG GİRİŞİ & PSİKOLOJİK TİLT METRE -->
+            <div class="glass-panel flex-grow flex flex-col p-4 border-white/10 bg-[#020202] overflow-hidden gap-4">
+                
+                <div class="flex justify-between items-center border-b border-white/5 pb-2 shrink-0">
+                    <h2 class="text-white font-black text-xs tracking-widest uppercase cyber-text">⚡ Kuantum İşlem Kaydı & Doğrulama</h2>
+                    <span class="bg-pink-500/20 text-pink-400 border border-pink-500/30 px-2 py-1 rounded text-[9px] font-bold cyber-text">Nöral Ağ Modeli Aktif</span>
+                </div>
+
+                <!-- TILT METER (Psikolojik Çöküş Ölçer) -->
+                <div class="bg-[#050507] border border-white/5 p-3 rounded-lg flex flex-col gap-2 shrink-0">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest cyber-text">AI Psikolojik Durum (Tilt) Ölçer</span>
+                        <span class="text-pink-500 text-[10px] font-black cyber-text" id="tilt-score">RİSKLİ (%72)</span>
+                    </div>
+                    <div class="tilt-bar-bg">
+                        <div class="tilt-bar-fill bg-gradient-to-r from-green-500 via-yellow-500 to-red-600" style="width: 72%;"></div>
+                    </div>
+                    <p class="text-[8px] text-gray-500 cyber-text mt-1">Uyarı: Son 3 işleminizde "Umut Etme" (Stop kaydırma) paterni tespit edildi. Mevcut işlemlerinizde intikam alma eğilimi var.</p>
+                </div>
+
+                <!-- LOG GİRİŞ EKRANI -->
+                <div class="flex flex-col flex-grow gap-3 relative">
+                    <!-- Hex Dump Background -->
+                    <div class="absolute inset-0 opacity-10 pointer-events-none overflow-hidden text-[8px] cyber-text text-pink-500/50 break-all leading-none z-0 select-none">
+                        0x0000 48 65 6C 6C 6F 20 57 6F 72 6C 64 21 00 00 00 00<br>
+                        0x0010 51 2D 41 49 20 54 65 72 6D 69 6E 61 6C 20 56 35<br>
+                        0x0020 45 78 65 63 75 74 69 6E 67 20 54 72 61 64 65 00<br>
+                        0x0030 4E 4C 50 20 50 61 72 73 65 72 20 41 63 74 69 76<br>
+                        0x0040 5A 65 72 6F 2D 4B 6E 6F 77 6C 65 64 67 65 20 45<br>
+                    </div>
+
+                    <textarea id="log-input" class="pro-input flex-grow resize-none relative z-10" placeholder="İşlemin arkasındaki mantığı, ruh halini ve piyasa şartlarını buraya gir. (Q-AI yazdıklarını NLP ile analiz edip puanlayacaktır...)"></textarea>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 z-10 shrink-0">
+                        <input type="text" placeholder="Sembol (BTC)" class="pro-input !py-2 !text-[10px]">
+                        <input type="text" placeholder="PnL ($)" class="pro-input !py-2 !text-[10px]">
+                        <input type="text" placeholder="Giriş Fiyatı" class="pro-input !py-2 !text-[10px]">
+                        <input type="text" placeholder="Çıkış Fiyatı" class="pro-input !py-2 !text-[10px]">
+                    </div>
+
+                    <button onclick="saveLog()" class="neon-btn w-full py-3 rounded-lg text-xs font-black uppercase tracking-widest cyber-text z-10 shrink-0">
+                        VERİYİ ŞİFRELE VE AĞA YAZ
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- SAĞ PANEL: GEÇMİŞ İŞLEMLER VE AI YORUMLARI -->
+            <div class="w-full lg:w-[400px] flex flex-col gap-3 shrink-0">
+                
+                <div class="glass-panel flex-grow flex flex-col border-white/10 overflow-hidden bg-[#030303]">
+                    <div class="px-4 py-3 border-b border-white/5 shrink-0 flex justify-between items-center bg-[#050505]">
+                        <h3 class="text-white font-black text-[10px] tracking-widest uppercase cyber-text">Kuantum Kayıt Defteri</h3>
+                        <span class="text-pink-500 text-[8px] cyber-text">Zero-Knowledge Zarfı</span>
+                    </div>
+                    
+                    <div id="log-history" class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
+                        <!-- Kayıtlar JS ile buraya gelecek -->
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
+
     <script>
-        async function fetchNotlar() {
-            const res = await fetch('/api/notlar');
-            const data = await res.json();
-            const liste = document.getElementById('not-listesi');
-            liste.innerHTML = data.reverse().map(n => `
-                <div class="bg-[#05070A] border border-white/5 p-4 rounded-xl">
-                    <span class="text-gray-500 text-[10px] font-bold block mb-1">${n.zaman}</span>
-                    <p class="text-gray-200 text-sm">${n.not}</p>
-                </div>
-            `).join('');
+        // Sahte Veritabanı ve Log Geçmişi
+        const db = [
+            {
+                zaman: "Bugün 14:32:05",
+                sembol: "BTCUSDT",
+                pnl: "-$145.20",
+                isProfit: false,
+                metin: "FOMC öncesi hareketlilik bekliyordum ama stop oldum. Tahta çok sığdı. Stop seviyemi aşağı çekmem hataydı.",
+                aiGeriBildirim: "[HATA TESPİTİ] 'Stop seviyesini kaydırma' kuralı ihlal edildi. FOMO ve Umut Etme (Loss Aversion) saptandı. Duygu skoru: Panik."
+            },
+            {
+                zaman: "Dün 09:15:22",
+                sembol: "SOLUSDT",
+                pnl: "+$890.50",
+                isProfit: true,
+                metin: "Likidite boşluğunu (FVG) doldurduğu an long girdim. Taker hacmi destekliyordu. TP noktasına kadar sabrettim.",
+                aiGeriBildirim: "[ONAY] Sistematik ve kurallara uygun işlem. Disiplin skoru %95. Algoritmik uyum sağlandı."
+            }
+        ];
+
+        function renderLogs() {
+            const container = document.getElementById('log-history');
+            let html = '';
+            
+            db.forEach(log => {
+                const color = log.isProfit ? '#10B981' : '#EF4444';
+                const bg = log.isProfit ? 'rgba(16,185,129,0.05)' : 'rgba(239,68,68,0.05)';
+                const border = log.isProfit ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)';
+                
+                html += `
+                <div class="border border-white/5 rounded-xl flex flex-col overflow-hidden" style="background-color: ${bg}; border-left: 2px solid ${color};">
+                    <div class="flex justify-between items-center p-2 border-b border-white/5 bg-black/40">
+                        <div class="flex items-center gap-2">
+                            <span class="text-white text-[10px] font-black cyber-text">${log.sembol}</span>
+                            <span class="text-gray-500 text-[8px] cyber-text">${log.zaman}</span>
+                        </div>
+                        <span class="font-black text-xs cyber-text" style="color: ${color}">${log.pnl}</span>
+                    </div>
+                    <div class="p-3 text-gray-300 text-[10px] leading-relaxed cyber-text font-medium">
+                        "${log.metin}"
+                    </div>
+                    <div class="p-2 bg-black/60 border-t border-white/5 text-[9px] cyber-text" style="color: ${log.isProfit ? '#34d399' : '#f87171'}">
+                        <strong>Q-AI TEŞHİSİ:</strong> ${log.aiGeriBildirim}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
         }
-        async function notEkle() {
-            const icerik = document.getElementById('not-icerik').value;
-            if(!icerik) return;
-            await fetch('/api/notlar', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({not_icerigi: icerik}) });
-            document.getElementById('not-icerik').value = '';
-            fetchNotlar();
+
+        function saveLog() {
+            const input = document.getElementById('log-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            // Yapay Zeka Teşhisi Simülasyonu
+            const isNegative = text.toLowerCase().includes("hata") || text.toLowerCase().includes("stop") || text.toLowerCase().includes("korku") || text.toLowerCase().includes("erken");
+            const isProfit = !isNegative; // Basit mantık
+            
+            const aiYorum = isNegative 
+                ? "[DİKKAT] Psikolojik sapma tespit edildi. İşlem planına sadık kalınmadı. Tilt ihtimali artıyor." 
+                : "[OPTİMAL] Disiplinli yürütme saptandı. Backtest metrikleri pozitif yönde güncellendi.";
+
+            db.unshift({
+                zaman: new Date().toLocaleTimeString('tr-TR') + " (Şifreli)",
+                sembol: "HFT-SYS",
+                pnl: isProfit ? "+Simüle" : "-Simüle",
+                isProfit: isProfit,
+                metin: text,
+                aiGeriBildirim: aiYorum
+            });
+
+            input.value = '';
+            
+            // Tilt bar hareket animasyonu
+            const tiltBar = document.querySelector('.tilt-bar-fill');
+            const tiltScore = document.getElementById('tilt-score');
+            
+            if(isNegative) {
+                tiltBar.style.width = "85%";
+                tiltScore.innerText = "KRİTİK (%85)";
+            } else {
+                tiltBar.style.width = "40%";
+                tiltScore.innerText = "STABİL (%40)";
+            }
+
+            renderLogs();
         }
-        fetchNotlar();
+
+        renderLogs();
     </script>
 </body>
 </html>

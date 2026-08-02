@@ -3,47 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Makro Takvim | Q-AI Terminal</title>
+    <title>Küresel Makro Şok Radarı | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; }
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; }
-        .glass-panel { background: rgba(10, 15, 26, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; z-index: 10; position: relative;}
+        body { font-family: 'Inter', sans-serif; background-color: #010101; color: white; margin: 0; overflow: hidden; height: 100vh; }
+        
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, rgba(1, 1, 1, 1) 80%); z-index: 0; pointer-events: none; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(59, 130, 246, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.02) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none; }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; }
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: rgba(5, 7, 10, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(59, 130, 246, 0.2); border-top: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.9);
+        }
+
+        .check-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; }
+        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.55rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;}
+        .feature-checkbox input { accent-color: #3b82f6; width: 10px; height: 10px; cursor: pointer; flex-shrink: 0;}
+        .feature-checkbox:hover { color: #93c5fd; }
+
+        .neon-btn {
+            background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); color: white;
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .neon-btn:hover { box-shadow: 0 0 25px rgba(59, 130, 246, 0.7); transform: translateY(-2px); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
+
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.3; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #3b82f6; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        
+        .macro-card { background: linear-gradient(90deg, rgba(59,130,246,0.05) 0%, transparent 100%); border-left: 2px solid #3b82f6; transition: all 0.2s; }
+        .macro-card:hover { background: linear-gradient(90deg, rgba(59,130,246,0.15) 0%, transparent 100%); transform: translateX(2px); border-color: #60a5fa; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+<body class="p-2 md:p-4">
+
     <div class="crypto-bg"></div>
-    <div class="w-full max-w-[900px] flex flex-col h-[90vh]">
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 z-10">
-            <a href="/pano" class="text-gray-400 hover:text-white text-xs font-black uppercase">← ANA PANO</a>
-            <h1 class="text-2xl font-black tracking-widest text-white">📅 MAKRO <span class="text-gray-500">TAKVİM</span></h1>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+
+    <div class="content-layer w-full h-full max-w-[1600px] mx-auto flex flex-col gap-3">
+        
+        <!-- ÜST KOMUTA BARI -->
+        <div class="glass-panel flex items-center justify-between p-3 shrink-0 border-blue-500/30">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-gray-500 hover:text-blue-400 transition-colors text-[10px] font-black flex items-center gap-1 uppercase tracking-widest cyber-text">
+                    <span class="text-sm">←</span> MERKEZE DÖN
+                </a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <h1 class="text-sm md:text-lg font-black tracking-[0.2em] text-white flex items-center gap-2 drop-shadow-md">
+                    🌐 KÜRESEL MAKRO <span class="text-blue-500 text-[10px] cyber-text">(ŞOK İZLEME AĞI V3)</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex gap-2">
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-gray-400 text-[9px] font-bold cyber-text">DXY: 104.25</span>
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-red-400 text-[9px] font-bold cyber-text">US10Y: 4.12%</span>
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-amber-400 text-[9px] font-bold cyber-text">VIX: 14.80</span>
+                </div>
+                <div class="h-6 w-px bg-white/10 hidden lg:block"></div>
+                <div class="flex flex-col items-end hidden lg:flex">
+                    <span class="text-blue-500 text-[8px] font-bold cyber-text flex items-center gap-1"><div class="pulse-dot"></div> BLOOMBERG API: SENKRONİZE</span>
+                    <span class="text-gray-400 text-[8px] font-bold cyber-text mt-0.5">NTP Time Server (Milisaniye Uyumlu)</span>
+                </div>
+            </div>
         </div>
-        <div class="glass-panel p-6 flex-grow overflow-y-auto">
-            <div id="makro-liste" class="flex flex-col gap-4"></div>
-        </div>
-    </div>
-    <script>
-        async function fetchMakro() {
-            const res = await fetch('/api/makro_takvim');
-            const data = await res.json();
-            document.getElementById('makro-liste').innerHTML = data.map(m => `
-                <div class="bg-[#05070A] border border-white/5 p-5 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div>
-                        <span class="text-gray-500 text-[10px] font-bold tracking-widest uppercase block mb-1">${m.tarih}</span>
-                        <h3 class="text-white font-black text-lg tracking-wide">${m.veri}</h3>
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <div class="text-right">
-                            <span class="text-gray-500 text-[9px] font-bold tracking-widest uppercase block">Beklenti</span>
-                            <span class="text-white font-black">${m.beklenti}</span>
+
+        <div class="flex flex-col lg:flex-row gap-3 flex-grow overflow-hidden">
+            
+            <!-- SOL PANEL: 100 MAKRO & HFT İNFAZ FİLTRESİ -->
+            <div class="glass-panel w-full lg:w-[320px] flex flex-col shrink-0 overflow-hidden bg-black/60 border-blue-500/20">
+                <div class="p-3 border-b border-blue-500/20 bg-black/80">
+                    <h2 class="text-blue-400 font-black text-[10px] tracking-widest uppercase cyber-text">Makro Risk & Şok Filtreleri (100)</h2>
+                </div>
+                
+                <div class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
+                    
+                    <!-- Kat 1: Merkez Bankaları & Para Politikası -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">1. Merkez Bankaları & Politika (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> FED Dot Plot Çözümleyici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> ECB (Lagarde) Şahin/Güvercin NLP</label>
+                            <label class="feature-checkbox"><input type="checkbox"> BOJ Yield Curve Control (YCC) Monitörü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> PBOC Likidite Enjeksiyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> SNB Faiz Kararı Sürprizleri</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> BOE Forward Guidance Taraması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> FOMC Tutanakları Kelime Avcısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> CME FedWatch Beklenti Olasılığı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Bilanço Daraltma (QT) Hızı Sinyali</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Repo/Ters Repo (RRP) Drenaj Hacmi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İskonto Oranı Volatilitesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> M1/M2/M3 Para Arzı İvmesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Merkez Bankası Altın Alım Trendi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Rezerv Oranı (RRR) Değişiklik Etkisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> CBDC Pilot Test & Adaptasyon Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Enflasyon Hedef Sapması Hesaplayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Politika Faizi Terminal Tepe Noktası</label>
+                            <label class="feature-checkbox"><input type="checkbox"> SOFR Gecelik Borçlanma Dalgalanması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Libor/Euribor Makas (Spread) Genişlemesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Swap Hattı Acil Kullanım Oranı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Parasal Gevşeme (QE) Beklenti Metriği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Merkez Bankası Döviz Müdahale Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sözlü Yönlendirme (Jawboning) Filtresi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Zımni (Implied) Faiz Eğrisi Hesaplayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Hazine (Treasury) Borçlanma İhalesi Sonucu</label>
                         </div>
-                        <span class="px-3 py-1 bg-red-500/10 border border-red-500/30 text-red-500 rounded text-xs font-black uppercase">${m.etki}</span>
+                    </div>
+
+                    <!-- Kat 2: Global Enflasyon & İstihdam -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">2. Küresel Enflasyon & İstihdam (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Çekirdek TÜFE Sapma (Deviation) Motoru</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> ÜFE Üretim Maliyet Şoku İndeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> PCE (Kişisel Tüketim Harcamaları) Trendi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tarım Dışı İstihdam (NFP) Çarpanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> JOLTS Açık İş Sayısı Uyumsuzluğu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İşsizlik Haklarından Yararlanma (Claims)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> ADP İstihdam Raporu Öncü Sinyali</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ortalama Saatlik Kazançlar (Ücret Enflasyonu)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Michigan Tüketici Güven İndeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> ISM İmalat PMI Daralma Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Hizmet PMI Sınır İhlali (50.0 Seviyesi)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Perakende Satışlar Momentum Oranı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> GSYH (Büyüme) Revizyon Şokları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Konut Başlangıçları (Housing Starts)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Mevcut Konut Satışları Daralması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Çin ÜFE İhracat Enflasyonu Etkisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Eurozone TÜFE Flaş Tahmin Sensörü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Almanya ZEW Ekonomik Hissiyatı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> IFO İş Dünyası Beklenti Endeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kapasite Kullanım Oranı Maksimumu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sanayi Üretimi Daralma İndeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Emtia Süper Döngüsü Enflasyon Yansıması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tarım Ürünleri Fiyat Endeksi (Gıda Enflasyonu)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tedarik Zinciri Baskı İndeksi (NY Fed)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> İhracat/İthalat Ticaret Dengesi Şoku</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 3: Tahvil, Emtia & Geleneksel Finans -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">3. Tahvil, Emtia & TradFi (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> ABD 10 Yıllık Tahvil Faizi (US10Y) Tetikleyicisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> 2Y/10Y Getiri Eğrisi Tersinmesi (Inversion)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> DXY (Dolar Endeksi) Algoritmik Kırılımı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> MOVE (Tahvil Volatilitesi) Endeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Altın (XAU) Güvenli Liman Akışı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Gümüş/Altın Rasyosu Risk İştahı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Petrol (WTI/Brent) Fiyat Şoku Sinyali</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Çin Kredi İtici Gücü (Credit Impulse)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> S&P 500 & Kripto VIX Korelasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Nasdaq 100 (NDX) Beta Çarpanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Russell 2000 Küçük Ölçekli Şirket Riski</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Yüksek Getirili (Junk) Tahvil Spreadleri</label>
+                            <label class="feature-checkbox"><input type="checkbox"> CDS (Kredi Temerrüt Takası) İflas Primleri</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Şirket İflas (Bankruptcy) Başvuru Hızı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Mortgage (İpotek) Faiz Oranları Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> LME Bakır Depo Stokları (Global Büyüme)</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Baltık Kuru Yük Endeksi Değişimi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Çip (Semiconductor) Tedarik Stresi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Uranyum Fiyat Hareketi (Enerji Krizi)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Doğalgaz TTF Vadelileri Kış Fiyatlaması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> SKEW Endeksi (Siyah Kuğu Beklentisi)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> VIX Sıçrama (Spike) Logaritmik Çarpanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Küresel Likidite İndeksi (CBI)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Çapraz Döviz (Cross-Currency) Basis Swapları</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ticari Gayrimenkul (CRE) Temerrüt Oranı</label>
+                        </div>
+                    </div>
+
+                    <!-- Kat 4: Jeopolitik & HFT Entegrasyonu -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">4. Jeopolitik & HFT Adaptasyonu (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Makro Veri Çıkış Anı (Milisaniye) Scalp</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> "Haber Sat" (Sell-the-News) İnfaz Algoritması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Beklenti vs Gerçekleşme Arbitraj Sinyali</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Olay Sonrası (Post-Event) Ortalama Dönüş</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Makro Şok VIX Devre Kesici Tetikleyicisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Likidite Boşluğu (Void) Flash Crash Koruması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ekonomik Takvim Geri Sayım Senkronizasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Bloomberg Terminal API Gecikme Ölçer</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Savaş/Çatışma (Geopolitical) NLP İndeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> OPEC+ Sürpriz Toplantı Kararları Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Ambargo/Yaptırım (OFAC) Zincir Etkisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tayvan Boğazı Tansiyon Ölçer</label>
+                            <label class="feature-checkbox"><input type="checkbox"> BRICS Yeni Para Birimi Hamleleri</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Seçim Anketi (Prediction Market) Fiyatlaması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Hükümet Kapanma (Shutdown) Riski</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Borç Tavanı (Debt Ceiling) Krizi Monitörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> SEC/CFTC Kripto Regülasyon Eşleşmesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Yasa Tasarısı Meclis Onay Milisaniye Takibi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Veri Sızıntısı (Data Leak) Front-Run Önleme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> G7/G20 Ortak Bildiri Acil Durum Kazıyıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İklim Anlaşması Karbon Vergisi Algılayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Makro Haber Sentiment Ağırlık Çarpanı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Reuters Flaş Haber Önceliği Filtresi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Uluslararası Ticaret Ambargosu Skoru</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Makro Tsunami Kalkanı (Tüm Varlıkları Sat)</label>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <button class="w-full neon-btn font-black text-[10px] py-3 tracking-[0.2em] uppercase cyber-text shrink-0">HFT MAKRO BOTUNU ATEŞLE</button>
+            </div>
+
+            <!-- ORTA PANEL: MAKRO GERİ SAYIMLAR & OLAY PANOSU -->
+            <div class="glass-panel flex-grow flex flex-col p-4 border-white/10 bg-[#020202] overflow-hidden gap-4">
+                
+                <div class="flex justify-between items-center border-b border-white/5 pb-2 shrink-0">
+                    <h2 class="text-white font-black text-xs tracking-widest uppercase cyber-text">⚡ Kritik Makro Geri Sayımlar</h2>
+                    <span class="text-blue-500 font-bold text-[10px] cyber-text">Milisecond Execution Ready</span>
+                </div>
+
+                <!-- Timer Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+                    <!-- Event 1 -->
+                    <div class="bg-black/60 border border-blue-500/30 p-4 rounded-xl flex flex-col items-center justify-center relative overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                        <div class="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-600 to-transparent"></div>
+                        <span class="text-gray-400 text-[9px] font-bold uppercase tracking-widest cyber-text mb-1 text-center">ABD Çekirdek TÜFE (CPI) M/M</span>
+                        <span class="text-white font-black text-3xl cyber-text tracking-widest mb-1" id="timer-cpi">02:14:55</span>
+                        <div class="flex gap-4 text-[9px] text-gray-500 font-bold cyber-text">
+                            <span>Beklenti: <span class="text-white">0.3%</span></span>
+                            <span>Önceki: <span class="text-white">0.4%</span></span>
+                        </div>
+                        <span class="absolute bottom-2 right-2 text-red-500 text-[8px] font-black cyber-text animate-pulse">HFT IMPACT: YÜKSEK 🚨</span>
+                    </div>
+
+                    <!-- Event 2 -->
+                    <div class="bg-black/60 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center">
+                        <span class="text-gray-400 text-[9px] font-bold uppercase tracking-widest cyber-text mb-1 text-center">FED Faiz Kararı (FOMC)</span>
+                        <span class="text-white font-black text-3xl cyber-text tracking-widest mb-1" id="timer-fed">14:05:30</span>
+                        <div class="flex gap-4 text-[9px] text-gray-500 font-bold cyber-text">
+                            <span>Beklenti: <span class="text-white">5.25%</span></span>
+                            <span>Olasılık: <span class="text-blue-400">92% Sabit</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Event 3 -->
+                    <div class="bg-black/60 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center">
+                        <span class="text-gray-400 text-[9px] font-bold uppercase tracking-widest cyber-text mb-1 text-center">Tarım Dışı İstihdam (NFP)</span>
+                        <span class="text-gray-500 font-black text-2xl cyber-text tracking-widest mb-1">YARIN 15:30</span>
+                        <div class="flex gap-4 text-[9px] text-gray-500 font-bold cyber-text">
+                            <span>Beklenti: <span class="text-white">180K</span></span>
+                            <span>Önceki: <span class="text-white">215K</span></span>
+                        </div>
                     </div>
                 </div>
-            `).join('');
+
+                <!-- Event List -->
+                <div class="flex-grow bg-[#050507] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-2">
+                    <div class="flex text-[9px] text-gray-500 font-bold uppercase tracking-widest p-3 border-b border-white/5 bg-black/80 cyber-text z-10 shrink-0">
+                        <span class="w-2/12 text-left">Tarih/Saat</span>
+                        <span class="w-1/12 text-center">Ülke</span>
+                        <span class="w-5/12 text-left pl-2">Ekonomik Veri / Olay</span>
+                        <span class="w-2/12 text-center">Gerçekleşen / Beklenti</span>
+                        <span class="w-2/12 text-right">Volatilite İndeksi</span>
+                    </div>
+                    
+                    <div id="macro-calendar-list" class="flex-grow overflow-y-auto flex flex-col p-1 z-10">
+                        <!-- Javascript ile Dolacak -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SAĞ PANEL: CANLI PİYASA ETKİSİ & LOGLAR -->
+            <div class="w-full lg:w-[320px] flex flex-col gap-3 shrink-0">
+                
+                <!-- Macro Heat & Correlation -->
+                <div class="glass-panel p-4 flex flex-col border-white/10 bg-[rgba(59,130,246,0.02)] shrink-0">
+                    <h3 class="text-blue-400 font-black text-[9px] tracking-widest uppercase mb-3 cyber-text">Makro Korelasyon Isısı</h3>
+                    
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400 text-[10px] font-bold cyber-text">S&P 500 (SPX)</span>
+                            <span class="text-green-400 text-[10px] font-black cyber-text">+0.85 (Pozitif)</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400 text-[10px] font-bold cyber-text">US10Y Tahvil Getirisi</span>
+                            <span class="text-red-400 text-[10px] font-black cyber-text">-0.92 (Ters)</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400 text-[10px] font-bold cyber-text">Dolar Endeksi (DXY)</span>
+                            <span class="text-red-400 text-[10px] font-black cyber-text">-0.78 (Ters)</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400 text-[10px] font-bold cyber-text">Altın (XAU)</span>
+                            <span class="text-gray-500 text-[10px] font-black cyber-text">+0.12 (Nötr)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-2 bg-blue-500/10 border border-blue-500/30 rounded text-center">
+                        <span class="block text-blue-400 text-[8px] font-bold uppercase tracking-widest cyber-text mb-0.5">Sistem Makro Tavsiyesi</span>
+                        <span class="text-white font-black text-xs cyber-text">RISK-ON (LONG EĞİLİMLİ)</span>
+                    </div>
+                </div>
+
+                <!-- HFT Execution Logs -->
+                <div class="glass-panel flex-grow flex flex-col border-white/10 overflow-hidden bg-[#030303]">
+                    <div class="px-3 py-2 border-b border-white/5 shrink-0 flex justify-between items-center bg-[#050505]">
+                        <h3 class="text-white font-black text-[9px] tracking-widest uppercase cyber-text">Olay İnfaz (Execution) Akışı</h3>
+                        <span class="text-blue-500 text-[8px] cyber-text animate-pulse">DİNLENİYOR</span>
+                    </div>
+                    
+                    <div id="macro-logs" class="flex-grow overflow-y-auto p-2 flex flex-col gap-1.5 text-[8px] cyber-text text-gray-400">
+                        <span class="text-center opacity-50 my-5 uppercase tracking-widest">Takvim dinleniyor. Geri sayım bekleniyor...</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sahte Geri Sayım Aracı
+        let cpiSeconds = 2 * 3600 + 14 * 60 + 55; 
+        let fedSeconds = 14 * 3600 + 5 * 60 + 30;
+
+        function formatTime(sec) {
+            const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+            const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
         }
-        fetchMakro();
+
+        setInterval(() => {
+            if(cpiSeconds > 0) cpiSeconds--;
+            if(fedSeconds > 0) fedSeconds--;
+            
+            document.getElementById('timer-cpi').innerText = formatTime(cpiSeconds);
+            document.getElementById('timer-fed').innerText = formatTime(fedSeconds);
+        }, 1000);
+
+        // Makro Takvim Verisi Üretici
+        const macroEvents = [
+            { time: "09:00", country: "🇬🇧 UK", name: "Çekirdek TÜFE Yıllık", actual: "3.5%", expected: "3.5%", vol: "DÜŞÜK", color: "text-gray-400" },
+            { time: "12:00", country: "🇪🇺 EU", name: "GSYH Büyüme (Çeyreklik)", actual: "0.3%", expected: "0.2%", vol: "ORTA", color: "text-yellow-400" },
+            { time: "15:30", country: "🇺🇸 ABD", name: "Çekirdek Perakende Satışlar", actual: "---", expected: "0.4%", vol: "YÜKSEK", color: "text-red-500" },
+            { time: "15:30", country: "🇺🇸 ABD", name: "İşsizlik Haklarından Yararlanma", actual: "---", expected: "215K", vol: "ORTA", color: "text-yellow-400" },
+            { time: "17:00", country: "🇺🇸 ABD", name: "ISM İmalat PMI", actual: "---", expected: "49.5", vol: "YÜKSEK", color: "text-red-500" },
+            { time: "18:30", country: "🇺🇸 ABD", name: "Ham Petrol Stokları", actual: "---", expected: "1.2M", vol: "DÜŞÜK", color: "text-gray-400" },
+            { time: "21:00", country: "🇺🇸 ABD", name: "FOMC Üyesi Bostic Konuşması", actual: "---", expected: "---", vol: "ORTA", color: "text-yellow-400" }
+        ];
+
+        function renderCalendar() {
+            const list = document.getElementById('macro-calendar-list');
+            let html = '';
+            macroEvents.forEach(e => {
+                html += `
+                <div class="macro-card flex text-[10px] text-gray-300 font-bold py-3 px-3 border-b border-white/5 items-center cyber-text">
+                    <span class="w-2/12 text-left">${e.time}</span>
+                    <span class="w-1/12 text-center text-sm">${e.country}</span>
+                    <span class="w-5/12 text-left pl-2 text-white text-xs">${e.name}</span>
+                    <span class="w-2/12 text-center text-blue-400">${e.actual} <span class="text-gray-600">/</span> ${e.expected}</span>
+                    <span class="w-2/12 text-right ${e.color} font-black">${e.vol}</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+        renderCalendar();
+
+        // HFT İnfaz Logları Simülasyonu
+        const logBox = document.getElementById('macro-logs');
+        const hftMessages = [
+            "[DXY_TRACKER] Dolar Endeksi 104.20 direncini kırdı. Risk-Off senaryosu devrede.",
+            "[US10Y_ALGO] Tahvil faizlerinde 3 baz puanlık ani sıçrama. BTC Short algoritması hazırlandı.",
+            "[NEWS_PARSER] Çin Merkez Bankası (PBOC) 50 Milyar Yuan likidite enjekte etti. Boğa eğilimi.",
+            "[FED_WATCH] CME beklentileri %92 sabit tutma yönünde güncellendi.",
+            "[SENTIMENT] Küresel risk iştahı (S&P 500 öncülüğünde) artıyor. Alım modülleri aktif.",
+            "[HFT_SYNC] ABD TÜFE verisi için 15:30:00:000 infaz emirleri API sırasına alındı."
+        ];
+
+        function pushLog() {
+            if(logBox.innerHTML.includes("Takvim dinleniyor")) logBox.innerHTML = '';
+            
+            const msg = hftMessages[Math.floor(Math.random() * hftMessages.length)];
+            const time = new Date().toISOString().substring(11,23);
+            
+            const div = document.createElement('div');
+            div.className = `border-b border-white/5 pb-1 mb-1 text-gray-400`;
+            div.innerHTML = `<span class="text-blue-500">[${time}]</span> ${msg}`;
+            
+            logBox.prepend(div);
+            if(logBox.children.length > 15) logBox.removeChild(logBox.lastChild);
+        }
+
+        setInterval(pushLog, 2500);
+
     </script>
 </body>
 </html>

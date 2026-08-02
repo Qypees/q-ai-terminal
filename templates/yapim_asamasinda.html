@@ -3,116 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ sayfa }} | Q-AI Terminal Pro</title>
+    <title>{{ sayfa }} | Qypees Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; overflow: hidden; margin: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: #010102; color: white; overflow: hidden; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; }
         
-        /* Zemin Katmanları */
-        .crypto-bg {
-            position: fixed; inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%);
-            z-index: 0; pointer-events: none;
-        }
-        .dot-grid {
-            position: fixed; inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-            background-size: 24px 24px;
-            z-index: 1; pointer-events: none;
-        }
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(0, 255, 204, 0.05) 0%, rgba(1, 1, 2, 1) 85%); z-index: 0; pointer-events: none; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 255, 204, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 204, 0.02) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
 
-        .content-layer { position: relative; z-index: 10; }
+        .content-layer { position: relative; z-index: 10; width: 100%; display: flex; justify-content: center; }
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
 
-        /* Neomorphic Glass Panel */
         .glass-panel {
-            background: rgba(10, 15, 26, 0.45);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.02);
+            background: rgba(5, 7, 10, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 255, 204, 0.2); border-top: 1px solid rgba(0, 255, 204, 0.4);
+            border-radius: 16px; box-shadow: 0 20px 50px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,255,204,0.1);
         }
 
         /* Siber-Çekirdek Spinner Animasyonu */
-        .core-spinner {
-            position: relative;
-            width: 80px; height: 80px;
-            margin: 0 auto 2rem auto;
-        }
-        .core-spinner .ring1, .core-spinner .ring2 {
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2px solid transparent;
-        }
-        .core-spinner .ring1 {
-            border-top-color: #00ffcc;
-            border-bottom-color: #00ffcc;
-            animation: spin1 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-            box-shadow: 0 0 20px rgba(0,255,204,0.3);
-        }
-        .core-spinner .ring2 {
-            border-left-color: rgba(255,255,255,0.3);
-            border-right-color: rgba(255,255,255,0.3);
-            animation: spin2 2s linear infinite;
-            inset: 10px;
-        }
+        .core-spinner { position: relative; width: 70px; height: 70px; margin: 0 auto 1.5rem auto; }
+        .core-spinner .ring1, .core-spinner .ring2 { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
+        .core-spinner .ring1 { border-top-color: #00ffcc; border-bottom-color: #00ffcc; animation: spin1 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; box-shadow: 0 0 20px rgba(0,255,204,0.4); }
+        .core-spinner .ring2 { border-left-color: rgba(255,255,255,0.3); border-right-color: rgba(255,255,255,0.3); animation: spin2 2s linear infinite; inset: 8px; }
         @keyframes spin1 { 100% { transform: rotate(360deg); } }
         @keyframes spin2 { 100% { transform: rotate(-360deg); } }
 
-        /* Neon Geri Dön Butonu */
         .neon-outline-btn {
-            background: rgba(0, 255, 204, 0.05);
-            border: 1px solid rgba(0, 255, 204, 0.3);
-            color: #00ffcc;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(0, 255, 204, 0.05); border: 1px solid rgba(0, 255, 204, 0.4); color: #00ffcc;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 15px rgba(0,255,204,0.1);
         }
-        .neon-outline-btn:hover {
-            background: rgba(0, 255, 204, 0.15);
-            box-shadow: 0 10px 25px -5px rgba(0, 255, 204, 0.3);
-            transform: translateY(-2px);
-        }
+        .neon-outline-btn:hover { background: rgba(0, 255, 204, 0.15); box-shadow: 0 10px 25px -5px rgba(0, 255, 204, 0.4); transform: translateY(-2px); }
 
-        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); filter: blur(5px); }
-            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-        }
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.35; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #00ffcc; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 md:p-6">
+<body class="p-4 md:p-6">
 
     <div class="crypto-bg"></div>
-    <div class="dot-grid"></div>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
 
-    <div class="content-layer w-full max-w-lg text-center fade-in">
+    <div class="content-layer max-w-lg">
         
-        <div class="glass-panel p-10 md:p-12 relative overflow-hidden">
-            <!-- Arka Plan Hafif Parlaması -->
+        <div class="glass-panel p-8 md:p-10 relative overflow-hidden text-center">
+            
             <div class="absolute top-0 right-0 w-32 h-32 bg-[#00ffcc]/10 blur-3xl rounded-full pointer-events-none"></div>
 
             <!-- Siber-Çekirdek Yükleyici -->
             <div class="core-spinner">
                 <div class="ring1"></div>
                 <div class="ring2"></div>
-                <div class="absolute inset-0 flex items-center justify-center text-xs font-black text-[#00ffcc] tracking-widest">%99</div>
+                <div class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-[#00ffcc] tracking-widest cyber-text">DEV</div>
             </div>
             
-            <h2 class="text-xl md:text-2xl font-black tracking-widest text-white mb-2 uppercase drop-shadow-md">
+            <h2 class="text-lg md:text-xl font-black tracking-[0.2em] text-white mb-1 uppercase cyber-text">
                 <span class="text-[#00ffcc]">{{ sayfa }}</span> MODÜLÜ
             </h2>
-            <h3 class="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6">Sistem Entegrasyonu Sürüyor</h3>
+            <h3 class="text-[9px] font-black tracking-[0.3em] text-gray-500 uppercase mb-5 cyber-text flex items-center justify-center gap-1.5">
+                <div class="pulse-dot"></div> FastAPI Entegrasyonu Sürüyor
+            </h3>
             
-            <div class="bg-[#030407]/60 border border-white/5 rounded-xl p-4 mb-8">
-                <p class="text-gray-400 text-xs leading-relaxed font-medium">
-                    Algoritmik çekirdek adaptasyonu ve veri bağlantıları sağlanıyor. Bu modül çok yakında Q-AI ağına tam senkronize olarak eklenecektir.
+            <div class="bg-black/60 border border-white/5 rounded-xl p-4 mb-6 text-left">
+                <span class="text-[8px] text-[#00ffcc] font-bold uppercase tracking-widest cyber-text block mb-1">[QYPEES TERMINAL KERNEL]</span>
+                <p class="text-gray-300 text-xs leading-relaxed cyber-text font-medium">
+                    "{{ sayfa }}" modülü için gerekli Python FastAPI endpoint'leri, asenkron WebSocket soketleri ve HTML şablonları laboratuvarda derleniyor. Çok yakında tam kapasite yayında olacak.
                 </p>
             </div>
             
-            <a href="/" class="neon-outline-btn block w-full py-4 rounded-xl font-black text-xs uppercase tracking-[0.15em]">
-                RADARDAN ÇIK VE ANA PANOYA DÖN ➔
+            <a href="/" class="neon-outline-btn block w-full py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] cyber-text">
+                KOMUTA MERKEZİNE DÖN ➔
             </a>
         </div>
 

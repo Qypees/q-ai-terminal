@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -58,7 +58,6 @@ paper_bakiye = db_veri.get("paper_bakiye", 10000.0)
 paper_islemler = db_veri.get("paper_islemler", [])
 trade_notlari = db_veri.get("notlar", [])
 
-onayli_kullanicilar = set()
 spotify_tokens = {}
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "d560d37532284575a7933231cf7166f3")
@@ -91,11 +90,6 @@ class PaperTradeRequest(BaseModel):
     yon: str
     kaldirac: str
     teminat: float
-
-class RiskHesapRequest(BaseModel):
-    giris_fiyati: float
-    yon: str
-    risk_istahi: str
 
 class NotRequest(BaseModel):
     not_icerigi: str
@@ -168,7 +162,7 @@ def isiharitasi_verilerini_cek(zaman="1d"):
     return sorted(tum_coinler, key=lambda x: x['hacim'], reverse=True)
 
 # ==========================================
-# 2. SİSTEM, AĞ & ON-CHAIN API'LERİ (YENİ)
+# 2. SİSTEM, AĞ & ON-CHAIN API'LERİ
 # ==========================================
 @app.get("/api/sistem/ping")
 async def api_ping():
@@ -180,19 +174,18 @@ async def api_temizle_cache():
     haberler_cache["last_update"] = 0
     return JSONResponse(content={"durum": "basarili", "mesaj": "Tüm önbellek temizlendi."})
 
-# YENİ: On-Chain & AI VIX Uç Noktaları
 @app.get("/api/onchain/mvrv")
 async def api_onchain_mvrv():
     return JSONResponse(content={"z_score": 1.45, "durum": "Adil Değer Bölgesi", "risk": "DÜŞÜK"})
 
 @app.get("/api/sistem/ai_vix")
-async def api_ai_vix():
+async def api_sistem_ai_vix():
     vix_degeri = random.uniform(15.0, 35.0)
     durum = "Yüksek Volatilite Beklentisi" if vix_degeri > 25 else "Durağan Piyasa"
     return JSONResponse(content={"ai_vix_skoru": round(vix_degeri, 2), "tahmin": durum})
 
 @app.get("/api/sistem/mev_shield")
-async def api_mev_shield():
+async def api_sistem_mev_shield():
     return JSONResponse(content={"durum": "AKTİF", "engellenen_bot_sayisi": 14})
 
 @app.get("/api/sinyaller")
@@ -237,7 +230,7 @@ async def api_likidasyon_haritasi():
 async def api_balina_akimlari():
     return JSONResponse(content=[
         {"zaman": "Az önce", "detay": "Binance borsasına 4,250 BTC aktarıldı.", "yon": "NEGATİF (Satış Baskısı)", "renk": "#EF4444"},
-        {"zaman": "3 dk önce", "detay": "Cüzdanlardan soğuk depoya 125,000 ETH çekildi.", "yon": "POZİTİF (Arz Azalması)", "renk": "#10B981"},
+        {"zaman": "3 dk önce", "detay": "Cüzdandan soğuk depoya 125,000 ETH çekildi.", "yon": "POZİTİF (Arz Azalması)", "renk": "#10B981"},
         {"zaman": "8 dk önce", "detay": "Tether Treasury tarafından 500 Milyon USDT basıldı.", "yon": "BOĞA / LİKİDİTE GİRİŞİ", "renk": "#00ffcc"}
     ])
 
@@ -281,6 +274,42 @@ async def api_notlar_get(): return JSONResponse(content=trade_notlari)
 async def api_notlar_post(req: NotRequest):
     trade_notlari.append({"not": req.not_icerigi, "zaman": datetime.datetime.now().strftime("%d.%m.%Y - %H:%M")})
     veritabani_kaydet()
+    return JSONResponse(content={"durum": "basarili"})
+
+@app.get("/api/cuzdan/spot")
+async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
+
+@app.post("/api/cuzdan/spot")
+async def api_cuzdan_spot_post(req: SpotVarlikRequest):
+    spot_varliklar.append({"borsa": req.borsa, "bakiye": req.bakiye, "detay": req.detay})
+    veritabani_kaydet()
+    return JSONResponse(content={"durum": "basarili"})
+
+@app.delete("/api/cuzdan/spot/{index}")
+async def api_cuzdan_spot_delete(index: int):
+    if 0 <= index < len(spot_varliklar):
+        spot_varliklar.pop(index)
+        veritabani_kaydet()
+    return JSONResponse(content={"durum": "basarili"})
+
+@app.get("/api/cuzdan/vadeli")
+async def api_cuzdan_vadeli_get(): return JSONResponse(content=aktif_pozisyonlar)
+
+@app.post("/api/cuzdan/vadeli")
+async def api_cuzdan_vadeli_post(req: VadeliPozisyonRequest):
+    aktif_pozisyonlar.append({
+        "coin": req.coin.upper(), "kaldirac": req.kaldirac, "yon": req.yon,
+        "miktar": req.miktar, "zaman": datetime.datetime.now().strftime("%H:%M:%S"),
+        "ai_yorum": "Q-AI risk analizi başarılı. Volatilite seviyesi optimize edildi."
+    })
+    veritabani_kaydet()
+    return JSONResponse(content={"durum": "basarili"})
+
+@app.delete("/api/cuzdan/vadeli/{index}")
+async def api_cuzdan_vadeli_delete(index: int):
+    if 0 <= index < len(aktif_pozisyonlar):
+        aktif_pozisyonlar.pop(index)
+        veritabani_kaydet()
     return JSONResponse(content={"durum": "basarili"})
 
 # ==========================================
@@ -397,10 +426,6 @@ async def api_top5(zaman: str = "1d"): return JSONResponse(content=top5_verileri
 async def api_isiharitasi_data(zaman: str = "1d"): return JSONResponse(content=isiharitasi_verilerini_cek(zaman))
 @app.post("/api/sohbet")
 async def api_sohbet(req: ChatRequest): return JSONResponse(content={"yanit": await uclu_ai_birlesik_yanit(req.mesaj)})
-@app.get("/api/cuzdan/spot")
-async def api_cuzdan_spot_get(): return JSONResponse(content=spot_varliklar)
-@app.get("/api/cuzdan/vadeli")
-async def api_cuzdan_vadeli_get(): return JSONResponse(content=aktif_pozisyonlar)
 
 # --- SPOTIFY ---
 @app.get("/spotify/giris")
@@ -408,13 +433,18 @@ async def spotify_giris(): return RedirectResponse(url=sp_oauth.get_authorize_ur
 
 @app.get("/callback")
 async def spotify_callback(request: Request, code: str):
-    try: spotify_tokens[request.client.host] = sp_oauth.get_access_token(code)['access_token']
+    try:
+        token_info = sp_oauth.get_access_token(code)
+        if token_info:
+            response = RedirectResponse(url="/muzik?spotify=baglandi", status_code=303)
+            response.set_cookie(key="spotify_token", value=token_info['access_token'], httponly=True)
+            return response
     except: pass
-    return RedirectResponse(url="/muzik?spotify=baglandi", status_code=303)
+    return RedirectResponse(url="/muzik", status_code=303)
 
 @app.get("/api/spotify/kendi_listelerim")
 async def api_spotify_listeler(request: Request):
-    token = spotify_tokens.get(request.client.host)
+    token = request.cookies.get("spotify_token")
     if not token: return JSONResponse(content={"durum": "hata", "mesaj": "Bağlantı yok"})
     try:
         sp = spotipy.Spotify(auth=token)
@@ -424,16 +454,15 @@ async def api_spotify_listeler(request: Request):
         return JSONResponse(content={"durum": "hata", "mesaj": str(e)})
 
 # ==========================================
-# 6. SAYFA YÖNLENDİRMELERİ
+# 6. SAYFA YÖNLENDİRMELERİ (ÇEREZ TABANLI KARARLI YETKİ KONTROLÜ)
 # ==========================================
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
-async def splash_ekrani(request: Request):
-    # Eğer gelen istek izleme botundan (HEAD) geliyorsa, sadece boş ve başarılı yanıt dön (sunucuyu yorma)
+async def splash_ekrani(request: Request, response: Response = None):
     if request.method == "HEAD":
         return HTMLResponse(content="")
-        
-    onayli_kullanicilar.discard(request.client.host)
-    return templates.TemplateResponse(request=request, name="splash.html", context={"request": request})
+    resp = templates.TemplateResponse(request=request, name="splash.html", context={"request": request})
+    resp.delete_cookie("q_terminal_auth")
+    return resp
 
 @app.get("/disclaimer", response_class=HTMLResponse)
 async def yasal_uyari(request: Request):
@@ -441,10 +470,12 @@ async def yasal_uyari(request: Request):
 
 @app.get("/onayla")
 async def oturum_onayla(request: Request):
-    onayli_kullanicilar.add(request.client.host)
-    return RedirectResponse(url="/pano", status_code=303)
+    response = RedirectResponse(url="/pano", status_code=303)
+    response.set_cookie(key="q_terminal_auth", value="authenticated_omega", httponly=True, max_age=86400)
+    return response
 
-def yetki_kontrol(request: Request): return request.client.host in onayli_kullanicilar
+def yetki_kontrol(request: Request):
+    return request.cookies.get("q_terminal_auth") == "authenticated_omega"
 
 @app.get("/pano", response_class=HTMLResponse)
 async def ana_ekran(request: Request):

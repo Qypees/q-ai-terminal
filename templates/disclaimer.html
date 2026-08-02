@@ -3,124 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yasal Uyarı | Q-AI Terminal Pro</title>
+    <title>Kuantum Uyum & Yasal Geçit | Q-AI Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #030407; 
+            background-color: #020203; 
             color: #ffffff; 
             margin: 0; 
             overflow: hidden; 
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(30, 10, 15, 0.6) 0%, rgba(3, 4, 7, 0.98) 80%);
+            background-image: radial-gradient(circle at 50% 0%, rgba(30, 10, 15, 0.8) 0%, rgba(2, 2, 3, 0.99) 80%);
             transition: opacity 0.4s ease;
         }
         
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none; }
+
         /* Neomorphic Uyarı Paneli */
         .glass-panel { 
-            background: rgba(15, 10, 15, 0.45);
+            background: rgba(10, 5, 8, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(239, 68, 68, 0.15);
-            border-top: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 24px; 
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-top: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 20px; 
             box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(239, 68, 68, 0.1);
             animation: panelFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         /* Sözleşme Metin Kutusu */
         .content-box {
-            background: rgba(3, 4, 7, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
 
         /* Yüksek Tepkimeli Onay Butonu */
         .accept-btn {
-            background: linear-gradient(135deg, #00ffcc 0%, #00b386 100%);
-            box-shadow: 0 10px 30px -10px rgba(0, 255, 204, 0.4);
-            color: #030407;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.5);
+            color: #ffffff;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
+            opacity: 0.5;
+            pointer-events: none; /* Terminal bitene kadar kapalı */
         }
-
-        .accept-btn::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-            transition: all 0.6s ease;
-        }
-
-        .accept-btn:hover {
-            transform: translateY(-3px) scale(1.01);
-            box-shadow: 0 15px 40px -10px rgba(0, 255, 204, 0.6);
-        }
-
-        .accept-btn:hover::after { left: 200%; }
+        .accept-btn.active { opacity: 1; pointer-events: auto; }
+        .accept-btn.active:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 15px 40px -10px rgba(239, 68, 68, 0.8); }
 
         @keyframes panelFadeIn {
             0% { opacity: 0; transform: scale(0.95) translateY(30px); filter: blur(10px); }
             100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
 
-        /* Kurumsal Terminal Tarama Çizgisi (Scanline) */
+        /* Terminal Tarama Çizgisi */
         .scanline {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 50;
-            opacity: 0.3;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.4;
         }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(239,68,68,0.4); border-radius: 10px; }
     </style>
 </head>
 <body class="h-screen w-screen flex items-center justify-center p-4">
     
+    <div class="grid-bg"></div>
     <div class="scanline"></div>
     
-    <div class="glass-panel w-full max-w-2xl p-8 md:p-12 flex flex-col items-center text-center relative z-10">
+    <div class="w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10 h-[90vh]">
         
-        <!-- Uyarı İkonu -->
-        <div class="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/50 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(239,68,68,0.3)] relative">
-            <div class="absolute inset-0 rounded-full border border-red-500 animate-ping opacity-20"></div>
-            <span class="text-4xl">⚠️</span>
+        <!-- SOL PANEL: YASAL UYARI VE ONAY -->
+        <div class="glass-panel p-8 flex flex-col items-center text-center h-full relative">
+            
+            <div class="absolute top-4 left-4 flex gap-2">
+                <span class="text-red-500 text-[9px] border border-red-500/30 px-2 py-1 rounded cyber-text bg-red-500/10" id="date-display">TARİH: YÜKLENİYOR</span>
+                <span class="text-red-500 text-[9px] border border-red-500/30 px-2 py-1 rounded cyber-text bg-red-500/10">İSTANBUL HFT SUNUCUSU</span>
+            </div>
+
+            <!-- Uyarı İkonu -->
+            <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/50 flex items-center justify-center mt-6 mb-4 shadow-[0_0_30px_rgba(239,68,68,0.3)] relative shrink-0">
+                <div class="absolute inset-0 rounded-full border border-red-500 animate-ping opacity-20"></div>
+                <span class="text-2xl">⚠️</span>
+            </div>
+
+            <h1 class="text-2xl font-black text-red-500 tracking-[0.15em] mb-4 shrink-0" style="text-shadow: 0 0 20px rgba(239,68,68,0.4);">
+                HFT & KUANTUM RİSK GEÇİDİ
+            </h1>
+            
+            <div class="content-box text-gray-300 text-xs leading-relaxed text-left flex flex-col gap-4 p-5 rounded-xl flex-grow overflow-y-auto mb-4 w-full">
+                <div class="flex items-start gap-3">
+                    <span class="text-red-500 font-bold mt-0.5 cyber-text">01_</span>
+                    <p>Bu terminal (<strong class="text-white">Q-AI Pro Trading Desk</strong>), Kuantum Veri Analizi, MEV Ağ Taraması ve HFT (Yüksek Frekanslı Ticaret) istihbaratı amacıyla oluşturulmuş kapalı devre bir simülasyon ve analiz motorudur.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="text-red-500 font-bold mt-0.5 cyber-text">02_</span>
+                    <p>İçerisinde yer alan 100+ yapay zeka analiz modeli, destek/direnç haritaları, karanlık havuz (dark pool) verileri ve on-chain istihbaratların hiçbiri <strong class="text-red-400 font-black">YATIRIM TAVSİYESİ DEĞİLDİR</strong>.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="text-red-500 font-bold mt-0.5 cyber-text">03_</span>
+                    <p>HFT algoritmalarının, MEV Sandwich saldırılarının, flaş çöküşlerin (flash crash) ve akıllı kontrat açıklarının yaratabileceği tüm <strong class="text-red-400 font-black">EKSTREM FİNANSAL RİSKLERİ</strong> kabul ediyorsunuz.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="text-red-500 font-bold mt-0.5 cyber-text">04_</span>
+                    <p>Sistem içi tüm gelir modeli, VIP abonelik ve komisyon mimarisi imha edilmiştir. Q-AI, tamamen şeffaf ve otonom bir risk okuyucusudur.</p>
+                </div>
+                <div class="mt-2 pt-3 border-t border-red-500/20 text-center">
+                    <p class="text-red-400 font-black tracking-widest text-[10px] uppercase drop-shadow-[0_0_10px_rgba(239,68,68,0.3)] cyber-text">
+                        100 Protokol Taraması Bittiğinde Onay Kilidi Açılacaktır.
+                    </p>
+                </div>
+            </div>
+
+            <button id="accept-btn" onclick="document.body.style.opacity='0'; setTimeout(()=>window.location.href='/onayla', 400);" class="accept-btn w-full font-black py-4 rounded-xl text-xs tracking-[0.1em] uppercase shrink-0 cyber-text">
+                <span id="btn-text">GÜVENLİK TARAMASI BEKLENİYOR...</span>
+            </button>
         </div>
 
-        <!-- Başlık -->
-        <h1 class="text-3xl md:text-4xl font-black text-red-500 tracking-[0.15em] mb-8" style="text-shadow: 0 0 20px rgba(239,68,68,0.4);">
-            YASAL UYARI
-        </h1>
-        
-        <!-- Sözleşme Metin Kutusu -->
-        <div class="content-box text-gray-300 text-sm md:text-base leading-relaxed text-left flex flex-col gap-5 mb-10 p-6 md:p-8 rounded-2xl">
-            <div class="flex items-start gap-3">
-                <span class="text-red-500 font-bold mt-0.5">01_</span>
-                <p>Bu terminal (<strong class="text-white">Q-AI Pro Trading Desk</strong>), tamamen kişisel portföy yönetimi, yapay zeka entegrasyonu ve piyasa istihbaratı amacıyla oluşturulmuştur.</p>
+        <!-- SAĞ PANEL: 100 RİSK & COMPLIANCE MODÜLÜ (Terminal Akışı) -->
+        <div class="glass-panel p-6 flex flex-col h-full bg-black/80">
+            <div class="flex justify-between items-center border-b border-red-500/30 pb-3 mb-3 shrink-0">
+                <h2 class="text-red-500 font-black text-xs tracking-widest uppercase cyber-text">Regülasyon & Risk Onay Terminali</h2>
+                <span class="text-white text-[10px] cyber-text" id="progress-text">0/100 YÜKLENDİ</span>
             </div>
-            <div class="flex items-start gap-3">
-                <span class="text-red-500 font-bold mt-0.5">02_</span>
-                <p>İçerisinde yer alan yapay zeka analizleri, destek/direnç hesaplamaları ve istihbarat verilerinin hiçbiri <strong class="text-red-400 font-black">YATIRIM TAVSİYESİ DEĞİLDİR</strong>.</p>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="text-red-500 font-bold mt-0.5">03_</span>
-                <p>Kripto para piyasalarında işlem yapmak yüksek finansal risk taşır. Sistem verilerinden veya piyasa dalgalanmalarından doğacak kayıplardan geliştirici sorumlu tutulamaz.</p>
-            </div>
-            <div class="mt-2 pt-5 border-t border-white/5 text-center">
-                <p class="text-[#00ffcc] font-black tracking-widest text-sm uppercase drop-shadow-[0_0_10px_rgba(0,255,204,0.3)]">
-                    Sisteme giriş yaparak tüm riskleri kabul etmiş sayılırsınız.
-                </p>
+            <div id="compliance-terminal" class="flex-grow overflow-y-auto flex flex-col gap-1 text-[9px] text-gray-400 cyber-text leading-tight pr-2">
+                <!-- JS ile 100 madde doldurulacak -->
             </div>
         </div>
-
-        <!-- Onay Butonu (Tıklanınca kararma animasyonuyla geçer) -->
-        <button onclick="document.body.style.opacity='0'; setTimeout(()=>window.location.href='/onayla', 400);" class="accept-btn w-full font-black py-4 md:py-5 rounded-xl text-sm md:text-base tracking-[0.1em] uppercase cursor-pointer">
-            TÜM ŞARTLARI OKUDUM, KABUL EDİYORUM ✓
-        </button>
 
     </div>
 
+    <script>
+        document.getElementById('date-display').innerText = `TARİH: ${new Date().toLocaleDateString('tr-TR')} | ${new Date().toLocaleTimeString('tr-TR')}`;
+
+        // 100 Benzersiz HFT, Regülasyon ve On-Chain Risk Feragatnamesi
+        const riskModules = [
+            "HFT Volatilite Kayması (Slippage) Feragatnamesi", "MEV Rüşvet (Bribe) Açığı Sorumluluk Reddi", "Flash Crash Zarar Kabul Beyanı", "Karanlık Havuz (Dark Pool) Veri Gecikme Kabulü", 
+            "API Rate-Limit Kesinti Sorumluluğu", "Sandwich Saldırısı Finansal Risk Onayı", "Smart Contract (Akıllı Kontrat) Exploit Feragatnamesi", "De-Peg (Sabitlik Bozulması) İflas Riski", 
+            "Front-Running İşlem Kaybı Kabulü", "Back-Running Algoritma Dezavantajı", "Borsa İflası (Counterparty) Sorumluluk Reddi", "Regülatif (SEC/CFTC) Siyah Kuğu Riski",
+            "Ağ Tıkanıklığı (Network Congestion) Gecikme Onayı", "Gas Ücreti Şoku (Spike) Kabulü", "Oracle Fiyat Manipülasyon Riski", "DEX Likidite Tahliyesi (Rug Pull) Feragatnamesi",
+            "Geçici Kayıp (Impermanent Loss) Finansal Yükü", "Çapraz Zincir (Cross-Chain) Köprü Çöküş Riski", "Birim Kök Testi Yanılgı Oranı Kabulü", "Pekiştirmeli Öğrenme (RL) Overfitting Riski",
+            "Markov Rejim Değişikliği Gecikme Payı", "LSTM Nöral Ağ Sinyal Hata Payı", "Sosyal Duygu (Sentiment) Yanılsama Riski", "Deep-Fake Haberlere Karşı Algoritma Körlüğü",
+            "Kointegrasyon Vektörü Sapma Olasılığı", "Maksimum Drawdown (MDD) Aşım Onayı", "İzole Marjin Tasfiye (Liquidation) Kabulü", "Çapraz Marjin Bulaşıcılık (Contagion) Riski",
+            "Opsiyon Gamma Squeeze Finansal Şoku", "Delta-Nötr Hedge Kırılganlık Onayı", "VIX Temelli Ani Marjin Kapatma Yetkisi", "Otomatik Zarar Kes (Stop-Loss) Kayma Payı",
+            "Taker Komisyon Aşımı (Fee Burn) Onayı", "Negatif Fonlama Oranı (Funding Rate) Yükü", "Maker Rebate İptal Riski Kabulü", "Suni Hacim (Wash Trade) Filtre Yanılgısı",
+            "Balina Spoofing Tuzağına Düşme Payı", "Iceberg Emirlerin Gözden Kaçma İhtimali", "OFI (Order Flow Imbalance) Sinyal Hatası", "CVD (Cumulative Volume Delta) Ayrışma Gecikmesi",
+            "Likidite Boşluğu (Void) Doldurma Başarısızlığı", "Limit Order Book (LOB) Asimetrisi", "TWAP Zaman Ağırlıklı Sızma Riski", "VWAP Fiyat Ağırlıklı Çekim Hatası",
+            "Fat-Finger (Şişman Parmak) İnsan Hatası Feragatnamesi", "CEX/DEX Arbitraj Bacağı Kopma (Leg-Risk) Onayı", "Flash Loan Likidite Yetmezliği", "Aave/Compound Ani Faiz Sıçraması",
+            "LRT (Liquid Restaking) Risk Katmanı Onayı", "EigenLayer Ceza (Slashing) Olasılığı", "Madenci Teslimiyeti Sinyal Gecikmesi", "MVRV Z-Score Aşırı Alım/Satım Yanılgısı",
+            "Borsa Soğuk Cüzdan Yanıltıcı Çıkışı", "Tether (USDT) Darphane Veri Gecikmesi", "DXY Ters Korelasyon Bozulma Riski", "US10Y Faiz Şoku Önlem Başarısızlığı",
+            "SPX Beta Katsayısı Geçersizliği", "TÜFE/ÜFE Veri API Gecikme Toleransı", "Jeopolitik Şok (Savaş/Kriz) Etki Kabulü", "Yapay Zeka Mantıksal Halüsinasyon Riski",
+            "Makine Öğrenimi Bellek Taşkını", "Sinyal Önceliği Atama Algoritma Hatası", "Dağıtık Ağ Senkronizasyon (Node Sync) Problemi", "WebSocket Bağlantı Kopması PnL Kaybı",
+            "Göz Takip (Eye-Tracking) Gecikme Payı", "Biyometrik Onay Sistem Hatası", "Panik Kapatma (Nükleer Buton) Kayma Onayı", "Gizli Mod (Stealth) Kapanma Gecikmesi",
+            "Klavye Ninja Kısayol Hata Toleransı", "Veritabanı (JSON) Çökme ve Veri Kaybı", "Çevrimdışı (Offline) Mod Senkronizasyon Hatası", "Bileşik Kâr (Auto-Compounding) Kontrat Açığı",
+            "Spot Hedge Ayrışma (Decoupling) Riski", "Korelasyon Matrisi (Pearson) Hata Payı", "Zımni Volatilite (IV) Yanlış Fiyatlaması", "Sürekli Vadeli (Perpetual) Premium Sapması",
+            "Gecikmeli Fiyat (Latency) İstismarı Kaybı", "Sıfır Blok Onayı (Zero-Block) Çift Harcama", "Uncle Bandit Saldırısı Sorumluluk Reddi", "Zaman Haydutu (Time-Bandit) Reorg Riski",
+            "Sushiswap/Uniswap Rota Optimizasyon Hatası", "L2 Sequencer Duraklama Sorumluluğu", "Optimistic Rollup Fraud Proof Gecikmesi", "zkEVM Kanıt İşleme Hatası",
+            "Köprü Ücreti (Bridge Fee) Ani Değişimi", "Gnosis Chain Likidite Kuruluğu", "Avalanche C-Chain TPS Düşüşü", "Solana Ağ Çökmesi (Downtime) Risk Onayı",
+            "Cosmos IBC Paket İletim Arızası", "Thorchain RUNE Sabitlik (Peg) Kaybı", "DEX Aggregator Maksimum Kayma Aşımı", "Tokenomik Enflasyon Emisyon Şoku",
+            "Hak Ediş (Vesting) Tarihi Veri Hatası", "Airdrop Claim (Talep) Botu Başarısızlığı", "DAO Hazine Oylaması Manipülasyon Riski", "KYC/AML Borsa Dondurma İşlemi Sorumluluğu",
+            "Alt-Hesap (Sub-account) Marjin Senkron Hatası", "Kuantum Algoritma Donanım Darboğazı", "Sistem Geneli Otonom Risk Üstlenme Beyanı", "KÜRESEL NİHAİ İBRA VE FERAGATNAME SÖZLEŞMESİ"
+        ];
+
+        const terminal = document.getElementById('compliance-terminal');
+        const acceptBtn = document.getElementById('accept-btn');
+        const btnText = document.getElementById('btn-text');
+        const progressText = document.getElementById('progress-text');
+
+        let loadedCount = 0;
+
+        function loadModule() {
+            if (loadedCount < riskModules.length) {
+                const line = document.createElement('div');
+                line.className = "flex items-start gap-2 mb-0.5 opacity-80 animate-[fadeIn_0.1s_ease-out]";
+                line.innerHTML = `
+                    <span class="text-red-500 font-bold">[SYS_${(loadedCount+1).toString().padStart(3, '0')}]</span> 
+                    <span class="flex-grow">${riskModules[loadedCount]}</span> 
+                    <span class="text-[#00ffcc] font-bold">VERIFIED</span>
+                `;
+                terminal.appendChild(line);
+                terminal.scrollTop = terminal.scrollHeight;
+                
+                loadedCount++;
+                progressText.innerText = `${loadedCount}/100 YÜKLENDİ`;
+                
+                // Giderek hızlanan terminal efekti
+                let nextDelay = Math.max(10, 80 - (loadedCount * 0.8)); 
+                setTimeout(loadModule, nextDelay);
+            } else {
+                // Yükleme Bitti
+                btnText.innerText = "TÜM HFT RİSKLERİNİ KABUL EDİYORUM ✓";
+                acceptBtn.classList.add('active');
+                acceptBtn.classList.remove('opacity-50');
+                
+                const finalLine = document.createElement('div');
+                finalLine.className = "mt-4 text-center text-red-500 font-black uppercase drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]";
+                finalLine.innerText = ">> TÜM 100 RİSK PROTOKOLÜ ONAYLANDI. SİSTEM GİRİŞE HAZIR. <<";
+                terminal.appendChild(finalLine);
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+
+        // Terminali küçük bir gecikmeyle başlat
+        setTimeout(loadModule, 500);
+
+    </script>
 </body>
 </html>

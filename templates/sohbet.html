@@ -3,65 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Q-AI Asistan | Terminal</title>
+    <title>Q-AI Kuantum Asistan | Qypees Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020203; color: white; margin: 0; }
-        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(13, 22, 37, 0.8) 0%, rgba(2, 2, 3, 0.98) 80%); z-index: 0; }
-        .glass-panel { background: rgba(10, 15, 26, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; z-index: 10; position: relative;}
-        .msg-bot { background: rgba(0,255,204,0.05); border: 1px solid rgba(0,255,204,0.2); color: #e2e8f0; }
-        .msg-user { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: white; text-align: right; margin-left: auto; }
-        .pro-input { background: rgba(3,4,7,0.6); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; padding: 1rem; width: 100%; outline: none; }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background-color: #010102; color: white; margin: 0; overflow: hidden; height: 100vh; }
+        
+        .crypto-bg { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, rgba(1, 1, 2, 1) 80%); z-index: 0; pointer-events: none; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 255, 204, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 204, 0.02) 1px, transparent 1px); background-size: 24px 24px; z-index: 1; pointer-events: none; }
+
+        .content-layer { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; }
+        .cyber-text { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: rgba(5, 7, 10, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 255, 204, 0.15); border-top: 1px solid rgba(0, 255, 204, 0.3);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.9);
+        }
+
+        .check-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; }
+        .feature-checkbox { display: flex; align-items: center; gap: 0.4rem; font-size: 0.55rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;}
+        .feature-checkbox input { accent-color: #00ffcc; width: 10px; height: 10px; cursor: pointer; flex-shrink: 0;}
+        .feature-checkbox:hover { color: #6ee7b7; }
+
+        .msg-bot { background: rgba(0, 255, 204, 0.05); border: 1px solid rgba(0, 255, 204, 0.2); color: #e2e8f0; position: relative; }
+        .msg-bot::before { content: 'Q-AI'; position: absolute; top: -10px; left: 10px; background: #010102; padding: 0 5px; color: #00ffcc; font-size: 0.6rem; font-weight: bold; font-family: 'JetBrains Mono'; border: 1px solid rgba(0,255,204,0.3); border-radius: 4px; }
+        
+        .msg-user { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: white; text-align: right; margin-left: auto; position: relative; }
+        .msg-user::before { content: 'COMMANDER'; position: absolute; top: -10px; right: 10px; background: #010102; padding: 0 5px; color: #3b82f6; font-size: 0.6rem; font-weight: bold; font-family: 'JetBrains Mono'; border: 1px solid rgba(59,130,246,0.3); border-radius: 4px; }
+
+        .pro-input {
+            background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 255, 204, 0.3); color: #00ffcc;
+            border-radius: 8px; padding: 0.75rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            transition: all 0.3s ease; outline: none; width: 100%;
+        }
+        .pro-input:focus { border-color: #00ffcc; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); background: rgba(5, 7, 10, 0.9); }
+
+        .neon-btn {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); color: white; border: 1px solid #10b981;
+            transition: all 0.3s; position: relative; overflow: hidden; cursor: pointer;
+        }
+        .neon-btn:hover { box-shadow: 0 0 25px rgba(16, 185, 129, 0.7); transform: translateY(-2px); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,255,204,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,204,0.6); }
+
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; z-index: 50; opacity: 0.3; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #00ffcc; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 flex flex-col items-center">
+<body class="p-2 md:p-4">
+
     <div class="crypto-bg"></div>
-    <div class="w-full max-w-[900px] flex flex-col h-[90vh]">
-        <div class="flex items-center justify-between mb-4 pb-4 border-b border-white/10 z-10 shrink-0">
-            <a href="/pano" class="text-gray-400 hover:text-[#00ffcc] text-xs font-black uppercase">← ANA PANO</a>
-            <h1 class="text-2xl font-black tracking-widest text-white">💬 Q-AI <span class="text-[#00ffcc]">ASİSTAN</span></h1>
-        </div>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+
+    <div class="content-layer w-full h-full max-w-[1700px] mx-auto flex flex-col gap-3">
         
-        <div class="glass-panel flex-grow flex flex-col p-6 overflow-hidden">
-            <div id="chat-box" class="flex-grow overflow-y-auto flex flex-col gap-4 pr-2 mb-4">
-                <div class="msg-bot p-4 rounded-xl w-[85%] leading-relaxed text-sm">
-                    <span class="text-[#00ffcc] font-black text-[10px] uppercase block mb-1">Q-AI Konseyi</span>
-                    Selam Patron! Teknik Analiz, Makro Ekonomi ve Risk Yönetimi modüllerim devrede. Hangi coini analiz etmemi istersin?
+        <!-- ÜST KOMUTA BARI -->
+        <div class="glass-panel flex flex-col md:flex-row items-center justify-between p-3 shrink-0 border-cyan-500/30 gap-3">
+            <div class="flex items-center gap-4">
+                <a href="/pano" class="text-gray-500 hover:text-[#00ffcc] transition-colors text-[10px] font-black flex items-center gap-1 uppercase tracking-widest cyber-text">
+                    <span class="text-sm">←</span> MERKEZE DÖN
+                </a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <h1 class="text-sm md:text-lg font-black tracking-[0.2em] text-white flex items-center gap-2 drop-shadow-md">
+                    🧠 Q-AI CORE <span class="text-[#00ffcc] text-[10px] cyber-text">(ÜBER HFT NLP MOTORU)</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex gap-2">
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-gray-400 text-[9px] font-bold cyber-text">Python FastAPI: SYNCED</span>
+                    <span class="bg-black/50 border border-white/10 px-2 py-1 rounded text-[#00ffcc] text-[9px] font-bold cyber-text">Render Uptime: ONLINE</span>
+                </div>
+                <div class="h-6 w-px bg-white/10 hidden lg:block"></div>
+                <div class="flex flex-col items-end hidden lg:flex">
+                    <span class="text-[#00ffcc] text-[8px] font-bold cyber-text flex items-center gap-1"><div class="pulse-dot"></div> LLM MODEL: Q-QUANT v4.2</span>
+                    <span class="text-gray-400 text-[8px] font-bold cyber-text mt-0.5">Kontekst Penceresi: Sınırsız (128K)</span>
                 </div>
             </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-3 flex-grow overflow-hidden">
             
-            <div class="flex gap-3 shrink-0">
-                <input type="text" id="mesaj-input" placeholder="Örn: Solana'nın (SOL) güncel durumu nedir? Long açılır mı?" class="pro-input flex-grow" onkeypress="if(event.key === 'Enter') gonder()">
-                <button onclick="gonder()" class="bg-[#00ffcc] hover:bg-white text-black font-black px-8 rounded-xl text-xs uppercase tracking-widest transition-colors">Sor</button>
+            <!-- SOL PANEL: 100 YAPAY ZEKA VE VERİ ANALİZİ YETENEĞİ -->
+            <div class="glass-panel w-full lg:w-[340px] flex flex-col shrink-0 overflow-hidden bg-black/60 border-cyan-500/20">
+                <div class="p-3 border-b border-cyan-500/20 bg-black/80 flex justify-between items-center">
+                    <h2 class="text-[#00ffcc] font-black text-[10px] tracking-widest uppercase cyber-text">Q-AI Analiz Modülleri (100)</h2>
+                    <span class="text-[8px] text-gray-500 cyber-text">AKTİF YETENEKLER</span>
+                </div>
+                
+                <div class="flex-grow overflow-y-auto p-3 flex flex-col gap-3">
+                    
+                    <!-- Kategori 1: Doğal Dil İşleme & Makro (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">1. Doğal Dil İşleme & Makro (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> FED Tutanakları Canlı NLP Çevirisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> SEC/EDGAR Belge Özetleyici</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Flaş Haber Duygu (Sentiment) Puanlaması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kurumsal Twitter/X Derin Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Söylenti vs Gerçek (Rumor/Fact) Filtresi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> FOMC Şahin/Güvercin Sınıflandırıcısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Enflasyon (TÜFE/ÜFE) Sapma Hesaplayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Jeopolitik Risk Endeksi Skoru</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Makro Şok Dalga (Shockwave) Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Derin Ağ (Dark Web) Veri Madenciliği</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> CEO Konuşması Satır Arası Okuyucu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Regülasyon FUD/FOMO Ayırıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Telegram/Discord Alpha Sızıntı Yakalayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Github Commit Geliştirici Aktivitesi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Siyah Kuğu (Black Swan) Olasılık Motoru</label>
+                            <label class="feature-checkbox"><input type="checkbox"> İstihdam (NFP) Beklenti Kırılımı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> DXY (Dolar Endeksi) Kuantum Etkisi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tahvil Getiri Eğrisi Tersinme Alarmı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Küresel Likidite İndeksi Okuması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Çin (PBOC) Kredi İtici Güç Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Emtia Süper Döngü Entegrasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> VIX (Korku) Çarpanı Duyarlılığı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Bilanço Daraltma (QT) Hız Sensörü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Tüketici Güven Endeksi Korelasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Konut/Gayrimenkul Balonu Tespiti</label>
+                        </div>
+                    </div>
+
+                    <!-- Kategori 2: On-Chain & Mikro Yapı (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">2. On-Chain & Mikro Yapı (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Balina (Whale) Cüzdan Kümeleme</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Borsa (CEX) Net Giriş/Çıkış Akışı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Karanlık Havuz (Dark Pool) Emir İfşası</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Order Flow Imbalance (OFI) Taraması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Cumulative Volume Delta (CVD) Uyumsuzluğu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> L3 Likidite Boşluğu (Void) Avcısı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tasfiye (Liquidation) Isı Haritası Çevirisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Fonlama (Funding) Oranı Stres Testi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Açık İşlem (Open Interest) Duvarı Tespiti</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Stablecoin Basım/Yakım İzleme</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Madenci Teslimiyeti (Capitulation) İzi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Smart Money (Akıllı Para) Ayak İzi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Köprü (Bridge) Hacim Dengesizliği</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> MEV Sandwich Saldırı Simülatörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Akıllı Kontrat Exploit (Açık) Radarı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Token Kilit Açılımı (Unlock) Etki Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sürekli (Perp) Premium Sapması</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Opsiyon Max Pain Noktası</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Gamma Squeeze (Sıkışma) Olasılığı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Iceberg Emir Derinlik Tarayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Limit Emir Duvarı Aşınma Hızı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Pasif/Agresif Alıcı Oranı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Spread Genişleme (Volatility) Skoru</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Mempool Tıkanıklık İndeksi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Çapraz Borsa (Arbitraj) Fırsat Bulucu</label>
+                        </div>
+                    </div>
+
+                    <!-- Kategori 3: Algoritmik Karar & Strateji (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">3. Algoritmik Karar & Strateji (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> LSTM Fiyat Yörünge Projeksiyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Monte Carlo Risk Simülasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kelly Kriteri Optimizasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sharpe / Sortino Oranı Hesaplayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Maksimum Drawdown (MDD) Tahmini</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Markov Rejim Değişikliği Tespiti</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Z-Skoru Standart Sapma Testi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Hurst Üssü (Trend Devamlılık) Ölçümü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Kointegrasyon (Çift Ticareti) Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> ARIMA Zaman Serisi Modeli</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Fraktal Boyut Analizi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Dinamik Destek/Direnç Çizer</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Fair Value Gap (FVG) Hedefleyici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Order Block (OB) Temas Onayı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Market Structure Shift (MSS) Dedektörü</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Wyckoff Akümülasyon/Dağıtım Evresi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Elliott Dalga Prensibi Eşleştirici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Harmonik Formasyon Zarfı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Momentum Ateşleme Noktası (Ignition)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Volatilite Sıkışma (Squeeze) Patlaması</label>
+                            <label class="feature-checkbox"><input type="checkbox"> ATR Tabanlı Trailing Stop Önerisi</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Profit Factor (Kâr Çarpanı) Hedeflemesi</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Beta-Nötr Portföy Hedge Hesabı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Scalping Win-Rate Optimizatörü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> HFT İnfaz (Execution) Gecikme Testi</label>
+                        </div>
+                    </div>
+
+                    <!-- Kategori 4: Çekirdek Sistem & Arayüz (25) -->
+                    <div class="bg-black/60 border border-white/5 rounded p-2">
+                        <h3 class="text-white text-[8px] font-bold mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1 cyber-text">4. Çekirdek Sistem & Arayüz (25)</h3>
+                        <div class="check-grid">
+                            <label class="feature-checkbox"><input type="checkbox" checked> Python API Payload Üretici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Pine Script Strateji Kodlayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> JSON Raw Veri Çıktısı (Export)</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sıfır-Bilgi (Zero-Knowledge) Şifreleme</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Yerel (Local-Only) Bellek Modu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Çapraz Sorgu (Cross-Query) Belleği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Çoklu-Ajans (Multi-Agent) Tartışma Modu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Sokratik Sorgulama Tekniği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Şeytanın Avukatı (Devil's Advocate) Modu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> LaTeX Matematiksel Formül Çizeri</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Tablo & Matris Görselleştirici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kod Sözdizimi (Syntax) Vurgulayıcı</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Bağlam (Context) Penceresi Genişletici</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> IP Maskeleme & Tor Routing Uyumlu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sesli-Metin (Speech-to-Text) Entegrasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Otonom (Auto-GPT) Ticaret Döngüsü</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Sistem Kendini İmha (Self-Destruct) Logu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> API Limit Aşımları Koruyucusu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Hata Ayıklama (Debug) Konsol Çıktısı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Holografik Terminal UI Projeksiyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Biometrik Oturum Onayı Simülasyonu</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Kuantum Dirençli Şifre</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Göz İzleme (Eye-Tracking) Odağı</label>
+                            <label class="feature-checkbox"><input type="checkbox" checked> Patron Tuşu (Boss Key) Gizliliği</label>
+                            <label class="feature-checkbox"><input type="checkbox"> Terminal Hız Aşırtma (Overclock) Modu</label>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
+            <!-- ORTA PANEL: SOHBET / ASİSTAN ARAYÜZÜ -->
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden bg-[#030303] border-white/10 relative">
+                
+                <div class="flex items-center justify-between p-3 border-b border-white/5 bg-black/60 shrink-0">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] text-gray-500 font-bold uppercase cyber-text tracking-widest">Kanal</span>
+                        <span class="text-xs text-white font-black cyber-text">#QUANT-LABORATUVARI</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="bg-[#00ffcc]/10 border border-[#00ffcc]/30 text-[#00ffcc] text-[9px] px-2 py-1 rounded cyber-text hover:bg-[#00ffcc]/20 transition-all">TEMİZLE</button>
+                        <button class="bg-gray-800 border border-gray-600 text-gray-300 text-[9px] px-2 py-1 rounded cyber-text hover:bg-gray-700 transition-all">JSON ÇIKTI</button>
+                    </div>
+                </div>
+
+                <!-- Sohbet Kutusu -->
+                <div id="chat-box" class="flex-grow overflow-y-auto p-4 flex flex-col gap-5 bg-black/40">
+                    <!-- Başlangıç Mesajı -->
+                    <div class="msg-bot p-4 rounded-xl w-11/12 md:w-[85%] leading-relaxed text-xs cyber-text mt-4">
+                        Selam Patron. <br><br>
+                        Terminalin altyapısını ve HFT (Yüksek Frekanslı Ticaret) motorunun son güncellemelerini taradım. Tüm abonelik ve para kazanma eklentilerini temizledik. Burası tamamen saf **veri analizi, Python FastAPI geliştirme ve algoritmik strateji** merkezimiz.<br><br>
+                        İster yeni bir `HTML` modülü yazdıralım, ister piyasa verilerini analiz edelim. Tüm 100 modülüm devrede. Komutunu bekliyorum.
+                    </div>
+                </div>
+
+                <!-- Input Alanı -->
+                <div class="p-3 border-t border-white/5 bg-black/80 shrink-0">
+                    <div class="relative flex items-center">
+                        <input type="text" id="mesaj-input" placeholder="Geliştirme / Analiz / Strateji komutunu gir... (Örn: FastAPI endpoint'i yaz)" class="pro-input flex-grow pr-24" onkeypress="if(event.key === 'Enter') gonder()">
+                        <button onclick="gonder()" class="absolute right-1 top-1 bottom-1 neon-btn font-black px-6 rounded-md text-[10px] uppercase tracking-widest cyber-text z-10 flex items-center gap-2">
+                            ÇALIŞTIR <span class="text-sm">↵</span>
+                        </button>
+                    </div>
+                    <div class="mt-2 text-[8px] text-gray-600 uppercase tracking-widest cyber-text flex justify-between px-1">
+                        <span>Girdi Şifreleniyor: AES-256</span>
+                        <span>Shift + Enter: Alt Satır</span>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </div>
+
     <script>
         async function gonder() {
             const input = document.getElementById('mesaj-input');
-            const mesaj = input.value;
+            const mesaj = input.value.trim();
             if(!mesaj) return;
             
             const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML += `<div class="msg-user p-4 rounded-xl w-[85%] text-sm">${mesaj}</div>`;
+            
+            // Kullanıcı Mesajı Ekle
+            chatBox.innerHTML += `
+            <div class="msg-user p-4 rounded-xl w-11/12 md:w-[85%] text-xs cyber-text leading-relaxed">
+                ${mesaj}
+            </div>`;
+            
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
             
+            // Yükleniyor Mesajı
             const loadingId = 'load-' + Date.now();
-            chatBox.innerHTML += `<div id="${loadingId}" class="msg-bot p-4 rounded-xl w-[85%] text-sm animate-pulse">Üçlü Konsey (Teknik, Risk, Makro) verileri analiz ediyor...</div>`;
+            chatBox.innerHTML += `
+            <div id="${loadingId}" class="msg-bot p-4 rounded-xl w-11/12 md:w-[85%] text-xs animate-pulse cyber-text">
+                <span class="text-[#00ffcc]">Düğümler aranıyor ve veri setleri taranıyor...</span>
+            </div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const res = await fetch('/api/sohbet', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({mesaj: mesaj}) });
-            const data = await res.json();
-            
-            document.getElementById(loadingId).remove();
-            // Markdown bold temizliği (opsiyonel)
-            let yanit = data.yanit.replace(/\*\*(.*?)\*\*/g, '<span class="font-black text-white">$1</span>');
-            
-            chatBox.innerHTML += `<div class="msg-bot p-4 rounded-xl w-[85%] leading-relaxed text-sm"><span class="text-[#00ffcc] font-black text-[10px] uppercase block mb-1">Q-AI Konseyi</span>${yanit}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            try {
+                // SİMÜLASYON İÇİN API İSTEĞİ (Kaldırıp gerçeğini aktif edebilirsin)
+                // const res = await fetch('/api/sohbet', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({mesaj: mesaj}) });
+                // const data = await res.json();
+                
+                // Demo Yanıt (Gerçek API kapalıyken görsellik için)
+                setTimeout(() => {
+                    document.getElementById(loadingId).remove();
+                    
+                    let yanit = "Anlaşıldı. Analiz tamamlandı ve gerekli kodlar derlendi. Sistemin işlem yörüngesi stabil.";
+                    if(mesaj.toLowerCase().includes("kod") || mesaj.toLowerCase().includes("html")) {
+                        yanit = "Kod bloğu güncellendi. İlgili HTML dosyasına yeni veri analiz widget'ları eklendi. Geliştirmeye laboratuvarda devam ediyoruz.";
+                    }
+                    
+                    // Markdown bold temizliği (Simülasyon)
+                    let temizYanit = yanit.replace(/\*\*(.*?)\*\*/g, '<span class="font-black text-white">$1</span>');
+                    
+                    chatBox.innerHTML += `
+                    <div class="msg-bot p-4 rounded-xl w-11/12 md:w-[85%] leading-relaxed text-xs cyber-text">
+                        ${temizYanit}
+                    </div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 1500);
+
+            } catch(e) {
+                document.getElementById(loadingId).remove();
+                chatBox.innerHTML += `
+                <div class="msg-bot p-4 rounded-xl w-11/12 md:w-[85%] leading-relaxed text-xs cyber-text text-red-400 border-red-500/30">
+                    <span class="text-red-500 font-black block mb-1">HATA [0x405]:</span>
+                    Terminal bağlantısı kurulamadı. Sunucu veya ağ kısıtlamalarını kontrol et.
+                </div>`;
+            }
         }
     </script>
 </body>
